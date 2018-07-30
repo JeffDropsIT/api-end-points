@@ -1,50 +1,68 @@
-const mongodb = require('mongodb');
-const assert = require('assert');
+const mongodb = require("mongodb");
 
-
-let mongoClient = mongodb.MongoClient;
+let mongodbClient = mongodb.MongoClient;
 let url = 'mongodb://admin:password123@ds153841.mlab.com:53841/afroturf';
 
 
+//get salon by Name
 
-function getSalonByName(dbo, name, callback){
- // console.log("SALONS SEARCHING FOUNDING");
-  dbo.collection("salons").find({name:name})
- .toArray(function (err, items) { 
-   if (items.length > 0) {
+const getSalonByName = async (name) => {
+  
+   try{
+      const db = await getDatabaseByName("afroturf");
+      const salonCursor = await db.db.collection("salons").find({name:name});
+      const salon = await salonCursor.toArray();
+
+      console.log("INSIDE connect", JSON.stringify(salon[0].name));
+      db.connection.close();
+      return JSON.stringify(salon[0]);
       
 
 
-     let salon = JSON.stringify(items[0]);
-     //item = yield salon; 
-     callback(salon);
+   }catch(err){
+    throw new Error(err);
+   }
       
-     }
-   });
+    };
 
+//get database by Name
+const getDatabaseByName = async(name) =>{
+ 
+  try{
+    
+    const db = await mongodbClient.connect(url,{useNewUrlParser : true});
+    
+    if(db.isConnected){
+      console.log("connected");
+    }
+    
+    return { db: db.db(name), connection: db};
+  }catch (err) {
+    throw new Error(err);
+  }
 };
 
-
-mongoClient.connect(url, {useNewUrlParser : true}).then(db => {
-  //yield db;
-  //let myobj = { name: "Company Inc", address: "Highway 37" };
-  console.log("DB CONNECTED");
-  return db;
-
-}).then(db => {
-  console.log("SALONS SEARCHING > > >");
-
-
-  module.exports.getSalonByName =  getSalonByName(db.db("afroturf"), "HeartBeauty", function(docs){
-    console.log(docs);
-    db.close();
-    return docs;
-    
-  });
-
-
+//get all salons
+const getAllSalon =  async () => {
   
-}).catch(err => {
-  console.log(err);
-});
+  try{
+     const db = await getDatabaseByName("afroturf");
+     const salonCursor = await db.db.collection("salons").find({});
+     const salon = await salonCursor.toArray();
+
+     console.log("INSIDE connect", JSON.stringify(salon));
+     db.connection.close();
+     return JSON.stringify(salon);
+     
+
+
+  }catch(err){
+   throw new Error(err);
+  }
+     
+   };
+// const data = getDatabaseByName("afroturf");
+
+//getSalonByName("HeartBeauty");
+getAllSalon();
 
