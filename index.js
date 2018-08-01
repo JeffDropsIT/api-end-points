@@ -22,19 +22,35 @@ const getDatabaseByName = async(name) =>{
 };
 // get nearest salons
 
-const getNearestSalons = async (location, radius) => {
+const getNearestSalons = async (Userlocation, radius, limit) => {
 
   try {
     
     const db = await getDatabaseByName("afroturf");
-    const salonCursor = await db.db.collection("salons");
-    const nearestSalons = await salonCursor.aggregate(
+    const collection = await db.db.collection("salons");
+
+    await collection.ensureIndex({"location.coordinates" : "2dsphere"})
+    const nearestSalonsCursor = await collection.aggregate([
+
       {
-        $cond: {$eq: [computation.haversine(location, )]}
+        $geoNear: {
+          near: {coordinates :Userlocation}, 
+          distanceField: "dist.calculated",
+          maxDistance: radius,
+          includeLocs: "distance.location",
+          num: limit,
+          spherical: true
+
+        }
       }
-    );
+
+    ]);
+    const nearestSalons = await nearestSalonsCursor.toArray();
+    db.connection.close();
+    return JSON.stringify(nearestSalons);
   } catch(err){
     throw new Error(err);
+    db.connection.close();
   } 
 
 }
@@ -60,12 +76,12 @@ const getSalonByName = async (name) => {
     
      try{
         const db = await getDatabaseByName("afroturf");
-        const salonCursor = await db.db.collection("salons").aggregate({
-          $project: {name: 1, location:1, rating: 1, address:1, street:1}
-        });
+        const salonCursor = await db.db.collection("salons").aggregate([{
+          $project: {name: 1, location:1, rating: 1}
+        }]);
         const salon = await salonCursor.toArray();
   
-        console.log("INSIDE connect", JSON.stringify(salon));
+        //console.log("INSIDE connect", JSON.stringify(salon));
         db.connection.close();
         return JSON.stringify(salon);
         
@@ -137,11 +153,11 @@ const getAllSalonShallow = async () => {
   try{
      const db = await getDatabaseByName("afroturf");
      const salonCursor = await db.db.collection("salons").aggregate([{
-       $project: {name: 1, location:1, rating: 1, address:1, street:1}
+       $project: {name: 1, location:1, rating: 1}
      }])
      const salon = await salonCursor.toArray();
 
-     console.log("INSIDE connect", JSON.stringify(salon));
+     //console.log("INSIDE connect", JSON.stringify(salon));
      db.connection.close();
      return JSON.stringify(salon);
      
@@ -161,7 +177,7 @@ const getAllSalon =  async () => {
      const salonCursor = await db.db.collection("salons").find({});
      const salon = await salonCursor.toArray();
 
-     console.log("INSIDE connect", JSON.stringify(salon));
+     //console.log("INSIDE connect", JSON.stringify(salon));
      db.connection.close();
      return JSON.stringify(salon);
      
@@ -178,17 +194,18 @@ const getAllSalon =  async () => {
   
 
   
-
+/* TESTS      START    */
 
 // getAllSalonShallowQuery().then(k => {console.log(k)});
 // getSalonByStylistRatingGender(5, "female").then(k => {console.log(k)});
 // const data = getDatabaseByName("afroturf");
 // getSalonByName("HeartBeauty");
-// getAllSalon();
+// getAllSalon();\
+//getAllSalonShallow("HeartBeaty").then(k => {console.log(k)});
+const cor1 =  [ -21.067155,  23.977487 ];
+getNearestSalons(cor1, 211, 10).then(k => console.log(k));
 
-
-
-
+/* TESTS      END    */
 
 
 

@@ -1,12 +1,14 @@
 const  degrees_to_radians = (degrees) => {
-    const pi = Math.PI;
-    return degrees * (pi/180);
-}
+        const pi = Math.PI;
+        return degrees * (pi/180);
+    }
+
+    
 const haversine = async (coordinate1, coordinate2) =>{
     let latiOrigin = coordinate1.lati, longiOrigin = coordinate1.longi;
 
     let latiDes = coordinate2.lati, longiDes = coordinate2.longi;
-
+    
     const R = 6371000;
 
     const phi1 = await degrees_to_radians(latiOrigin);
@@ -20,7 +22,7 @@ const haversine = async (coordinate1, coordinate2) =>{
     const c = await 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
 
-return R*c/1000;
+    return R*c/1000;
 
 
 };
@@ -31,6 +33,6 @@ return R*c/1000;
 // //haversine(cor2, cor1).then(dis => {console.log(dis)});
 
 module.exports = {
-degrees_to_radians, 
-haversine,
+    degrees_to_radians, 
+    haversine,
 };
