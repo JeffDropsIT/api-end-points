@@ -29,7 +29,7 @@ const getNearestSalons = async (Userlocation, radius, limit) => {
     const db = await getDatabaseByName("afroturf");
     const collection = await db.db.collection("salons");
 
-    await collection.ensureIndex({"location.coordinates" : "2dsphere"})
+    await collection.ensureIndex({"location.coordinates" : "2dsphere"});
     const nearestSalonsCursor = await collection.aggregate([
 
       {
@@ -72,11 +72,24 @@ const getSalonByName = async (name) => {
     throw new Error(err);
    }   
   };//get salon by Name shallow
-  const getSalonByNameShallow = async (name) => {
+  const getSalonByNameShallow = async (salonname, Userlocation, radius, limit) => {
     
      try{
         const db = await getDatabaseByName("afroturf");
-        const salonCursor = await db.db.collection("salons").aggregate([{
+        await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+        const salonCursor = await db.db.collection("salons").aggregate([ {
+          $geoNear: {
+            near: { coordinates :Userlocation}, 
+            distanceField: "distance.calculated",
+            maxDistance: radius,
+            query: {name: salonname},
+            includeLocs: "distance.location",
+            num: limit,
+            spherical: true
+  
+          }
+        }, 
+        {
           $project: {name: 1, location:1, rating: 1}
         }]);
         const salon = await salonCursor.toArray();
@@ -94,10 +107,22 @@ const getSalonByName = async (name) => {
 
   // //Eg 2). {Baseurl}/salons?location=25,25&
   // //radius=5&filters{ “gender”: “male”, “rating”:”>3”}&limit10
-const getSalonByStylistRatingGender = async(rating, gender) => {
+const getSalonByStylistRatingGender = async(userlocation, radius, limit, rating, gender) => {
 
   const db = await getDatabaseByName("afroturf");
+  await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
   const stylistCursor = await db.db.collection("salons").aggregate([
+    {
+      $geoNear:{
+        near: {coordinates: userlocation},
+        distanceField: "distance.calculated",
+        maxDistance: radius,
+        includeLocs: "distance.location",
+        num: limit,
+        spherical: true
+      }
+
+    },
     {
       $project: { stylists: 
   
@@ -120,10 +145,26 @@ const getSalonByStylistRatingGender = async(rating, gender) => {
 };
 
 //return salon_id and list of stylist with the input rating
-const getSalonByStylistRating = async(rating) => {
+const getSalonByStylistRating = async(userlocation, radius, limit, rating) => {
 
   const db = await getDatabaseByName("afroturf");
+  await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
   const stylistCursor = await db.db.collection("salons").aggregate([
+
+
+
+    {
+      $geoNear:{
+        near: {coordinates: userlocation},
+        distanceField: "distance.calculated",
+        maxDistance: radius,
+        includeLocs: "distance.location",
+        num: limit,
+        spherical: true
+      }
+
+    },
+
     {
       $project: { stylists: 
   
@@ -147,12 +188,27 @@ const getSalonByStylistRating = async(rating) => {
 
 
 
-//get salon by Name shallow query
-const getAllSalonShallow = async () => {
+//get salons nearest shallow query
+const getAllNearestSalonsShallow = async (Userlocation, radius, limit) => {
   
   try{
      const db = await getDatabaseByName("afroturf");
-     const salonCursor = await db.db.collection("salons").aggregate([{
+     await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+     const salonCursor = await db.db.collection("salons").aggregate([
+      
+        {
+          $geoNear : {
+            near: {coordinates :Userlocation}, 
+            distanceField: "dist.calculated",
+            maxDistance: radius,
+            includeLocs: "distance.location",
+            num: limit,
+            spherical: true
+  
+          }
+        }, 
+
+      {
        $project: {name: 1, location:1, rating: 1}
      }])
      const salon = await salonCursor.toArray();
@@ -196,14 +252,20 @@ const getAllSalon =  async () => {
   
 /* TESTS      START    */
 
-// getAllSalonShallowQuery().then(k => {console.log(k)});
-// getSalonByStylistRatingGender(5, "female").then(k => {console.log(k)});
+
 // const data = getDatabaseByName("afroturf");
 // getSalonByName("HeartBeauty");
-// getAllSalon();\
+// getAllSalon();
 //getAllSalonShallow("HeartBeaty").then(k => {console.log(k)});
 const cor1 =  [ -21.067155,  23.977487 ];
-getNearestSalons(cor1, 211, 10).then(k => console.log(k));
+
+console.log("************************************************************");
+//getNearestSalons(cor1, 211, 10).then(k => console.log(k));
+//getAllNearestSalonsShallow(cor1, 211, 10).then(k => console.log(k));
+//getSalonByStylistRating(cor1, 211, 10,5).then(k => console.log(k));
+//getSalonByStylistRatingGender(cor1, 211, 10,4,"male").then(k => console.log(k));
+//getSalonByNameShallow("YoungNBold",cor1, 211, 10).then(k => console.log(k));
+
 
 /* TESTS      END    */
 
