@@ -2,13 +2,13 @@ const Koa = require('koa');
 const Router = require('koa-router');
 const controller = require('./controller');
 const task = require('./task');
-
+const PORT = process.env.PORT
 const app = new Koa();
 const router = new Router();
 
 
 
-router.get('/afroturf/salons/', async (ctx) =>{
+router.get('/afroturf/salons', async (ctx) =>{
     const location = await ctx.query.location;
     const radius = await ctx.query.radius;
     const name = await ctx.query.name;
@@ -63,4 +63,4 @@ router.get('/afroturf/salons/stylist/filter', async (ctx) => {
 app.use(router.routes())
     .use(router.allowedMethods());
 
-app.listen(3000);
+app.listen(PORT);
