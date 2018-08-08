@@ -65,7 +65,7 @@ const getSalonByName = async (name, userlocation, radius, limit) => {
           distanceField: "distance.calculated",
           maxDistance: radius,
           query: {name: name},
-          includeLocs: "distance.location",
+        
           num: limit,
           spherical: true
 
@@ -94,7 +94,6 @@ const getSalonByName = async (name, userlocation, radius, limit) => {
             distanceField: "distance.calculated",
             maxDistance: radius,
             query: {name: salonname},
-            includeLocs: "distance.location",
             num: limit,
             spherical: true
   
@@ -128,7 +127,6 @@ const getSalonByStylistRatingGender = async(userlocation, radius, limit, rating,
         near: {coordinates: userlocation},
         distanceField: "distance.calculated",
         maxDistance: radius,
-        includeLocs: "distance.location",
         num: limit,
         spherical: true
       }
@@ -166,7 +164,6 @@ const getSalonByStylistNameRatingGender = async(userlocation, radius, name,limit
         near: {coordinates: userlocation},
         distanceField: "distance.calculated",
         maxDistance: radius,
-        includeLocs: "distance.location",
         num: limit,
         spherical: true
       }
@@ -208,7 +205,6 @@ const getSalonByStylistRating = async(userlocation, radius, limit, rating) => {
         near: {coordinates: userlocation},
         distanceField: "distance.calculated",
         maxDistance: radius,
-        includeLocs: "distance.location",
         num: limit,
         spherical: true
       }
@@ -251,7 +247,6 @@ const getAllNearestSalonsShallow = async (Userlocation, radius, limit) => {
             near: {coordinates :Userlocation}, 
             distanceField: "dist.calculated",
             maxDistance: radius,
-            includeLocs: "distance.location",
             num: limit,
             spherical: true
   
