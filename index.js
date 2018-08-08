@@ -2,7 +2,7 @@ const Koa = require('koa');
 const Router = require('koa-router');
 const controller = require('./controller');
 const task = require('./task');
-const PORT = process.env.PORT
+const PORT = process.env.PORT;
 const app = new Koa();
 const router = new Router();
 
