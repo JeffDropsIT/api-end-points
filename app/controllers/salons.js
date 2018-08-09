@@ -85,3 +85,18 @@ const getSalonBySalonIdShallow = async ctx =>{
         ctx.body = await salonClient.getSalonBysalonIdShallow(nasalonIdme, userLocation, radius,limit);
     }
 }
+
+//filter 
+
+
+
+
+module.exports = {
+    getAllNearestSalonsShallow,
+    getNearestSalons, 
+    getSalonByName, 
+    getSalonByNameShallow, 
+    getSalonBySalonIdShallow,
+    getSalonBySalonId,
+
+};

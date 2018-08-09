@@ -39,6 +39,8 @@ router.get('/afroturf/salons/shallow/'
 router.get('/afroturf/salons/shallow/q'
 , getSalonByNameShallow(ctx));
 
+
+
 router.get('/afroturf/salons/stylist/filter', async (ctx) => {
     const location = await ctx.query.location;
     const radius = await ctx.query.radius;
@@ -60,12 +62,6 @@ router.get('/afroturf/salons/stylist/filter', async (ctx) => {
             ctx.body = await salonClient.getSalonByStylistRating(userLocation, radius, limit, rating);
         }
 });
-router.get('/afroturf/salons/services/', async (ctx) => {
-   
-
-
-
-});
 
 //returns all salon reviews by id/salonId
 router.get('afroturf/salons/reviews/id');
@@ -73,6 +69,8 @@ router.get('afroturf/salons/reviews/id');
 router.get('afroturf/salons/stylist/reviews/id');
 //returns all stylist by id/username
 router.get('afroturf/salons/stylist/id')
+
+
 app.use(router.routes())
     .use(router.allowedMethods());
 
