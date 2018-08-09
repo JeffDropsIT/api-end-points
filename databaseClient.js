@@ -82,7 +82,68 @@ const getSalonByName = async (name, userlocation, radius, limit) => {
    }catch(err){
     throw new Error(err);
    }   
-  };//get salon by Name shallow
+  };
+  
+  //get salon by salonId
+const getSalonBySalonId = async (salonId, userlocation, radius) => {
+  
+  try{
+     const db = await getDatabaseByName("afroturf");
+     const salonCursor = await db.db.collection("salons").aggregate([ {
+       $geoNear: {
+         near: { coordinates :userlocation}, 
+         distanceField: "distance.calculated",
+         maxDistance: radius,
+         query: {salonId: salonId},
+         spherical: true
+
+       }
+     }]);
+     const salon = await salonCursor.toArray();
+
+     console.log("INSIDE connect", JSON.stringify(salon));
+     db.connection.close();
+     return JSON.stringify(salon);
+     
+
+
+  }catch(err){
+   throw new Error(err);
+  }   
+ };
+  // get salon by salonId shallow getSalonBySalonIdShallow
+  const getSalonBySalonIdShallow = async (salonId, Userlocation, radius) => {
+    
+    try{
+       const db = await getDatabaseByName("afroturf");
+       await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+       const salonCursor = await db.db.collection("salons").aggregate([ {
+         $geoNear: {
+           near: { coordinates :Userlocation}, 
+           distanceField: "distance.calculated",
+           maxDistance: radius,
+           query: {salonId: salonId},
+           spherical: true
+ 
+         }
+       }, 
+       {
+         $project: {name: 1, location:1, rating: 1}
+       }]);
+       const salon = await salonCursor.toArray();
+ 
+       //console.log("INSIDE connect", JSON.stringify(salon));
+       db.connection.close();
+       return JSON.stringify(salon);
+       
+ 
+ 
+    }catch(err){
+     throw new Error(err);
+    }   
+   };
+
+  //get salon by Name shallow
   const getSalonByNameShallow = async (salonname, Userlocation, radius, limit) => {
     
      try{
@@ -235,7 +296,7 @@ const getSalonByStylistRating = async(userlocation, radius, limit, rating) => {
 
 
 //get salons nearest shallow query
-const getAllNearestSalonsShallow = async (Userlocation, radius, limit) => {
+const getAllNearestSalonsShallow = async (Userlocation, radius) => {
   
   try{
      const db = await getDatabaseByName("afroturf");
@@ -247,7 +308,6 @@ const getAllNearestSalonsShallow = async (Userlocation, radius, limit) => {
             near: {coordinates :Userlocation}, 
             distanceField: "dist.calculated",
             maxDistance: radius,
-            num: limit,
             spherical: true
   
           }
@@ -323,6 +383,8 @@ module.exports = {
   getNearestSalons,
   getDatabaseByName,
   getSalonByStylistNameRatingGender,
+  getSalonBySalonId,
+  getSalonBySalonIdShallow,
 };
 
 

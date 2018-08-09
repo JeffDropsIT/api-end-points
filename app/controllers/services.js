@@ -1,10 +1,3 @@
-const toLocationObject =  async (location) =>{
-    
-    const userLocation =  await location.split(",").map(item => parseFloat(item));
-    return userLocation;
-};
-
-
 
 
 ///afroturf/salons/services/?location=23.123,21.3434
@@ -266,8 +259,4 @@ const getSalonsServicesFilterBySalonId = async ctx => {
     //also create a filter for services
 
 
-};
-
-module.exports = {
-    toLocationObject,
 };
