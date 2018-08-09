@@ -97,6 +97,6 @@ module.exports = {
     getSalonByName, 
     getSalonByNameShallow, 
     getSalonBySalonIdShallow,
-    getSalonBySalonId,
+    getSalonBySalonId
 
 };
