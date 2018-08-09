@@ -1,5 +1,5 @@
 const mongodb = require("mongodb");
-
+const METERS_TO_KM = 1000;
 
 let mongodbClient = mongodb.MongoClient;
 let url = 'mongodb://admin:password123@ds153841.mlab.com:53841/afroturf';
@@ -36,9 +36,8 @@ const getNearestSalons = async (Userlocation, radius, limit) => {
         $geoNear: {
           near: {coordinates :Userlocation}, 
           distanceField: "dist.calculated",
-          maxDistance: radius,
-          includeLocs: "distance.location",
-          num: limit,
+          maxDistance: parseInt(radius)*METERS_TO_KM,
+          num: parseInt(limit),
           spherical: true
 
         }
@@ -56,24 +55,23 @@ const getNearestSalons = async (Userlocation, radius, limit) => {
 }
 //get salon by Name
 const getSalonByName = async (name, userlocation, radius, limit) => {
-  
+ 
    try{
       const db = await getDatabaseByName("afroturf");
       const salonCursor = await db.db.collection("salons").aggregate([ {
         $geoNear: {
           near: { coordinates :userlocation}, 
           distanceField: "distance.calculated",
-          maxDistance: radius,
+          maxDistance: parseInt(radius)*METERS_TO_KM,
+          num: parseInt(limit),
           query: {name: name},
-        
-          num: limit,
           spherical: true
 
         }
       }]);
       const salon = await salonCursor.toArray();
 
-      console.log("INSIDE connect", JSON.stringify(salon));
+      
       db.connection.close();
       return JSON.stringify(salon);
       
@@ -93,8 +91,8 @@ const getSalonBySalonId = async (salonId, userlocation, radius) => {
        $geoNear: {
          near: { coordinates :userlocation}, 
          distanceField: "distance.calculated",
-         maxDistance: radius,
-         query: {salonId: salonId},
+         maxDistance: parseInt(radius)*METERS_TO_KM,
+         query: {salonId: parseInt(salonId)},
          spherical: true
 
        }
@@ -113,7 +111,7 @@ const getSalonBySalonId = async (salonId, userlocation, radius) => {
  };
   // get salon by salonId shallow getSalonBySalonIdShallow
   const getSalonBySalonIdShallow = async (salonId, Userlocation, radius) => {
-    
+  
     try{
        const db = await getDatabaseByName("afroturf");
        await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
@@ -121,8 +119,8 @@ const getSalonBySalonId = async (salonId, userlocation, radius) => {
          $geoNear: {
            near: { coordinates :Userlocation}, 
            distanceField: "distance.calculated",
-           maxDistance: radius,
-           query: {salonId: salonId},
+           maxDistance: parseInt(radius)*METERS_TO_KM,
+           query: {salonId: parseInt(salonId)},
            spherical: true
  
          }
@@ -145,7 +143,7 @@ const getSalonBySalonId = async (salonId, userlocation, radius) => {
 
   //get salon by Name shallow
   const getSalonByNameShallow = async (salonname, Userlocation, radius, limit) => {
-    
+    console.log("getSalonByNameShallow hhhhh");
      try{
         const db = await getDatabaseByName("afroturf");
         await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
@@ -153,9 +151,9 @@ const getSalonBySalonId = async (salonId, userlocation, radius) => {
           $geoNear: {
             near: { coordinates :Userlocation}, 
             distanceField: "distance.calculated",
-            maxDistance: radius,
+            maxDistance: parseInt(radius)*METERS_TO_KM,
+            num: parseInt(limit),
             query: {name: salonname},
-            num: limit,
             spherical: true
   
           }
@@ -187,8 +185,8 @@ const getSalonByStylistRatingGender = async(userlocation, radius, limit, rating,
       $geoNear:{
         near: {coordinates: userlocation},
         distanceField: "distance.calculated",
-        maxDistance: radius,
-        num: limit,
+        maxDistance: parseInt(radius)*METERS_TO_KM,
+        num: parseInt(limit),
         spherical: true
       }
 
@@ -224,8 +222,8 @@ const getSalonByStylistNameRatingGender = async(userlocation, radius, name,limit
       $geoNear:{
         near: {coordinates: userlocation},
         distanceField: "distance.calculated",
-        maxDistance: radius,
-        num: limit,
+        maxDistance: parseInt(radius)*METERS_TO_KM,
+        num: parseInt(limit),
         spherical: true
       }
 
@@ -265,8 +263,8 @@ const getSalonByStylistRating = async(userlocation, radius, limit, rating) => {
       $geoNear:{
         near: {coordinates: userlocation},
         distanceField: "distance.calculated",
-        maxDistance: radius,
-        num: limit,
+        maxDistance: parseInt(radius)*METERS_TO_KM,
+        num: parseInt(limit),
         spherical: true
       }
 
@@ -297,7 +295,7 @@ const getSalonByStylistRating = async(userlocation, radius, limit, rating) => {
 
 //get salons nearest shallow query
 const getAllNearestSalonsShallow = async (Userlocation, radius) => {
-  
+  console.log("get salons nearest shallow query");
   try{
      const db = await getDatabaseByName("afroturf");
      await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
@@ -307,7 +305,7 @@ const getAllNearestSalonsShallow = async (Userlocation, radius) => {
           $geoNear : {
             near: {coordinates :Userlocation}, 
             distanceField: "dist.calculated",
-            maxDistance: radius,
+            maxDistance: parseInt(radius)*METERS_TO_KM,
             spherical: true
   
           }
@@ -332,7 +330,7 @@ const getAllNearestSalonsShallow = async (Userlocation, radius) => {
 
 //get all salons
 const getAllSalons =  async () => {
-  
+  console.log("fwr")
   try{
      const db = await getDatabaseByName("afroturf");
      const salonCursor = await db.db.collection("salons").find({});
