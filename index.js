@@ -1,8 +1,9 @@
 const Koa = require('koa');
 const Router = require('koa-router');
 const salon = require('./app/controllers/salons');
-const stylist = require('./app/controllers/stylists')
-const PORT = process.env.PORT || 5000;
+const stylist = require('./app/controllers/stylists');
+const service = require('./app/controllers/services')
+const PORT = process.env.PORT || 3000;
 
 const app = new Koa();
 const router = new Router();
@@ -101,10 +102,14 @@ router.get('/afroturf/salons/stylist/filter/', async ctx =>{
 });
 
 
-//returns all stylist reviews by id/username
-router.get('afroturf/salons/stylist/reviews/id');
-//returns all stylist by id/username
-router.get('afroturf/salons/stylist/id')
+//services filter 
+///afroturf/salons/:salonId/services/filter/?location=23.123,21.3434
+//&radius=700000&price_lte=50&service=hairstyles&price_gte=10&code=F567B&type=Locks
+router.get('/afroturf/salons/:salonId/services/filter/', async (ctx) =>{
+    console.log("servicesFilterLocal -entry")
+    ctx.body = await service.servicesFilterLocal(ctx);
+});
+
 
 
 app.use(router.routes())

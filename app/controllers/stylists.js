@@ -34,7 +34,8 @@ const stylistQueries = async ctx =>{
 
     if(limit == undefined){
         limit = 10000000;
-    }else if(location !== undefined && name !== undefined && radius !== undefined
+    }
+     if(location !== undefined && name !== undefined && radius !== undefined
         && limit !== undefined && gender !== undefined
         && rating !== undefined){
             console.log("getSalonByStylistNameRatingGender - iin")

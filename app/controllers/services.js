@@ -213,54 +213,54 @@ const getServicesByPriceRangeAndSalonId = async ctx => {
     const serviceName =  ctx.query.service;
     const price =  ctx.query.price_;
 
-    if(location !== undefined && serviceName !== undefined 
-        && radius !== undefined && salonId !== undefined && price !== undefined){
-            const userLocation = await toLocationObject(location);
-            //get all nearest services by name and price range (above + below -) and salonId
-            //if contains - all below price else if + all above price
-    }
+    
 };
 
 //filter 
-///afroturf/salons/services/filter/?location=23.123,21.3434
-//&radius=10&price_=-50&salonId=1&service=hairstyles
-const getSalonsServicesFilter = async ctx => {
+///afroturf/salons/:salonId/services/filter/?location=23.123,21.3434
+//&radius=10&price_lte=50&service=hairstyles&price_gte=10&code=F567B&type=Locks
+
+const servicesFilterLocal = async ctx => {
 
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
-    const price =  ctx.query.price_;
+    const price_lte =  ctx.query.price_lte;
+    const price_gte =  ctx.query.price_gte; //handle gte and lte error
     const serviceName =  ctx.query.service;
     const servicetype =  ctx.query.type;
-    const gender =  ctx.query.gender;
-    if(location !== undefined && serviceName !== undefined && price !==undefined
-    && radius !== undefined && servicetype !== undefined && gender !== undefined){
-        
-        
+    const code = ctx.query.code;
+    const salonId = ctx.params.salonId;
+    
+    let limit = ctx.query.limit;
+    let userLocation;
+    if(location !== undefined){
+        userLocation = await task.toLocationObject(location);
     }
+    if(limit == undefined){
+        limit = 1000000;
+    }
+    if(location !== undefined && serviceName !== undefined && price_lte !==undefined
+    && radius !== undefined && servicetype !== undefined 
+    &&price_gte !==undefined&&code !== undefined && salonId !==undefined){
+        
+        ctx.body = await salonClient.getServicesByNameTypePriceRangeCodeAndSalonId(userLocation, radius, limit, serviceName, servicetype, price_gte, price_lte, code,salonId);
+
+        return ctx.body;
+    
+    }// }else if(location !== undefined && serviceName !== undefined 
+    //     && radius !== undefined && salonId !== undefined && price !== undefined){
+    //         const userLocation = await toLocationObject(location);
+    //         //get all nearest services by name and price range (above + below -) and salonId
+    //         //if contains - all below price else if + all above price
+    //         if()
+    // }
 
     //also create a filter for services
 
 
 };
-const servicesFilter = async ctx => {
 
-    const location =  ctx.query.location;
-    const radius =  ctx.query.radius;
-    const price =  ctx.query.price_;
-    const serviceName =  ctx.query.service;
-    const servicetype =  ctx.query.type;
-    const salonId =  ctx.query.salonId;
-    const gender =  ctx.query.gender;
-    if(location !== undefined && serviceName !== undefined && price !==undefined
-    && radius !== undefined && servicetype !== undefined && salonId !== undefined && gender !==undefined){
-        
-        
-    }
-
-    //also create a filter for services
-
-
-};
-
-
+module.exports = {
+    servicesFilterLocal,
+}
 
