@@ -62,7 +62,7 @@ const stylistQueries = async ctx =>{
     }
     else if(location !== undefined && radius !== undefined
         && limit !== undefined ){
-            console.log("getSalonByStylistRating - iiiin")
+            console.log("getSalonAllStylist - iiiin")
             const userLocation = await task.toLocationObject(location);
             ctx.body = await salonClient.getSalonAllStylist(userLocation, radius);
         return ctx.body;
@@ -100,7 +100,7 @@ const stylistQueriesLocal = async ctx =>{
             console.log("getSalonByStylistRatingGenderAndSalonId stylist")
             return await 
             salonClient
-            .getSalonByStylistRatingGenderAndSalonId(userLocation, radius, name,limit, rating, gender, salonId);
+            .getSalonByStylistRatingGenderAndSalonId(userLocation, radius,limit, rating, gender, salonId);
     }else if(location !== undefined && radius !== undefined
         && limit !== undefined && rating !== undefined 
         &&salonId !== undefined){

@@ -307,7 +307,7 @@ const getSalonByStylistRatingAndSalonId = async(userlocation, radius, limit, rat
 
 //return salon_id and list of stylist with the input rating
 const getSalonByStylistRating = async(userlocation, radius, limit, rating) => {
-
+  console.log("getSalonByStylistRating - server")
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
   const stylistCursor = await db.db.collection("salons").aggregate([
@@ -345,7 +345,7 @@ const getSalonByStylistRating = async(userlocation, radius, limit, rating) => {
   return JSON.stringify(stylist);
 
 };
-const getSalonByStylistRatingGenderAndSalonId = async(userlocation, radius, name,limit, rating, gender, salonId) => {
+const getSalonByStylistRatingGenderAndSalonId = async(userlocation, radius,limit, rating, gender, salonId) => {
 
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
@@ -369,7 +369,7 @@ const getSalonByStylistRatingGenderAndSalonId = async(userlocation, radius, name
           $filter: {
             input: "$stylists", 
             as: "this", 
-            cond: {$and: [{$gte : ["$$this.rating", parseInt(rating)]}, {$eq : ["$$this.gender", gender]}, {$eq : ["$$this.name", name]}] }
+            cond: {$and: [{$gte : ["$$this.rating", parseInt(rating)]}, {$eq : ["$$this.gender", gender]}] }
           }
         }
 

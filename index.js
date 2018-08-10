@@ -84,7 +84,7 @@ router.get('/afroturf/salons/stylist/global-q', async ctx =>{
     ctx.body = await stylist.stylistQueries(ctx);
 });
 
-// /afroturf/salons/stylist/local-q?location=-21.32565,23.54454&
+// /afroturf/salons/:salonId/stylist/local-q?location=-21.32565,23.54454&
 //radius=10000&limit=10&gender=male&rating=4;
 router.get('/afroturf/salons/:salonId/stylist/local-q', async ctx =>{
     console.log("Local -entry")
