@@ -60,6 +60,13 @@ const stylistQueries = async ctx =>{
             ctx.body = await salonClient.getSalonByStylistRating(userLocation, radius, limit, rating);
         return ctx.body;
     }
+    else if(location !== undefined && radius !== undefined
+        && limit !== undefined ){
+            console.log("getSalonByStylistRating - iiiin")
+            const userLocation = await task.toLocationObject(location);
+            ctx.body = await salonClient.getSalonAllStylist(userLocation, radius);
+        return ctx.body;
+    }
     
 };
 // /afroturf/salons/stylist/:salonId/local-q?location=-21.32565,23.54454&
@@ -109,46 +116,8 @@ const stylistQueriesLocal = async ctx =>{
     
 };
 
-// //filter 
-// // /afroturf/salons/stylist/filter/?location=-21.32565,23.54454&
-// //radius=10000&limit=10&gender=male&rating=4;
-// const stylistsFilter = async ctx =>{
-//     const location = await ctx.query.location;
-//     const radius = await ctx.query.radius;
-//     const name = await ctx.query.name;
-//     const rating = await ctx.query.rating;
-//     const gender = await ctx.query.gender
-//     const limit = await ctx.query.limit;
-//     if(limit == undefined){
-//         limit = 10000000000;
-//     }else if(location !== undefined && name !== undefined && radius !== undefined
-//         && limit !== undefined && gender !== undefined
-//         && rating !== undefined){
-//             const userLocation = await task.toLocationObject(location);
-//             ctx.body = await 
-//             salonClient.getSalonByStylistRatingGender(userLocation, radius, limit, rating, gender);
-//             return ctx.body;
-//     }else if(location !== undefined && radius !== undefined
-//         && limit !== undefined && gender !== undefined
-//          && rating !== undefined){
-    
-//             const userLocation = await task.toLocationObject(location);
-//             ctx.body = await 
-//             salonClient.getSalonByStylistRatingGender(userLocation, radius, limit, rating, gender);
-//             return ctx.body;
-//     }else if(location !== undefined && radius !== undefined
-//         && limit !== undefined && rating !== undefined){
-//             const userLocation = await task.toLocationObject(location);
-//             ctx.body = await salonClient.getSalonByStylistRating(userLocation, radius, limit, rating);
-//         return ctx.body;
-//     }
-// };
-
 
 module.exports = {
-    //stylistQueries,
-    //stylistQueriesLocal,
-    //stylistsFilter,
     getStylistById,
     stylistQueries,
     stylistQueriesLocal,

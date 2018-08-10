@@ -92,6 +92,15 @@ router.get('/afroturf/salons/:salonId/stylist/local-q', async ctx =>{
 });
 
 
+//filter 
+// /afroturf/salons/stylist/filter/?location=-21.32565,23.54454&
+//radius=10000&limit=10&gender=male&rating=4;
+router.get('/afroturf/salons/stylist/filter/', async ctx =>{
+    console.log("stylistsFilter -entry")
+    ctx.body = await stylist.stylistQueries(ctx);
+});
+
+
 //returns all stylist reviews by id/username
 router.get('afroturf/salons/stylist/reviews/id');
 //returns all stylist by id/username

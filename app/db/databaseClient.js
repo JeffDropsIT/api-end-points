@@ -209,7 +209,34 @@ const getSalonByNameShallow = async (salonname, Userlocation, radius, limit) => 
       throw new Error(err);
      }   
     };
+//return salon_id and list of stylist with the input rating
+const getSalonAllStylist = async(userlocation, radius) => {
 
+  const db = await getDatabaseByName("afroturf");
+  await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  const stylistCursor = await db.db.collection("salons").aggregate([
+
+
+
+    {
+      $geoNear:{
+        near: {coordinates: userlocation},
+        distanceField: "distance.calculated",
+        maxDistance: parseInt(radius)*METERS_TO_KM,
+        spherical: true
+      }
+
+    },
+
+    {
+      $project: { stylists: 1}
+    }
+  ]);
+  const stylist = await stylistCursor.toArray();
+  db.connection.close();
+  return JSON.stringify(stylist);
+
+};
 //return salon_id and list of stylist with the input rating
 const getSalonStylistBySalonId = async(userlocation, radius,salonId) => {
 
@@ -565,6 +592,7 @@ module.exports = {
   getSalonStylistBySalonId,
   getSalonByStylistRatingGenderAndSalonId,
   getSalonByStylistRatingAndSalonId,
+  getSalonAllStylist,
   getSalonByStylistNameRatingGenderAndSalonId,
 };
 
