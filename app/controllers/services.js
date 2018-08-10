@@ -247,13 +247,53 @@ const servicesFilterLocal = async ctx => {
 
         return ctx.body;
     
-    }// }else if(location !== undefined && serviceName !== undefined 
-    //     && radius !== undefined && salonId !== undefined && price !== undefined){
-    //         const userLocation = await toLocationObject(location);
-    //         //get all nearest services by name and price range (above + below -) and salonId
-    //         //if contains - all below price else if + all above price
-    //         if()
-    // }
+    }else if(location !== undefined && serviceName !== undefined && price_lte !==undefined
+        && radius !== undefined && servicetype !== undefined 
+        && price_gte !==undefined&& salonId !==undefined){
+            console.log("getServicesByNameTypePriceRangeAndSalonId");
+            ctx.body = await salonClient.getServicesByNameTypePriceRangeAndSalonId(userLocation, radius, limit, serviceName, servicetype, price_gte, price_lte,salonId);
+            return ctx.body;
+        
+    }else if(location !== undefined && serviceName !== undefined && price_lte !==undefined
+        && radius !== undefined 
+        && price_gte !==undefined&& salonId !==undefined){
+            console.log("getServicesByNamePriceRangeAndSalonId");
+            ctx.body = await salonClient.getServicesByNamePriceRangeAndSalonId(userLocation, radius, limit, serviceName, price_gte, price_lte,salonId);
+            return ctx.body;
+        
+    }else if(location !== undefined && serviceName !== undefined 
+        && radius !== undefined && salonId !== undefined
+        && servicetype !== undefined && limit !== undefined){
+            //get all nearest services by name and price range (above + below -) and salonId
+            //if contains - all below price else if + all above price
+            console.log(servicetype+" getServicesByNameTypeSalonId - "+serviceName)
+            ctx.body = await salonClient.getServicesByNameTypeSalonId(userLocation, radius, limit, serviceName, servicetype, salonId);
+
+            return ctx.body;
+    }else if(location !== undefined && serviceName !== undefined 
+        && radius !== undefined && salonId !== undefined
+        && limit !== undefined){
+            //get all nearest services by name and price range (above + below -) and salonId
+            //if contains - all below price else if + all above price
+            console.log(servicetype+" getServicesByNameSalonId - "+serviceName)
+            ctx.body = await salonClient.getServicesByNameSalonId(userLocation, radius, limit,serviceName, salonId);
+            return ctx.body;
+    }else if(location !== undefined 
+        && radius !== undefined && salonId !== undefined
+        && limit !== undefined){
+            
+            console.log(servicetype+" getServicesSalonId - "+serviceName)
+            ctx.body = await salonClient.getServicesSalonId(userLocation, radius, limit, salonId);
+            return ctx.body;
+    }
+
+
+    
+
+    
+
+
+    
 
     //also create a filter for services
 
