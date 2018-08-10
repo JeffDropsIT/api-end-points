@@ -674,6 +674,8 @@ const  getServicesByNamePriceRangeAndSalonId = async (userlocation, radius, limi
   return JSON.stringify(stylist); 
 };
 
+
+
 const getServicesByNameTypeSalonId = async (userlocation, radius, limit, serviceName, servicetype, salonId) =>{
   console.log("getServicesByNameTypeSalonId server "+userlocation)
   const db = await getDatabaseByName("afroturf");
