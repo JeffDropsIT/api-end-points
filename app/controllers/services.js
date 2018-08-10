@@ -1,8 +1,9 @@
-const task = require('./app/controllers/task');
+const task = require('../controllers/task');
+const salonClient = require('../db/databaseClient');
 
 ///afroturf/salons/services/?location=23.123,21.3434
 //&radius=10&service=hairstyles
-const getAllNearestServicesByName = async ctx => {
+const getServicesByName = async ctx => {
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
     const serviceName =  ctx.query.service;
@@ -12,10 +13,10 @@ const getAllNearestServicesByName = async ctx => {
             //get all nearest services by name 
     }
 };
-///afroturf/salons/services/?location=23.123,21.3434
-//&radius=10&service=hairstyles&salonId=1
+///afroturf/salons/:salonId/services/?location=23.123,21.3434
+//&radius=10&service=hairstyles
 
-const getSalonsServicesByNameAndSalonId= async ctx =>{
+const getServicesByNameAndSalonId= async ctx =>{
     const salonId =  ctx.query.salonId;
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
@@ -29,7 +30,7 @@ const getSalonsServicesByNameAndSalonId= async ctx =>{
 
 ///afroturf/salons/services/?location=23.123,21.3434
 //&radius=10&type=locks
-const getAllNearestServicesByType = async ctx => {
+const getServicesByType = async ctx => {
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
     const servicetype =  ctx.query.type;
@@ -39,10 +40,10 @@ const getAllNearestServicesByType = async ctx => {
             //get all nearest services by name and type 
     }
 };
-///afroturf/salons/services/?location=23.123,21.3434
-//&radius=10&type=Locks&salonId=1
+///afroturf/salons/:salonId/services/?location=23.123,21.3434
+//&radius=10&type=Locks
 
-const getSalonsServicesByTypeAndSalonId= async ctx =>{
+const getServicesByTypeAndSalonId= async ctx =>{
     const salonId =  ctx.query.salonId;
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
@@ -56,7 +57,7 @@ const getSalonsServicesByTypeAndSalonId= async ctx =>{
 
 ///afroturf/salons/services/?location=23.123,21.3434
 //&radius=10&service=hairstyles&type=locks
-const getAllNearestServicesByTypeAndName = async ctx => {
+const getServicesByTypeAndName = async ctx => {
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
     const serviceName =  ctx.query.service;
@@ -68,9 +69,9 @@ const getAllNearestServicesByTypeAndName = async ctx => {
     }
 };
 
-///afroturf/salons/services/?location=23.123,21.3434
-//&radius=10&service=hairstyles&type=locks&salonId=1
-const getAllNearestServicesByTypeAndNameAndSalonId = async ctx => {
+///afroturf/salons/:salonId/services/?location=23.123,21.3434
+//&radius=10&service=hairstyles&type=locks
+const getServicesByTypeAndNameAndSalonId = async ctx => {
     const salonId =  ctx.query.salonId;
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
@@ -86,7 +87,7 @@ const getAllNearestServicesByTypeAndNameAndSalonId = async ctx => {
 
 ///afroturf/salons/services/?location=23.123,21.3434
 //&radius=10&service=hairstyles&code=F567B
-const getAllNearestServicesByNameAndCode = async ctx => {
+const getServicesByNameAndCode = async ctx => {
 
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
@@ -100,9 +101,9 @@ const getAllNearestServicesByNameAndCode = async ctx => {
 };
 
 
-///afroturf/salons/services/?location=23.123,21.3434
-//&radius=10&service=hairstyles&code=F567B&salonId=1
-const getAllNearestServicesByNameAndCodeAndSalonId = async ctx => {
+///afroturf/salons/:salonId/services/?location=23.123,21.3434
+//&radius=10&service=hairstyles&code=F567B
+const getServicesByNameAndCodeAndSalonId = async ctx => {
     const salonId =  ctx.query.salonId;
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
@@ -117,7 +118,7 @@ const getAllNearestServicesByNameAndCodeAndSalonId = async ctx => {
 
 ///afroturf/salons/services/?location=23.123,21.3434
 //&radius=10&service=hairstyles&price=50
-const getAllNearestServicesByPrice = async ctx => {
+const getServicesByPrice = async ctx => {
 
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
@@ -129,9 +130,9 @@ const getAllNearestServicesByPrice = async ctx => {
             //get all nearest services by price
     }
 };
-///afroturf/salons/services/?location=23.123,21.3434
-//&radius=10&service=hairstyles&price=50&salonId=1
-const getAllNearestServicesByPriceAndSalonId = async ctx => {
+///afroturf/salons/:salonId/services/?location=23.123,21.3434
+//&radius=10&service=hairstyles&price=50&
+const getServicesByPriceAndSalonId = async ctx => {
 
     const salonId =  ctx.query.salonId;
     const location =  ctx.query.location;
@@ -147,7 +148,7 @@ const getAllNearestServicesByPriceAndSalonId = async ctx => {
 ///afroturf/salons/services/?location=23.123,21.3434
 //&radius=10&code=F567B
 
-const getAllNearestServicesByCode = async ctx => {
+const getServicesByCode = async ctx => {
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
     const code =  ctx.query.code;
@@ -157,10 +158,10 @@ const getAllNearestServicesByCode = async ctx => {
     }
 };
 
-///afroturf/salons/services/?location=23.123,21.3434
-//&radius=10&code=F567B&salonId=1
+///afroturf/salons/:salonId/services/?location=23.123,21.3434
+//&radius=10&code=F567B
 
-const getAllNearestServicesByCodeAndSalonId = async ctx => {
+const getServicesByCodeAndSalonId = async ctx => {
     const salonId =  ctx.query.salonId;
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
@@ -172,8 +173,8 @@ const getAllNearestServicesByCodeAndSalonId = async ctx => {
     }
 };
 
-///afroturf/salons/services/?location=23.123,21.3434
-//&radius=10&salonId=1
+///afroturf/salons/:salonId/services/?location=23.123,21.3434
+//&radius=10
 
 const getAllServicesBysalonId = async ctx => {
 
@@ -190,7 +191,7 @@ const getAllServicesBysalonId = async ctx => {
 
 ///afroturf/salons/services/?location=23.123,21.3434
 //&radius=10&price_=-50 || +50 
-const getAllNearestServicesByPriceRange = async ctx => {
+const getServicesByPriceRange = async ctx => {
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
     const serviceName =  ctx.query.service;
@@ -203,9 +204,9 @@ const getAllNearestServicesByPriceRange = async ctx => {
     }
 };
 
-///afroturf/salons/services/?location=23.123,21.3434
-//&radius=10&price_=-50&salonId=1&service=hairstyles
-const getAllNearestServicesByPriceRangeAndSalonId = async ctx => {
+///afroturf/salons/:salonId/services/?location=23.123,21.3434
+//&radius=10&price_=-50&service=hairstyles
+const getServicesByPriceRangeAndSalonId = async ctx => {
     const salonId =  ctx.query.salonId;
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
@@ -241,7 +242,7 @@ const getSalonsServicesFilter = async ctx => {
 
 
 };
-const getSalonsServicesFilterBySalonId = async ctx => {
+const servicesFilter = async ctx => {
 
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;

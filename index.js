@@ -1,8 +1,7 @@
 const Koa = require('koa');
 const Router = require('koa-router');
-const salonClient = require('./app/db/databaseClient');
-const task = require('./app/controllers/task');
-const salon = require('./app/controllers/salons')
+const salon = require('./app/controllers/salons');
+const stylist = require('./app/controllers/stylists')
 const PORT = process.env.PORT || 5000;
 
 const app = new Koa();
@@ -73,7 +72,26 @@ router.get('/afroturf/salons/:salonId/'
 
 
 //returns all salon reviews by id/salonId
-router.get('afroturf/salons/reviews/id');
+router.get('/afroturf/salons/stylist/:salonId/:stylistId/q', async ctx =>{
+    console.log("getStylistById -entry")
+    ctx.body = await stylist.getStylistById(ctx);
+});
+
+// /afroturf/salons/stylist/global-q?location=-21.32565,23.54454&
+//radius=10000&limit=10&gender=male&rating=4;
+router.get('/afroturf/salons/stylist/global-q', async ctx =>{
+    console.log("stylistQueries -entry")
+    ctx.body = await stylist.stylistQueries(ctx);
+});
+
+// /afroturf/salons/stylist/local-q?location=-21.32565,23.54454&
+//radius=10000&limit=10&gender=male&rating=4;
+router.get('/afroturf/salons/:salonId/stylist/local-q', async ctx =>{
+    console.log("Local -entry")
+    ctx.body = await stylist.stylistQueriesLocal(ctx);
+});
+
+
 //returns all stylist reviews by id/username
 router.get('afroturf/salons/stylist/reviews/id');
 //returns all stylist by id/username

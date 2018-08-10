@@ -80,8 +80,44 @@ const getSalonByName = async (name, userlocation, radius, limit) => {
    }catch(err){
     throw new Error(err);
    }   
-  };
-  
+};
+const getStylistById = async(salonId, stylistId, userLocation, radius) => {
+    console.log("getStylistById server")
+      const db = await getDatabaseByName("afroturf");
+      await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+      const stylistCursor = await db.db.collection("salons").aggregate([
+        {
+          $geoNear:{
+            near: { coordinates: userLocation},
+            distanceField: "distance.calculated",
+            maxDistance: parseInt(radius)*METERS_TO_KM,
+            query: {salonId: parseInt(salonId)},
+            spherical: true
+          }
+    
+        },
+        {
+          $project: { stylists: 
+      
+        
+            {
+              $filter: {
+                input: "$stylists", 
+                as: "this", 
+                cond: {$eq : [ "$$this.stylistId", parseInt(stylistId)]}, 
+              }
+            }
+    
+          }
+        }
+      ]);
+      
+      const stylist = await stylistCursor.toArray();
+      db.connection.close();
+      return JSON.stringify(stylist);
+    
+};
+ 
   //get salon by salonId
 const getSalonBySalonId = async (salonId, userlocation, radius) => {
   
@@ -110,7 +146,7 @@ const getSalonBySalonId = async (salonId, userlocation, radius) => {
   }   
  };
   // get salon by salonId shallow getSalonBySalonIdShallow
-  const getSalonBySalonIdShallow = async (salonId, Userlocation, radius) => {
+const getSalonBySalonIdShallow = async (salonId, Userlocation, radius) => {
   
     try{
        const db = await getDatabaseByName("afroturf");
@@ -142,7 +178,7 @@ const getSalonBySalonId = async (salonId, userlocation, radius) => {
    };
 
   //get salon by Name shallow
-  const getSalonByNameShallow = async (salonname, Userlocation, radius, limit) => {
+const getSalonByNameShallow = async (salonname, Userlocation, radius, limit) => {
     console.log("getSalonByNameShallow hhhhh");
      try{
         const db = await getDatabaseByName("afroturf");
@@ -174,73 +210,28 @@ const getSalonBySalonId = async (salonId, userlocation, radius) => {
      }   
     };
 
-  // //Eg 2). {Baseurl}/salons?location=25,25&
-  // //radius=5&filters{ “gender”: “male”, “rating”:”>3”}&limit10
-const getSalonByStylistRatingGender = async(userlocation, radius, limit, rating, gender) => {
+//return salon_id and list of stylist with the input rating
+const getSalonStylistBySalonId = async(userlocation, radius,salonId) => {
 
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
   const stylistCursor = await db.db.collection("salons").aggregate([
+
+
+
     {
       $geoNear:{
         near: {coordinates: userlocation},
         distanceField: "distance.calculated",
         maxDistance: parseInt(radius)*METERS_TO_KM,
-        num: parseInt(limit),
+        query: {salonId: parseInt(salonId)},
         spherical: true
       }
 
     },
+
     {
-      $project: { stylists: 
-  
-    
-        {
-          $filter: {
-            input: "$stylists", 
-            as: "this", 
-            cond: {$and: [{$gte : ["$$this.rating", rating]}, {$eq : ["$$this.gender", gender]}] }
-          }
-        }
-
-      }
-    }
-  ]);
-  const stylist = await stylistCursor.toArray();
-  db.connection.close();
-  return JSON.stringify(stylist);
-
-};
-// get stylist by name and other
-
-const getSalonByStylistNameRatingGender = async(userlocation, radius, name,limit, rating, gender) => {
-
-  const db = await getDatabaseByName("afroturf");
-  await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
-  const stylistCursor = await db.db.collection("salons").aggregate([
-    {
-      $geoNear:{
-        near: {coordinates: userlocation},
-        distanceField: "distance.calculated",
-        maxDistance: parseInt(radius)*METERS_TO_KM,
-        num: parseInt(limit),
-        spherical: true
-      }
-
-    },
-    {
-      $project: { stylists: 
-  
-    
-        {
-          $filter: {
-            input: "$stylists", 
-            as: "this", 
-            cond: {$and: [{$gte : ["$$this.rating", rating]}, {$eq : ["$$this.gender", gender]}, {$eq : ["$$this.name", name]}] }
-          }
-        }
-
-      }
+      $project: { stylists: 1}
     }
   ]);
   const stylist = await stylistCursor.toArray();
@@ -249,6 +240,43 @@ const getSalonByStylistNameRatingGender = async(userlocation, radius, name,limit
 
 };
 
+
+const getSalonByStylistRatingAndSalonId = async(userlocation, radius, limit, rating, gender, salonId) => {
+      console.log("getSalonByStylistRatingAndSalonId - server")
+      const db = await getDatabaseByName("afroturf");
+      await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+      const stylistCursor = await db.db.collection("salons").aggregate([
+        {
+          $geoNear:{
+            near: {coordinates: userlocation},
+            distanceField: "distance.calculated",
+            maxDistance: parseInt(radius)*METERS_TO_KM,
+            num: parseInt(limit),
+            query: {salonId: parseInt(salonId)},
+            spherical: true
+          }
+    
+        },
+        {
+          $project: { stylists: 
+      
+        
+            {
+              $filter: {
+                input: "$stylists", 
+                as: "this", 
+                cond: {$gte : ["$$this.rating", parseInt(rating)]}
+              }
+            }
+    
+          }
+        }
+      ]);
+      const stylist = await stylistCursor.toArray();
+      db.connection.close();
+      return JSON.stringify(stylist);
+    
+    };
 
 //return salon_id and list of stylist with the input rating
 const getSalonByStylistRating = async(userlocation, radius, limit, rating) => {
@@ -278,7 +306,7 @@ const getSalonByStylistRating = async(userlocation, radius, limit, rating) => {
           $filter: {
             input: "$stylists", 
             as: "this", 
-            cond: {$gte : ["$$this.rating", rating]}
+            cond: {$gte : ["$$this.rating", parseInt(rating)]}
           }
         }
 
@@ -290,6 +318,156 @@ const getSalonByStylistRating = async(userlocation, radius, limit, rating) => {
   return JSON.stringify(stylist);
 
 };
+const getSalonByStylistRatingGenderAndSalonId = async(userlocation, radius, name,limit, rating, gender, salonId) => {
+
+  const db = await getDatabaseByName("afroturf");
+  await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  const stylistCursor = await db.db.collection("salons").aggregate([
+    {
+      $geoNear:{
+        near: {coordinates: userlocation},
+        distanceField: "distance.calculated",
+        maxDistance: parseInt(radius)*METERS_TO_KM,
+        num: parseInt(limit),
+        query: {salonId: parseInt(salonId)},
+        spherical: true
+      }
+
+    },
+    {
+      $project: { stylists: 
+  
+    
+        {
+          $filter: {
+            input: "$stylists", 
+            as: "this", 
+            cond: {$and: [{$gte : ["$$this.rating", parseInt(rating)]}, {$eq : ["$$this.gender", gender]}, {$eq : ["$$this.name", name]}] }
+          }
+        }
+
+      }
+    }
+  ]);
+  const stylist = await stylistCursor.toArray();
+  db.connection.close();
+  return JSON.stringify(stylist);
+
+};
+    
+  // //Eg 2). {Baseurl}/salons?location=25,25&
+  // //radius=5&filters{ “gender”: “male”, “rating”:”>3”}&limit10
+const getSalonByStylistRatingGender = async(userlocation, radius, limit, rating, gender) => {
+    console.log("getSalonByStylistRatingGender - server")
+    const db = await getDatabaseByName("afroturf");
+    await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+    const stylistCursor = await db.db.collection("salons").aggregate([
+      {
+        $geoNear:{
+          near: {coordinates: userlocation},
+          distanceField: "distance.calculated",
+          maxDistance: parseInt(radius)*METERS_TO_KM,
+          num: parseInt(limit),
+          spherical: true
+        }
+  
+      },
+      {
+        $project: { stylists: 
+    
+      
+          {
+            $filter: {
+              input: "$stylists", 
+              as: "this", 
+              cond: {$and: [{$gte : ["$$this.rating", parseInt(rating)]}, {$eq : ["$$this.gender", gender]}] }
+            }
+          }
+  
+        }
+      }
+    ]);
+    const stylist = await stylistCursor.toArray();
+    db.connection.close();
+    return JSON.stringify(stylist);
+  
+  };
+  
+// get stylist by name and other
+
+const getSalonByStylistNameRatingGender = async(userlocation, radius, name,limit, rating, gender) => {
+
+  const db = await getDatabaseByName("afroturf");
+  await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  const stylistCursor = await db.db.collection("salons").aggregate([
+    {
+      $geoNear:{
+        near: {coordinates: userlocation},
+        distanceField: "distance.calculated",
+        maxDistance: parseInt(radius)*METERS_TO_KM,
+        num: parseInt(limit),
+        spherical: true
+      }
+
+    },
+    {
+      $project: { stylists: 
+  
+    
+        {
+          $filter: {
+            input: "$stylists", 
+            as: "this", 
+            cond: {$and: [{$gte : ["$$this.rating", parseInt(rating)]}, {$eq : ["$$this.gender", gender]}, {$eq : ["$$this.name", name]}] }
+          }
+        }
+
+      }
+    }
+  ]);
+  const stylist = await stylistCursor.toArray();
+  db.connection.close();
+  return JSON.stringify(stylist);
+
+};
+
+const getSalonByStylistNameRatingGenderAndSalonId = async(userlocation, radius, name,limit, rating, gender, salonId) => {
+  console.log("getSalonByStylistNameRatingGenderAndSalonId server "+salonId)
+  const db = await getDatabaseByName("afroturf");
+  await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  const stylistCursor = await db.db.collection("salons").aggregate([
+    {
+      $geoNear:{
+        near: {coordinates: userlocation},
+        distanceField: "distance.calculated",
+        maxDistance: parseInt(radius)*METERS_TO_KM,
+        num: parseInt(limit),
+        query: {salonId: parseInt(salonId)},
+        spherical: true
+      }
+
+    },
+    {
+      $project: { stylists: 
+  
+    
+        {
+          $filter: {
+            input: "$stylists", 
+            as: "this", 
+            cond: {$and: [{$gte : ["$$this.rating", parseInt(rating)]}, {$eq : ["$$this.gender", gender]}, {$eq : ["$$this.name", name]}] }
+          }
+        }
+
+      }
+    }
+  ]);
+  const stylist = await stylistCursor.toArray();
+  db.connection.close();
+  return JSON.stringify(stylist);
+
+};
+
 
 
 
@@ -346,7 +524,7 @@ const getAllSalons =  async () => {
    throw new Error(err);
   }
      
-   };
+};
 
 
 
@@ -383,6 +561,11 @@ module.exports = {
   getSalonByStylistNameRatingGender,
   getSalonBySalonId,
   getSalonBySalonIdShallow,
+  getStylistById,
+  getSalonStylistBySalonId,
+  getSalonByStylistRatingGenderAndSalonId,
+  getSalonByStylistRatingAndSalonId,
+  getSalonByStylistNameRatingGenderAndSalonId,
 };
 
 

@@ -1,4 +1,4 @@
-const task = require('./task');
+const task = require('../controllers/task');
 const salonClient = require('../db/databaseClient');
 
 
