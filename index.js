@@ -22,10 +22,15 @@ router.get('/afroturf/salons/-a', async ctx => {
 
 // /afroturf/salons/q?location=-73.99842,40.719544
 //&radius=10000&limit=10&name=HeartBeauty
+
+//or
+
+// /afroturf/salons/q?location=-73.99842,40.719544
+//&radius=10000&limit=10&rating=4
 router.get('/afroturf/salons/q'
 , async ctx =>{
-    
-   ctx.body = await salon.getSalonByName(ctx);
+    console.log("getSalonByNameOrRating")
+   ctx.body = await salon.getSalonByNameOrRating(ctx);
    
 } );
 
@@ -103,14 +108,18 @@ router.get('/afroturf/salons/stylist/filter/', async ctx =>{
 
 
 //services filter 
-///afroturf/salons/:salonId/services/filter/?location=23.123,21.3434
+///afroturf/salons/:salonId/services/local-q?location=23.123,21.3434
 //&radius=700000&price_lte=50&service=hairstyles&price_gte=10&code=F567B&type=Locks
-router.get('/afroturf/salons/:salonId/services/filter/', async (ctx) =>{
-    console.log("servicesFilterLocal -entry")
+router.get('/afroturf/salons/:salonId/services/local-q', async (ctx) =>{
+    console.log("servicesFilterLocal - entry")
     ctx.body = await service.servicesFilterLocal(ctx);
 });
-
-
+///afroturf/salons/services/global-q?location=23.123,21.3434
+//&radius=700000&price_lte=50&service=hairstyles&price_gte=10&code=F567B&type=Locks
+router.get('/afroturf/salons/services/global-q', async (ctx) =>{
+    console.log("servicesFilterGlobal -entry")
+    ctx.body = await service.servicesFilterGlobal(ctx);
+});
 
 app.use(router.routes())
     .use(router.allowedMethods());

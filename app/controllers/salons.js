@@ -21,15 +21,18 @@ const getSalonBySalonId = async ctx => {
 
 
 };
-
+// /afroturf/salons/q?location=23.123,21.3434
+//&radius=10&limit=10&rating=4
+//or
 // /afroturf/salons/q?location=23.123,21.3434
 //&radius=10&limit=10&name=HeartBeauty
-const getSalonByName = async ctx => {
-    console.log("WE ARE IN 2");
+const getSalonByNameOrRating = async ctx => {
+    console.log("getSalonByNameOrRating");
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
     const name =  ctx.query.name;
     const limit =  ctx.query.limit;
+    const rating =  ctx.query.rating;
     if(location !== undefined &&
       name !== undefined &&
       radius !== undefined 
@@ -37,7 +40,14 @@ const getSalonByName = async ctx => {
         const userLocation = await task.toLocationObject(location);
         ctx.body = await salonClient.getSalonByName(name, userLocation, radius,limit);
         return ctx.body;
-    }
+    }else if(location !== undefined &&
+        rating !== undefined &&
+        radius !== undefined 
+        && limit !== undefined ){
+          const userLocation = await task.toLocationObject(location);
+          ctx.body = await salonClient.getSalonByRating(rating, userLocation, radius,limit);
+          return ctx.body;
+      }
     
 
 
@@ -125,10 +135,11 @@ const getAllSalons = async ctx =>{
 module.exports = {
     getAllNearestSalonsShallow,
     getNearestSalons, 
-    getSalonByName, 
+    getSalonByNameOrRating, 
     getSalonByNameShallow, 
     getSalonBySalonIdShallow,
     getSalonBySalonId,
-    getAllSalons
+    getAllSalons,
+
 
 };

@@ -81,6 +81,41 @@ const getSalonByName = async (name, userlocation, radius, limit) => {
     throw new Error(err);
    }   
 };
+
+//get salon by tot rating
+
+const getSalonByRating = async (rating, userlocation, radius, limit) => {
+ console.log("getSalonByRating ---")
+  try{
+     const db = await getDatabaseByName("afroturf");
+     const salonCursor = await db.db.collection("salons").aggregate([ {
+       $geoNear: {
+         near: { coordinates :userlocation}, 
+         distanceField: "distance.calculated",
+         maxDistance: parseInt(radius)*METERS_TO_KM,
+         num: parseInt(limit),
+         spherical: true
+
+       }
+     },
+    {
+      $project: {salonId: 1, name:1, location:1, rating:1 , match: {$gte : ["salons.rating", parseInt(rating)]}}
+    },{
+      "$match": { "match": true}
+    }]);
+     const salon = await salonCursor.toArray();
+
+     
+     db.connection.close();
+     return JSON.stringify(salon);
+     
+
+
+  }catch(err){
+   throw new Error(err);
+  }   
+};
+
 const getStylistById = async(salonId, stylistId, userLocation, radius) => {
     console.log("getStylistById server")
       const db = await getDatabaseByName("afroturf");
@@ -162,7 +197,7 @@ const getSalonBySalonIdShallow = async (salonId, Userlocation, radius) => {
          }
        }, 
        {
-         $project: {name: 1, location:1, rating: 1}
+         $project: {name: 1, location:1, rating: 1, salonId: 1}
        }]);
        const salon = await salonCursor.toArray();
  
@@ -195,7 +230,7 @@ const getSalonByNameShallow = async (salonname, Userlocation, radius, limit) => 
           }
         }, 
         {
-          $project: {name: 1, location:1, rating: 1}
+          $project: {name: 1, location:1, rating: 1, salonId: 1}
         }]);
         const salon = await salonCursor.toArray();
   
@@ -229,7 +264,7 @@ const getSalonAllStylist = async(userlocation, radius) => {
     },
 
     {
-      $project: { stylists: 1}
+      $project: { stylists: 1, salonId: 1}
     }
   ]);
   const stylist = await stylistCursor.toArray();
@@ -258,7 +293,7 @@ const getSalonStylistBySalonId = async(userlocation, radius,salonId) => {
     },
 
     {
-      $project: { stylists: 1}
+      $project: { stylists: 1, salonId: 1}
     }
   ]);
   const stylist = await stylistCursor.toArray();
@@ -517,7 +552,7 @@ const getAllNearestSalonsShallow = async (Userlocation, radius) => {
         }, 
 
       {
-       $project: {name: 1, location:1, rating: 1}
+       $project: {name: 1, location:1, rating: 1, salonId: 1}
      }])
      const salon = await salonCursor.toArray();
 
@@ -593,7 +628,44 @@ const getServicesByNameTypePriceRangeCodeAndSalonId = async (userlocation, radiu
 
 };
 
+//global
+const getServicesByNameTypePriceRangeCode = async (userlocation, radius, limit, serviceName, servicetype, price_gte, price_lte, code) =>{
+  console.log("getServicesByNameTypePriceRangeCode ---346 ");
+  const db = await getDatabaseByName("afroturf");
+  await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  const stylistCursor = await db.db.collection("salons").aggregate([
+    {
+      $geoNear:{
+        near: {coordinates: userlocation},
+        distanceField: "distance.calculated",
+        maxDistance: parseInt(radius)*METERS_TO_KM,
+        num: parseInt(limit),
+        spherical: true
+      }
 
+    },{
+       $unwind :'$services'
+    
+    },{
+      $unwind :'$services.'+serviceName
+   
+    }
+    ,{
+      $project: {services: 1,matchCode: { $eq: [ '$services.'+serviceName+'.code', code ] }, match: { $eq: [ '$services.'+serviceName+'.type', servicetype ] }, matchPrice : {$and :[{$gte: ['$services.'+serviceName+'.price', parseInt(price_gte)]}, {$lte: ['$services.'+serviceName+'.price', parseInt(price_lte)]}]}}
+    }, 
+    {
+      "$match": { "match": true , "matchPrice":true, "matchCode":true}
+    },
+    {
+      $project: {services: 1 }
+    },
+  
+  ]);
+  const stylist = await stylistCursor.toArray();
+  db.connection.close();
+  return JSON.stringify(stylist);               
+
+};
 
 
 const getServicesByNameTypePriceRangeAndSalonId = async (userlocation, radius, limit, serviceName, servicetype, price_gte, price_lte,salonId) =>{
@@ -635,6 +707,48 @@ const getServicesByNameTypePriceRangeAndSalonId = async (userlocation, radius, l
 
 };
 
+
+//gobal
+
+
+const getServicesByNameTypePriceRange = async (userlocation, radius, limit, serviceName, servicetype, price_gte, price_lte) =>{
+  console.log("getServicesByNameTypePriceRange server "+userlocation)
+  const db = await getDatabaseByName("afroturf");
+  await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  const stylistCursor = await db.db.collection("salons").aggregate([
+    {
+      $geoNear:{
+        near: {coordinates: userlocation},
+        distanceField: "distance.calculated",
+        maxDistance: parseInt(radius)*METERS_TO_KM,
+        num: parseInt(limit),
+        spherical: true
+      }
+
+    },{
+       $unwind :'$services'
+    
+    },{
+      $unwind :'$services.'+serviceName
+   
+    }
+    ,{
+      $project: {services: 1, match: { $eq: [ '$services.'+serviceName+'.type', servicetype ] }, matchPrice : {$and :[{$gte: ['$services.'+serviceName+'.price', parseInt(price_gte)]}, {$lte: ['$services.'+serviceName+'.price', parseInt(price_lte)]}]}}
+    }, 
+    {
+      "$match": { "match": true , "matchPrice":true}
+    },
+    {
+      $project: {services: 1 }
+    },
+  
+  ]);
+  const stylist = await stylistCursor.toArray();
+  db.connection.close();
+  return JSON.stringify(stylist);               
+
+};
+
  
 const  getServicesByNamePriceRangeAndSalonId = async (userlocation, radius, limit, serviceName, price_gte, price_lte,salonId) =>{
   console.log("getServicesByNamePriceRangeAndSalonId server "+userlocation)
@@ -648,6 +762,45 @@ const  getServicesByNamePriceRangeAndSalonId = async (userlocation, radius, limi
         maxDistance: parseInt(radius)*METERS_TO_KM,
         num: parseInt(limit),
         query: {salonId: parseInt(salonId)},
+        spherical: true
+      }
+
+    },{
+       $unwind :'$services'
+    
+    },{
+      $unwind :'$services.'+serviceName
+   
+    }
+    ,{
+      $project: {services: 1, matchPrice : {$and :[{$gte: ['$services.'+serviceName+'.price', parseInt(price_gte)]}, {$lte: ['$services.'+serviceName+'.price', parseInt(price_lte)]}]}}
+    }, 
+    {
+      "$match": {"matchPrice":true}
+    },
+    {
+      $project: {services: 1 }
+    },
+  
+  ]);
+  const stylist = await stylistCursor.toArray();
+  db.connection.close();
+  return JSON.stringify(stylist); 
+};
+
+// global
+
+const  getServicesByNamePriceRange = async (userlocation, radius, limit, serviceName, price_gte, price_lte) =>{
+  console.log("getServicesByNamePriceRange server "+userlocation)
+  const db = await getDatabaseByName("afroturf");
+  await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  const stylistCursor = await db.db.collection("salons").aggregate([
+    {
+      $geoNear:{
+        near: {coordinates: userlocation},
+        distanceField: "distance.calculated",
+        maxDistance: parseInt(radius)*METERS_TO_KM,
+        num: parseInt(limit),
         spherical: true
       }
 
@@ -717,6 +870,44 @@ const getServicesByNameTypeSalonId = async (userlocation, radius, limit, service
 
 
 
+const getServicesByNameType = async (userlocation, radius, limit, serviceName, servicetype) =>{
+  console.log("getServicesByNameType server ---- 350 "+userlocation)
+  const db = await getDatabaseByName("afroturf");
+  await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  const stylistCursor = await db.db.collection("salons").aggregate([
+    {
+      $geoNear:{
+        near: {coordinates: userlocation},
+        distanceField: "distance.calculated",
+        maxDistance: parseInt(radius)*METERS_TO_KM,
+        num: parseInt(limit),
+        spherical: true
+      }
+
+    },{
+       $unwind :'$services'
+    
+    },{
+      $unwind :'$services.'+serviceName
+   
+    }
+    ,{
+      $project: {services: 1, match: { $eq: [ '$services.'+serviceName+'.type', servicetype ] }}
+    }, 
+    {
+      "$match": { "match": true }
+    },
+    {
+      $project: {services: 1 }
+    },
+  
+  ]);
+  const stylist = await stylistCursor.toArray();
+  db.connection.close();
+  return JSON.stringify(stylist);               
+
+};
+
 
 
 const getServicesByNameSalonId = async (userlocation, radius, limit,serviceName, salonId) =>{
@@ -731,6 +922,40 @@ const getServicesByNameSalonId = async (userlocation, radius, limit,serviceName,
         maxDistance: parseInt(radius)*METERS_TO_KM,
         num: parseInt(limit),
         query: {salonId: parseInt(salonId)},
+        spherical: true
+      }
+
+    },{
+       $unwind :'$services'
+    
+    },{
+      $unwind :'$services.'+serviceName
+   
+   }
+    ,{
+      $project: {services: 1}
+    }
+  
+  ]);
+  const stylist = await stylistCursor.toArray();
+  db.connection.close();
+  return JSON.stringify(stylist);               
+
+};
+  
+//global
+
+const getServicesByName = async (userlocation, radius, limit,serviceName) =>{
+  console.log("getServicesByName server ---3453 "+userlocation)
+  const db = await getDatabaseByName("afroturf");
+  await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  const stylistCursor = await db.db.collection("salons").aggregate([
+    {
+      $geoNear:{
+        near: {coordinates: userlocation},
+        distanceField: "distance.calculated",
+        maxDistance: parseInt(radius)*METERS_TO_KM,
+        num: parseInt(limit),
         spherical: true
       }
 
@@ -821,6 +1046,8 @@ module.exports = {
   getSalonAllStylist,
   getSalonByStylistNameRatingGenderAndSalonId,
 
+  //salons
+  getSalonByRating,
 
   //services
   getServicesByNameTypePriceRangeCodeAndSalonId,
@@ -828,7 +1055,17 @@ module.exports = {
   getServicesByNamePriceRangeAndSalonId,
   getServicesByNameTypeSalonId,
   getServicesByNameSalonId,
-  getServicesSalonId
+  getServicesSalonId, 
+
+  //global search
+  getServicesByNameTypePriceRangeCode,
+  getServicesByNameTypePriceRange,
+  getServicesByNamePriceRange,
+  getServicesByNameType,
+  getServicesByName,
+
+  
+
 };
 
 
