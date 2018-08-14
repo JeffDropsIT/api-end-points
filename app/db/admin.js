@@ -120,12 +120,12 @@ const applyAsStylist = async (userId, salonObjId) =>{
     }
 }
 const acceptStylistRequest = async (userId, salonObjId, status, permissions) =>{
-    const data = modifyRequestJson(userId, salonObjId,status, permissions)
     try{
         const db = await getDatabaseByName("afroturf");
         const result = await db.db.collection("users").update({
-            $and:[{"salons.salonObjId": ObjectId(salonObjId)}, {"salons.role": "salonOwner"},{"stylistRequests.salonObjId": ObjectId(salonObjId)}, {"stylistRequests.userId": ObjectId(userId)}]},
-            {$addToSet: {stylistRequests:data}}, 
+            $and:[{"salons.salonObjId": ObjectId(salonObjId)}, {"salons.role": "salonOwner"}]},
+            {$set: {"stylistRequests.$[stylist].status":status, "stylistRequests.$[stylist].stylistAccess":permissions}},
+            {arrayFilters: [{$and: [{"stylist.salonObjId": ObjectId(salonObjId)}, {"stylist.userId": ObjectId(userId)}]}], multi : true } 
         );
         db.connection.close();
     return  result.result;
@@ -137,7 +137,7 @@ const acceptStylistRequest = async (userId, salonObjId, status, permissions) =>{
 
 //applyAsStylist("5b72a32fc2352417f49992f8", "5b5a37b3fb6fc07c4c24d80d").then(p => console.log(p));
 //updateUser(updatesalons, "5b72a32fc2352417f49992f7");
-acceptStylistRequest("5b72a32fc2352417f49992f8", "5b5a37b3fb6fc07c4c24d80d", "pending", ["GU"]).then(p => console.log(p))
+acceptStylistRequest("5b72a32fc2352417f49992f8", "5b5a37b3fb6fc07c4c24d80d", "active", ["GU"]).then(p => console.log(p))
 // createUser( "Afroturf", "v1", "password", "email@email.com", "+2771008456895");
 // createUser( "Jeff", "v2", "jeff123", "jeff@email.com", "+277789845496");
 // createUser( "Jane", "Lane", "jane123", "jabe@email.com", "+2771008526842");
