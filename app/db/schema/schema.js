@@ -102,7 +102,29 @@ const users = {
 
 
 };
+const stylist =  (stylist, stylistId)=>{
+    const application = {
+        "userId": ObjectId(stylist._id),
+        "name": stylist.fname,
+        "gender": stylist.gender,
+        "stylistId": ObjectId(stylistId),
+        "reviews":[],
+        "rating": 1,
+    }
+    return application;
+}
 
+const modifyRequestJson =  (userId, salonObjId, status, permissions)=>{
+    const application = {
+        "userId": ObjectId(userId),
+        "salonObjId": ObjectId(salonObjId),
+        "status": status,
+        "stylistAccess": permissions
+    }
+    return application;
+}
 module.exports = {
     users,
+    stylist,
+    modifyRequestJson,
 }

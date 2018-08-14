@@ -46,7 +46,7 @@ const getNearestSalons = async (Userlocation, radius, limit) => {
     ]);
     const nearestSalons = await nearestSalonsCursor.toArray();
     db.connection.close();
-    return JSON.stringify(nearestSalons);
+    return JSON.parse(JSON.stringify(nearestSalons));
   } catch(err){
     throw new Error(err);
     db.connection.close();
@@ -73,7 +73,7 @@ const getSalonByName = async (name, userlocation, radius, limit) => {
 
       
       db.connection.close();
-      return JSON.stringify(salon);
+      return JSON.parse(JSON.stringify(salon));
       
 
 
@@ -107,7 +107,7 @@ const getSalonByRating = async (rating, userlocation, radius, limit) => {
 
      
      db.connection.close();
-     return JSON.stringify(salon);
+     return JSON.parse(JSON.stringify(salon));
      
 
 
@@ -149,7 +149,7 @@ const getStylistById = async(salonId, stylistId, userLocation, radius) => {
       
       const stylist = await stylistCursor.toArray();
       db.connection.close();
-      return JSON.stringify(stylist);
+      return JSON.parse(JSON.stringify(stylist));
     
 };
  
@@ -170,9 +170,9 @@ const getSalonBySalonId = async (salonId, userlocation, radius) => {
      }]);
      const salon = await salonCursor.toArray();
 
-     console.log("INSIDE connect", JSON.stringify(salon));
+     //console.log("INSIDE connect", JSON.parse(JSON.stringify(salon));
      db.connection.close();
-     return JSON.stringify(salon);
+     return JSON.parse(JSON.stringify(salon));
      
 
 
@@ -203,7 +203,7 @@ const getSalonBySalonIdShallow = async (salonId, Userlocation, radius) => {
  
        //console.log("INSIDE connect", JSON.stringify(salon));
        db.connection.close();
-       return JSON.stringify(salon);
+       return JSON.parse(JSON.stringify(salon));
        
  
  
@@ -236,7 +236,7 @@ const getSalonByNameShallow = async (salonname, Userlocation, radius, limit) => 
   
         //console.log("INSIDE connect", JSON.stringify(salon));
         db.connection.close();
-        return JSON.stringify(salon);
+        return JSON.parse(JSON.stringify(salon));
         
   
   
@@ -269,7 +269,7 @@ const getSalonAllStylist = async(userlocation, radius) => {
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
-  return JSON.stringify(stylist);
+  return JSON.parse(JSON.stringify(stylist));
 
 };
 //return salon_id and list of stylist with the input rating
@@ -298,7 +298,7 @@ const getSalonStylistBySalonId = async(userlocation, radius,salonId) => {
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
-  return JSON.stringify(stylist);
+  return JSON.parse(JSON.stringify(stylist));
 
 };
 
@@ -336,7 +336,7 @@ const getSalonByStylistRatingAndSalonId = async(userlocation, radius, limit, rat
       ]);
       const stylist = await stylistCursor.toArray();
       db.connection.close();
-      return JSON.stringify(stylist);
+      return JSON.parse(JSON.stringify(stylist));
     
     };
 
@@ -377,7 +377,7 @@ const getSalonByStylistRating = async(userlocation, radius, limit, rating) => {
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
-  return JSON.stringify(stylist);
+  return JSON.parse(JSON.stringify(stylist));
 
 };
 const getSalonByStylistRatingGenderAndSalonId = async(userlocation, radius,limit, rating, gender, salonId) => {
@@ -413,7 +413,7 @@ const getSalonByStylistRatingGenderAndSalonId = async(userlocation, radius,limit
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
-  return JSON.stringify(stylist);
+  return JSON.parse(JSON.stringify(stylist));
 
 };
     
@@ -451,7 +451,7 @@ const getSalonByStylistRatingGender = async(userlocation, radius, limit, rating,
     ]);
     const stylist = await stylistCursor.toArray();
     db.connection.close();
-    return JSON.stringify(stylist);
+    return JSON.parse(JSON.stringify(stylist));
   
   };
   
@@ -489,7 +489,7 @@ const getSalonByStylistNameRatingGender = async(userlocation, radius, name,limit
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
-  return JSON.stringify(stylist);
+  return JSON.parse(JSON.stringify(stylist));
 
 };
 
@@ -526,7 +526,7 @@ const getSalonByStylistNameRatingGenderAndSalonId = async(userlocation, radius, 
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
-  return JSON.stringify(stylist);
+  return JSON.parse(JSON.stringify(stylist));
 
 };
 
@@ -558,7 +558,7 @@ const getAllNearestSalonsShallow = async (Userlocation, radius) => {
 
      //console.log("INSIDE connect", JSON.stringify(salon));
      db.connection.close();
-     return JSON.stringify(salon);
+     return JSON.parse(JSON.stringify(salon));
      
 
 
@@ -578,7 +578,7 @@ const getAllSalons =  async () => {
 
      //console.log("INSIDE connect", JSON.stringify(salon));
      db.connection.close();
-     return JSON.stringify(salon);
+     return JSON.parse(JSON.stringify(salon));
      
 
 
@@ -624,7 +624,7 @@ const getServicesByNameTypePriceRangeCodeAndSalonId = async (userlocation, radiu
         ]);
         const stylist = await stylistCursor.toArray();
         db.connection.close();
-        return JSON.stringify(stylist);               
+        return JSON.parse(JSON.stringify(stylist));               
 
 };
 
@@ -663,7 +663,7 @@ const getServicesByNameTypePriceRangeCode = async (userlocation, radius, limit, 
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
-  return JSON.stringify(stylist);               
+  return JSON.parse(JSON.stringify(stylist));               
 
 };
 
@@ -703,7 +703,7 @@ const getServicesByNameTypePriceRangeAndSalonId = async (userlocation, radius, l
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
-  return JSON.stringify(stylist);               
+  return JSON.parse(JSON.stringify(stylist));               
 
 };
 
@@ -745,7 +745,7 @@ const getServicesByNameTypePriceRange = async (userlocation, radius, limit, serv
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
-  return JSON.stringify(stylist);               
+  return JSON.parse(JSON.stringify(stylist));               
 
 };
 
@@ -785,7 +785,7 @@ const  getServicesByNamePriceRangeAndSalonId = async (userlocation, radius, limi
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
-  return JSON.stringify(stylist); 
+  return JSON.parse(JSON.stringify(stylist)); 
 };
 
 // global
@@ -824,7 +824,7 @@ const  getServicesByNamePriceRange = async (userlocation, radius, limit, service
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
-  return JSON.stringify(stylist); 
+  return JSON.parse(JSON.stringify(stylist)); 
 };
 
 
@@ -864,7 +864,7 @@ const getServicesByNameTypeSalonId = async (userlocation, radius, limit, service
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
-  return JSON.stringify(stylist);               
+  return JSON.parse(JSON.stringify(stylist));               
 
 };
 
@@ -904,7 +904,7 @@ const getServicesByNameType = async (userlocation, radius, limit, serviceName, s
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
-  return JSON.stringify(stylist);               
+  return JSON.parse(JSON.stringify(stylist));               
 
 };
 
@@ -939,7 +939,7 @@ const getServicesByNameSalonId = async (userlocation, radius, limit,serviceName,
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
-  return JSON.stringify(stylist);               
+  return JSON.parse(JSON.stringify(stylist));               
 
 };
   
@@ -973,7 +973,7 @@ const getServicesByName = async (userlocation, radius, limit,serviceName) =>{
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
-  return JSON.stringify(stylist);               
+  return JSON.parse(JSON.stringify(stylist));               
 
 };
   
@@ -1005,7 +1005,7 @@ const getServicesSalonId = async (userlocation, radius, limit, salonId) =>{
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
-  return JSON.stringify(stylist);               
+  return JSON.parse(JSON.stringify(stylist));               
 
 };
   
