@@ -312,6 +312,7 @@ const createNewSalonForm =  (genNextSalonId,name, address, street, coordinates, 
     }
     return form;
 }
+
 const createNewServicesForm =  (sName)=>{
 
     
@@ -323,13 +324,13 @@ const createNewServicesForm =  (sName)=>{
     }
     return form;
 }
-const createNewReviewForm =  (userId, review, description)=>{
+const createNewReviewForm =  (userId, review, rating)=>{
     
     const form = {
         "userId": userId,
         "created": new Date(), //unique
         "review": review,
-        "rating": description
+        "rating": rating
         
     }
     return form;

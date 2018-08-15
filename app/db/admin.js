@@ -339,12 +339,27 @@ const addsubserviceToSalonServices = async (salonObjId, serviceName, type, code,
 // CRUD reviews salon and stylist
 
 
-const createReview = async (serviceName, serviceData) =>{
-
+const createReview = async (userId, review, rating) =>{
+    console.log("--createReview--");
+    //add the review_id to the review table maybe use the index in the review table
+    const data = await schema.createNewReviewForm(userId, review, rating);
+    try{
+        const db = await getDatabaseByName("afroturf");
+        const result = await db.db.collection("salons").update(
+            {$and: [{"_id": ObjectId(salonObjId)}]},
+            {$addToSet: {reviews:data}}, 
+        );
+        db.connection.close();
+        console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
+    return  result.result.ok, result.result.nModified;
+    }catch(err){
+        throw new Error(err);
+    }
 }
 
 const updateReview = async (serviceName, serviceData) =>{
-
+    //put object to update in a salon
+    
 }
 const deleteReview = async ( serviceName) => {
 
