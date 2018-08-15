@@ -202,11 +202,15 @@ const salons = {
                 bsonType: "array",
                 stylist:{
                     bsonType: "object",
-                    required: ["userId", "name", "gender", "reviews", "stylistId"],
+                    required: ["userId", "name", "username", "gender", "reviews", "stylistId"],
                     properties:{
                         userId: {
                             bsonType: "object",
                             properties: {$oid: {bsonType: "string", description:"must be a string and is required"}}
+                        },
+                        username: {
+                            bsonType: "string",
+                            description: "must be a obj string and is required"
                         },
                         name: {
                             bsonType: "string",
@@ -351,6 +355,7 @@ const stylist =  (stylist, stylistId)=>{
     const application = {
         "userId": ObjectId(stylist._id),
         "name": stylist.fname,
+        "username": stylist.username,
         "gender": stylist.gender,
         "stylistId": ObjectId(stylistId),
         "reviews":[],
