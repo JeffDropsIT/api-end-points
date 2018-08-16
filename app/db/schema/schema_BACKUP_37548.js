@@ -198,7 +198,11 @@ const salons = {
                 bsonType: "array",
                 items:{
                     bsonType: "object",
+<<<<<<< HEAD
+                    required: ["userId", "name", "username", "gender", "reviews", "stylistId"],
+=======
                     required: ["userId", "name", "username", "stylistId", "gender", "reviewsDocId"],
+>>>>>>> all-endpoints-created
                     properties:{
                         userId: {
                             bsonType: "string",
@@ -470,12 +474,21 @@ const createNewSubserviceForm =  (type, code, price, description)=>{
 }
 const stylist =  (_id, username, fname, gender, stylistId)=>{
     const application = {
+<<<<<<< HEAD
+        "userId": ObjectId(stylist._id),
+        "name": stylist.fname,
+        "username": stylist.username,
+        "gender": stylist.gender,
+        "stylistId": ObjectId(stylistId),
+        "reviews":[],
+=======
         "userId": _id,
         "username": username,
         "name": fname,
         "gender": gender,
         "stylistId": stylistId,
         "reviewsDocId":"",
+>>>>>>> all-endpoints-created
         "created": new Date(),
         "rating": 1
     }

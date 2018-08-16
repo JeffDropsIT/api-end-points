@@ -204,10 +204,6 @@ const salons = {
                             bsonType: "string",
                             description:"must be a string and is required"
                         },
-                        username: {
-                            bsonType: "string",
-                            description: "must be a obj string and is required"
-                        },
                         name: {
                             bsonType: "string",
                             description: "must be a obj string and is required"
