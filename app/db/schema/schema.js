@@ -1,4 +1,4 @@
-const ObjectId = require('mongodb').ObjectID;
+
 
 const users = {
     bsonType: "object",
@@ -30,6 +30,10 @@ const users = {
             bsonType: "string",
             description: "must be a string and is required"
          },
+        created: {
+             bsonType: "date",
+             description: "must be a date and is not required"
+             }, //added not in schema
         phone: {
             bsonType: "string",
             description: "must be an string and is required"
@@ -73,6 +77,27 @@ const users = {
                 },
             }
             
+        },
+        avatar: { //added not in schema
+            bsonType: "array",
+            items: {
+                bsonType: "object",
+                required: ["url", "key", "created"],
+                properties:{
+                    url: {
+                        bsonType: "string",
+                        description: "must be a obj string and is not required"
+                        },
+                    key: {
+                        bsonType: "string",
+                        description: "must be a obj string and is not required"
+                    },
+                    created: {
+                        bsonType: "date",
+                        description: "must be a obj date and is not required"
+                    },
+                }
+            }
         },
         following: {
             bsonType: "array",
@@ -185,6 +210,83 @@ const salons = {
                         bsonType: "string",
                         description: "must be a obj string and is not required"
                         }
+                    },
+                    avatar: { //added not in schema
+                        bsonType: "array",
+                        items: {
+                            bsonType: "object",
+                            properties:{
+                                url: {
+                                    bsonType: "string",
+                                    description: "must be a obj string and is not required"
+                                    },
+                                key: {
+                                    bsonType: "string",
+                                    description: "must be a obj string and is not required"
+                                },
+                                created: {
+                                    bsonType: "date",
+                                    description: "must be a obj date and is not required"
+                                },
+                            }
+                        }
+                    },
+                    gallary: { //added not in schema
+                        bsonType: "array",
+                        required: ["fileType", "url", "views", "caption", "comments","key"],
+                        items:{
+                            bsonType: "object",
+                            properties:{
+                                fileType: {
+                                    bsonType: "string",
+                                    description: "must be a string and is not required"
+                                    },
+                                url: {
+                                    bsonType: "string",
+                                    description: "must be a obj string and is not required"
+                                    },
+                                key: {
+                                    bsonType: "string",
+                                    description: "must be a obj string and is not required"
+                                    },
+                                caption: {
+                                    bsonType: "string",
+                                    description: "must be a obj string and is not required"
+                                },
+                                views: {
+                                    bsonType: "int",
+                                    description: "must be a obj string and is not required"
+                                },
+                                created: {
+                                    bsonType: "date",
+                                    description: "must be a obj date and is not required"
+                                },
+                                comments: { 
+                                    bsonType:  "array",
+                                    items: {
+                                        bsonType: "object",
+                                        required: ["created", "from", "comment"], //added not to schema
+                                        properties: {
+                                            created:{
+                                                bsonType: "string",
+                                                description: "must be a string and is not required"
+                                            },
+                                            from:{
+                                                bsonType: "string",
+                                                description: "must be a string and is not required"
+                                            },
+                                            comment:{
+                                                bsonType: "string",
+                                                description: "must be a string and is not required"
+                                            }
+                                        }
+                                    }
+                
+                
+                                }
+                                }
+                            }
+                        
                     }
                 }
             
@@ -192,39 +294,172 @@ const salons = {
         reviewsDocId:{
             bsonType: "string", 
             description: "must be a string that represents the id of the review document which contains the reviewsIn of this salon"
-        },
-                
-            stylists: {
-                bsonType: "array",
-                items:{
-                    bsonType: "object",
-                    required: ["userId", "name", "username", "stylistId", "gender", "reviewsDocId"],
-                    properties:{
-                        userId: {
-                            bsonType: "string",
-                            description:"must be a string and is required"
-                        },
-                        name: {
-                            bsonType: "string",
-                            description: "must be a obj string and is required"
-                        },
-                        username: {
-                            bsonType: "string",
-                            description: "must be a obj string and is required"
-                        },
-                        stylistId: {
-                            bsonType: "int",
-                            description: "must be a obj string and is required"
-                        },
-                        gender: {
+        },    
+        stylists: {
+            bsonType: "array",
+            items:{
+                bsonType: "object",
+                required: ["userId", "name", "username", "stylistId", "gender", "reviewsDocId"],
+                properties:{
+                    userId: {
+                        bsonType: "string",
+                        description:"must be a string and is required"
+                    },
+                    name: {
+                        bsonType: "string",
+                        description: "must be a obj string and is required"
+                    },
+                    username: {
+                        bsonType: "string",
+                        description: "must be a obj string and is required"
+                    },
+                    stylistId: {
+                        bsonType: "int",
+                        description: "must be a obj string and is required"
+                    },
+                    gender: {
+                        bsonType: "object",
+                        description: "must be a obj string and is required"
+                    },
+                    reviewsDocId:{
+                        bsonType: "string", 
+                        description: "must be a string that represents the id of the review document which contains the reviewsIn of this stylist"
+                    },
+                    gallary: { //added not in schema
+                        bsonType: "array",
+                        required: ["fileType", "url", "views", "caption", "comments","key"],
+                        items:{
                             bsonType: "object",
-                            description: "must be a obj string and is required"
-                        },
-                        reviewsDocId:{
-                            bsonType: "string", 
-                            description: "must be a string that represents the id of the review document which contains the reviewsIn of this stylist"
+                            properties:{
+                                fileType: {
+                                    bsonType: "string",
+                                    description: "must be a string and is not required"
+                                    },
+                                url: {
+                                    bsonType: "string",
+                                    description: "must be a obj string and is not required"
+                                    },
+                                key: {
+                                    bsonType: "string",
+                                    description: "must be a obj string and is not required"
+                                    },
+                                caption: {
+                                    bsonType: "string",
+                                    description: "must be a obj string and is not required"
+                                },
+                                views: {
+                                    bsonType: "int",
+                                    description: "must be a obj string and is not required"
+                                },
+                                created: {
+                                    bsonType: "date",
+                                    description: "must be a obj date and is not required"
+                                },
+                                comments: { 
+                                    bsonType:  "array",
+                                    items: {
+                                        bsonType: "object",
+                                        required: ["created", "from", "comment"], //added not to schema
+                                        properties: {
+                                            created:{
+                                                bsonType: "string",
+                                                description: "must be a string and is not required"
+                                            },
+                                            from:{
+                                                bsonType: "string",
+                                                description: "must be a string and is not required"
+                                            },
+                                            comment:{
+                                                bsonType: "string",
+                                                description: "must be a string and is not required"
+                                            }
+                                        }
+                                    }
+                
+                
+                                }
+                                }
+                            }
+                        
+                    }
+                }
+            }
+        
+    },
+    avatar: { //added not in schema
+        bsonType: "array",
+        items: {
+            bsonType: "object",
+            properties:{
+                url: {
+                    bsonType: "string",
+                    description: "must be a obj string and is not required"
+                    },
+                key: {
+                    bsonType: "string",
+                    description: "must be a obj string and is not required"
+                },
+                created: {
+                    bsonType: "date",
+                    description: "must be a obj date and is not required"
+                },
+            }
+        }
+    },
+    gallary: { //added not in schema
+        bsonType: "array",
+        required: ["fileType", "url", "views", "caption", "comments","key"],
+        items:{
+            bsonType: "object",
+            properties:{
+                fileType: {
+                    bsonType: "string",
+                    description: "must be a string and is not required"
+                    },
+                url: {
+                    bsonType: "string",
+                    description: "must be a obj string and is not required"
+                    },
+                key: {
+                    bsonType: "string",
+                    description: "must be a obj string and is not required"
+                    },
+                caption: {
+                    bsonType: "string",
+                    description: "must be a obj string and is not required"
+                },
+                views: {
+                    bsonType: "int",
+                    description: "must be a obj string and is not required"
+                },
+                created: {
+                    bsonType: "date",
+                    description: "must be a obj date and is not required"
+                },
+                comments: { 
+                    bsonType:  "array",
+                    items: {
+                        bsonType: "object",
+                        required: ["created", "from", "comment"], //added not to schema
+                        properties: {
+                            created:{
+                                bsonType: "string",
+                                description: "must be a string and is not required"
+                            },
+                            from:{
+                                bsonType: "string",
+                                description: "must be a string and is not required"
+                            },
+                            comment:{
+                                bsonType: "string",
+                                description: "must be a string and is not required"
+                            }
                         }
                     }
+
+
+                }
+                }
             }
         
     }
@@ -310,6 +545,28 @@ const rooms = {
                     type: {
                         bsonType:"int", 
                         description: "an integer that represents the type of the message that this is"
+                    },
+                    sharedMedia : {
+                        bsonType: "object",
+                        required: ["fileType", "url", "caption", "key"],
+                        properties: {         
+                            fileType: {
+                                bsonType: "string",
+                                description: "must be a string and is not required"
+                                },
+                            url: {
+                                bsonType: "string",
+                                description: "must be a obj string and is not required"
+                                },
+                            key: {
+                                bsonType: "string",
+                                description: "must be a obj string and is not required"
+                                },
+                            caption: {
+                                bsonType: "string",
+                                description: "must be a obj string and is not required"
+                            }
+                        }
                     }
                 }
             }
@@ -352,6 +609,28 @@ const reviews = {
                     rating: {
                         bsonType: "int",
                         description: "must be a obj string and is required"
+                    },
+                    sharedMedia : {
+                        bsonType: "object",
+                        required: ["fileType", "url", "caption", "key"],
+                        properties: {         
+                            fileType: {
+                                bsonType: "string",
+                                description: "must be a string and is not required"
+                                },
+                            url: {
+                                bsonType: "string",
+                                description: "must be a obj string and is not required"
+                                },
+                            key: {
+                                bsonType: "string",
+                                description: "must be a obj string and is not required"
+                                },
+                            caption: {
+                                bsonType: "string",
+                                description: "must be a obj string and is not required"
+                            }
+                        }
                     }
                 }
             }    
@@ -381,6 +660,28 @@ const reviews = {
                     rating: {
                         bsonType: "int",
                         description: "must be a obj string and is required"
+                    },
+                    sharedMedia : {
+                        bsonType: "object",
+                        required: ["fileType", "url", "caption", "key"],
+                        properties: {         
+                            fileType: {
+                                bsonType: "string",
+                                description: "must be a string and is not required"
+                                },
+                            url: {
+                                bsonType: "string",
+                                description: "must be a obj string and is not required"
+                                },
+                            key: {
+                                bsonType: "string",
+                                description: "must be a obj string and is not required"
+                                },
+                            caption: {
+                                bsonType: "string",
+                                description: "must be a obj string and is not required"
+                            }
+                        }
                     }
                 }
                     
