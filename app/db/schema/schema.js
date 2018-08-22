@@ -82,12 +82,7 @@ const users = {
             bsonType: "array",
             items: {
                 bsonType: "object",
-                required: ["url", "key", "created"],
                 properties:{
-                    url: {
-                        bsonType: "string",
-                        description: "must be a obj string and is not required"
-                        },
                     key: {
                         bsonType: "string",
                         description: "must be a obj string and is not required"
@@ -216,10 +211,7 @@ const salons = {
                         items: {
                             bsonType: "object",
                             properties:{
-                                url: {
-                                    bsonType: "string",
-                                    description: "must be a obj string and is not required"
-                                    },
+                                
                                 key: {
                                     bsonType: "string",
                                     description: "must be a obj string and is not required"
@@ -233,17 +225,12 @@ const salons = {
                     },
                     gallary: { //added not in schema
                         bsonType: "array",
-                        required: ["fileType", "url", "views", "caption", "comments","key"],
                         items:{
                             bsonType: "object",
                             properties:{
                                 fileType: {
                                     bsonType: "string",
                                     description: "must be a string and is not required"
-                                    },
-                                url: {
-                                    bsonType: "string",
-                                    description: "must be a obj string and is not required"
                                     },
                                 key: {
                                     bsonType: "string",
@@ -261,7 +248,7 @@ const salons = {
                                     bsonType: "date",
                                     description: "must be a obj date and is not required"
                                 },
-                                comments: { 
+                                comments: { //add endpoint
                                     bsonType:  "array",
                                     items: {
                                         bsonType: "object",
@@ -327,17 +314,12 @@ const salons = {
                     },
                     gallary: { //added not in schema
                         bsonType: "array",
-                        required: ["fileType", "url", "views", "caption", "comments","key"],
                         items:{
                             bsonType: "object",
                             properties:{
                                 fileType: {
                                     bsonType: "string",
                                     description: "must be a string and is not required"
-                                    },
-                                url: {
-                                    bsonType: "string",
-                                    description: "must be a obj string and is not required"
                                     },
                                 key: {
                                     bsonType: "string",
@@ -391,10 +373,6 @@ const salons = {
         items: {
             bsonType: "object",
             properties:{
-                url: {
-                    bsonType: "string",
-                    description: "must be a obj string and is not required"
-                    },
                 key: {
                     bsonType: "string",
                     description: "must be a obj string and is not required"
@@ -408,17 +386,12 @@ const salons = {
     },
     gallary: { //added not in schema
         bsonType: "array",
-        required: ["fileType", "url", "views", "caption", "comments","key"],
         items:{
             bsonType: "object",
             properties:{
                 fileType: {
                     bsonType: "string",
                     description: "must be a string and is not required"
-                    },
-                url: {
-                    bsonType: "string",
-                    description: "must be a obj string and is not required"
                     },
                 key: {
                     bsonType: "string",
@@ -548,15 +521,10 @@ const rooms = {
                     },
                     sharedMedia : {
                         bsonType: "object",
-                        required: ["fileType", "url", "caption", "key"],
                         properties: {         
                             fileType: {
                                 bsonType: "string",
                                 description: "must be a string and is not required"
-                                },
-                            url: {
-                                bsonType: "string",
-                                description: "must be a obj string and is not required"
                                 },
                             key: {
                                 bsonType: "string",
@@ -612,15 +580,10 @@ const reviews = {
                     },
                     sharedMedia : {
                         bsonType: "object",
-                        required: ["fileType", "url", "caption", "key"],
                         properties: {         
                             fileType: {
                                 bsonType: "string",
                                 description: "must be a string and is not required"
-                                },
-                            url: {
-                                bsonType: "string",
-                                description: "must be a obj string and is not required"
                                 },
                             key: {
                                 bsonType: "string",
@@ -661,17 +624,12 @@ const reviews = {
                         bsonType: "int",
                         description: "must be a obj string and is required"
                     },
-                    sharedMedia : {
+                    sharedMedia : { //add endpoint
                         bsonType: "object",
-                        required: ["fileType", "url", "caption", "key"],
                         properties: {         
                             fileType: {
                                 bsonType: "string",
                                 description: "must be a string and is not required"
-                                },
-                            url: {
-                                bsonType: "string",
-                                description: "must be a obj string and is not required"
                                 },
                             key: {
                                 bsonType: "string",
@@ -705,6 +663,25 @@ const reviews = {
 
 //templates
 
+const gallaryEntry = (fileType, views, key, caption) => {
+    const form = {
+        "fileType": fileType,
+        "view": views,
+        "key": key,
+        "caption": caption,
+        "created": new Date(),
+        "comments": []
+    }
+    return form;
+}
+const commentEntry = (from, comment) =>{
+    const form = {
+        "from": from,
+        "created": new Date(),
+        "comment": comment
+    }
+    return form;
+}
 const getActiveSalonsJsonForm =  (genSalonVal, salonObjId, hiring)=>{
     const application = {
         "salonId": genSalonVal,
@@ -736,6 +713,8 @@ const createNewSalonForm =  (genNextSalonId,name, address, street, coordinates, 
         "created": new Date(),
         "location": {"address": address, "street": street, "coordinates":coordinates},
         "services": [createNewServicesForm(sName)],
+        "stylists": [],
+        "avatar": [],
         "reviews": []
     }
     return form;
@@ -789,14 +768,16 @@ const modifyRequestJson =  (userId, salonObjId, status, permissions)=>{
     return application;
 }
 
-const stylistJSON =  (_id, username, fname, gender, stylistId)=>{
+const stylistJSON =  (data, stylistId, id)=>{
     const form = {
-        "userId": _id,
-        "username": username,
-        "name": fname,
-        "gender": gender,
+        "userId":id,
+        "username": data.username,
+        "name": data.fname,
+        "gender": data.gender,
         "stylistId": stylistId,
-        "reviewsDocId":"",
+        "reviewsDocId":data.reviewsDocId,
+        "gallery":[],
+        "avatar":data.avatar,
         "created": new Date(),
         "rating": 1
     }
@@ -890,13 +871,16 @@ module.exports = {
     createNewServicesForm,
     createNewReviewInForm,
     createNewReviewOutForm,
-    createNewSubserviceForm, getApplicationJson,
+    createNewSubserviceForm, 
+    getApplicationJson,
     getActiveSalonsJsonForm,
     createNewReviewDocForm,
     rooms, 
     reviews,
     createNewRoomForm,
     createNewMessageForm,
-    createNewMemberForm
+    createNewMemberForm,
+    gallaryEntry,
+    commentEntry
 
 }

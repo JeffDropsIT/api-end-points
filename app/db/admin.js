@@ -1,8 +1,13 @@
 const schema = require("../db/schema/schema");
 const mongodb = require("mongodb");
 const ObjectId = require('mongodb').ObjectID;
-const authentication = require("../db/authentication")
+const authentication = require("../db/authentication");
+const awsHandler = require('../../aws/aws-handler');
+const uuid = require("uuid");
+const empty = require("is-empty");
+
 let mongodbClient = mongodb.MongoClient;
+
 let url = 'mongodb://admin:password123@ds153841.mlab.com:53841/afroturf';
 
 
@@ -73,19 +78,21 @@ const updateCollectionDocument = async (dbName, collectionName, data, id) =>{
     }
     
 };
+
 const createUser = async (fname, lname, password, username, phone) =>{
 
     try {
         console.log("--createusers--");
-        const user = await {fname: fname, lname: lname, password:await authentication.hashPassword(password), username: username, phone: phone, email:"afroturf@gmail.com"};
+        const user = await {fname: fname, lname: lname, password:await authentication.hashPassword(password), username: username, phone: phone, email:"afroturf@gmail.com", created: new Date()};
     
         const result = await insertIntoCollection("afroturf", "users",user)
         console.log("ok: "+result.ok, "_id "+ result._id +" type: "+typeof(result._id));
         let _id;
         _id = result.ok == 1 ?  result._id: null;
         if(_id !==null){
-            console.log("Creating users chat room. . .and reviewsDoc")
+            console.log("Creating users chat room. . .and reviewsDoc :id "+_id)
             createNewUsersPrivateChatRoom(_id, username);
+            awsHandler.createUserDefaultBucket(fname).then(p => updateUser({bucketName: p}, _id));
             createReviewsDoc(_id);
         }else{
             return -1;
@@ -100,16 +107,15 @@ const updateUser = async (userData, userid) =>{
 
     console.log("--updateUser--");
     const result = await updateCollectionDocument("afroturf", "users",userData,userid).then(p => console.log("success "+p));
-    db.connection.close();
-    console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
-    return  result.ok, result.modified;
+    console.log("ok: "+result, "modified: "+ result);
+    return  1;
 };
 
 
 const getUser = async (userId)=>{
     try{
         const db = await getDatabaseByName("afroturf");
-        const result = await db.db.collection("users").aggregate([{$match: {_id:ObjectId(userId)} }, {$project: {username:1, fname:1, reviewsDocId:1, gender:1}}]).toArray();
+        const result = await db.db.collection("users").aggregate([{$match: {_id:ObjectId(userId)} }, {$project: {username:1, fname:1, reviewsDocId:1, gender:1, avatar:1}}]).toArray();
         db.connection.close();
        
         return  JSON.parse(JSON.stringify(result));
@@ -171,19 +177,20 @@ const getNextSequenceValue = async (sequenceName, collectionIndex) => {
 
 const addStylistToSalon = async (userId, salonObjId) => {
     const stylist = await getUser(userId);
+    //console.log()
     let stylistId = await getNextStylistInCount(salonObjId);
-    stylistId = stylistId.toString();
+    stylistId = stylistId;
 
     if(stylist == "[]"){
-        console.log("NO SUCH USER "+stylist)
+        console.log("   NO SUCH USER "+stylist)
         return -1;
     }
-    console.log("SUCH USER")
+    console.log(" SUCH USER "+stylist[0]._id)
     try{
         const db = await getDatabaseByName("afroturf");
         const result = await db.db.collection("salons").update({
-            $and:[{_id: ObjectId(salonObjId)}, {"stylists.userId": {$ne: ObjectId(stylist[0]._id)}}]},
-            {$addToSet: {stylists:schema.stylistJSON(stylist[0], stylistId)}}
+            $and:[{_id: ObjectId(salonObjId)}, {"stylists.userId": {$ne: stylist[0]._id}}]},
+            {$addToSet: {stylists:schema.stylistJSON(stylist[0], stylistId, stylist[0]._id )}}
         );
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
@@ -198,7 +205,7 @@ const addStylistToSalon = async (userId, salonObjId) => {
 //updateUser(updatesalons, "5b72a32fc2352417f49992f7");
 //acceptStylistRequest("5b72a32fc2352417f49992f8", "5b5a37b3fb6fc07c4c24d80d", "active", ["GU"]).then(p => console.log(p))
 //acceptStylistRequest("5b72a32fc2352417f49992e8", "5b5a37b3fb6fc07c4c24d80d", "active", ["null"]).then(p => console.log(p))
-//addStylistToSalon("5b72a32fc2352417f49992f8", "5b5a37b3fb6fc07c4c24d80d").then(p => console.log(p))
+//addStylistToSalon("5b7d187730d4801a6891ffde", "5b7d240bb22b4e2390677e3c").then(p => console.log(p))
 //getNextSequenceValue("stylistId").then(p => console.log(p))
 //getUser("5b72a32fc2352417f49992f8").then(p => console.log(p[0].fname))
 // createUser( "Afroturf", "v1", "password", "email@email.com", "+2771008456895");
@@ -229,7 +236,8 @@ const createSalon = async (userId, name, address, street, coordinates, sName, hi
         if(_id !== null){
             addSalonToUserAccount(userId, _id, hiring, salonId);
             console.log("Creating users chat room. . .and reviewsDoc")
-            createNewUsersPrivateChatRoom(_id, username);
+            createNewUsersPrivateChatRoom(_id, name);
+            awsHandler.createUserDefaultBucket(name).then(p => updateSalon({bucketName: p}, _id));
             createReviewsDoc(_id);
             console.log("--added to owner account-- "+_id);
         }else{
@@ -264,14 +272,15 @@ const addSalonToUserAccount = async (userId, salonObjId, hiring, salonId) => {
     }
 }
 
-const updateSalon = async (salonObjId, salonData) =>{
+const updateSalon = async (salonData, salonObjId) =>{
     //put object to update in a salon
     try{
         const db = await getDatabaseByName("afroturf");
         const result = await db.db.collection("salons").update(
             {"_id": ObjectId(salonObjId)},
-            {salonData} 
+            {$set: salonData}
         );
+        
         db.connection.close();
         console.log(result.result.ok, result.result.nModified);
     return  result.result.ok, result.result.nModified;
@@ -545,11 +554,21 @@ const getNextReviewInCount = async(userId) =>{
             { $match: { "userId": userId } },
             {$project:{count:{$size: "$reviewsIn"}}}
         ]);
+        
         result = await result.toArray();
-        const count = JSON.parse(JSON.stringify(result[0]));
-        console.log(count.count + 1);
-        db.connection.close();
-        return count.count + 1;
+        if(!empty(result)){
+            console.log("DATA IS THERE. . . ")
+            console.log(result)
+            let count = JSON.parse(JSON.stringify(result[0]));
+            db.connection.close();
+            return count.count + 1;
+        }else{
+            console.log("NOT STYLIST PRESENT. . .")
+            let count = JSON.parse(JSON.stringify(result));
+            db.connection.close();
+            console.log(count);
+            if(count === NaN) {return 1;}else return 1;
+        }
     } catch (error) {
         console.log("failed to getNextReviewInCount Count")
         throw new Error(error);
@@ -561,14 +580,26 @@ const getNextStylistInCount = async(salonId) =>{
     try {
         const db = await getDatabaseByName("afroturf");
         let result = await db.db.collection("salons").aggregate([
-            { $match: { _id: salonId } },
+            { $match: { _id: ObjectId(salonId) } },
             {$project:{count:{$size: "$stylists"}}}
         ]);
+       
         result = await result.toArray();
-        const count = JSON.parse(JSON.stringify(result[0]));
-        console.log(count.count + 1);
-        db.connection.close();
-        return count.count + 1;
+        if(!empty(result)){
+            console.log("DATA IS THERE. . .getNextStylistInCount ")
+            console.log(result)
+            let count = JSON.parse(JSON.stringify(result[0]));
+            db.connection.close();
+            return count.count + 1;
+        }else{
+            console.log("NOT STYLIST PRESENT. . .")
+            let count = JSON.parse(JSON.stringify(result));
+            db.connection.close();
+            console.log(count);
+            if(count === NaN) {return 1;}else return 1;
+        }
+        
+        
     } catch (error) {
         console.log("failed to getNextStylistInCount Count")
         throw new Error(error);
@@ -583,11 +614,21 @@ const getNextReviewOutCount = async(userId) =>{
             { $match: { "userId": userId } },
             {$project:{count:{$size: "$reviewsOut"}}}
         ]);
+        
         result = await result.toArray();
-        const count = JSON.parse(JSON.stringify(result[0]));
-        console.log(count.count + 1);
-        db.connection.close();
-        return count.count + 1;
+        if(!empty(result)){
+            console.log("DATA IS THERE. . . ")
+            console.log(result)
+            let count = JSON.parse(JSON.stringify(result[0]));
+            db.connection.close();
+            return count.count + 1;
+        }else{
+            console.log("NOT STYLIST PRESENT. . .")
+            let count = JSON.parse(JSON.stringify(result));
+            db.connection.close();
+            console.log(count);
+            if(count === NaN) {return 1;}else return 1;
+        }
     } catch (error) {
         console.log("failed to getNextReviewOutCount Count")
         throw new Error(error);
@@ -602,30 +643,259 @@ const getNextMessageCount = async(roomDocId) =>{
             { $match: { _id: ObjectId(roomDocId) } },
             {$project:{count:{$size: "$messages"}}}
         ]);
+        
         result = await result.toArray();
-        const count = JSON.parse(JSON.stringify(result[0]));
-        console.log(count.count + 1);
-        db.connection.close();
-        return count.count + 1;
+        if(!empty(result)){
+            console.log("DATA IS THERE. . . ")
+            console.log(result)
+            let count = JSON.parse(JSON.stringify(result[0]));
+            db.connection.close();
+            return count.count + 1;
+        }else{
+            console.log("STYLIST PRESENT. . .")
+            let count = JSON.parse(JSON.stringify(result));
+            db.connection.close();
+            console.log(count);
+            if(count === NaN) {return 1;}else return 1;
+        }
     } catch (error) {
         console.log("failed to getNextMessageCount Count")
         throw new Error(error);
     }
     
 }
+
+
+/*
+
+CONTENT RELATED QUERIES FOR SALON AND STYLISTS
+
+
+*/
+const addToSalonGalleryOnSuccessListner = async (err, data, salonObjId, userId) =>{
+    if (err){ console.log(err, err.stack); return -1;}
+    try{
+        console.log(data)
+        const db = await getDatabaseByName("afroturf");
+        const result = await db.db.collection("salons").update(
+            {$and: [{"_id": ObjectId(salonObjId)}]},
+            {$addToSet: {gallery:data}}, 
+        );
+        db.connection.close();
+        console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
+    return  result.result.ok, result.result.nModified;
+    }catch(err){
+        throw new Error(err);
+    }
+}
+const addToSalonGallery = async (salonObjId, key, pathF) =>{
+    console.log("--addToSalonGallery--");
+    try {
+        //get salon bucketId from salon
+        const db = await getDatabaseByName("afroturf");
+        let  result = await db.db.collection("salons").aggregate([{ $match: { _id: ObjectId(salonObjId) } }, {$project: {bucketName: 1}}])
+        result = await result.toArray();
+        const count = JSON.parse(JSON.stringify(result[0]));
+        let bucketName = await count.bucketName;
+        db.connection.close();
+        if(bucketName === undefined) {console.log("failed to find bucketName: ") ;return -1;}
+        bucketName = bucketName + "/accounts/user/data/public/photos/salon"
+        //upload to public
+        awsHandler.uploadFileWithCallBack(key, bucketName, pathF, addToSalonGalleryOnSuccessListner, salonObjId, "",)
+    } catch (error) {
+
+        console.log("addToSalonGallery --- failed to find add to gallery: ")
+        throw new Error(error)
+    }
+   
+}
+
+const addToStylistGallery = async (userId, salonObjId, key, pathF) => {
+    console.log("--addToStylistGallery--");
+    try {
+        //get salon bucketId from salon
+
+        const db = await getDatabaseByName("afroturf");
+        let  result = await db.db.collection("salons").aggregate([{ $match: { _id: ObjectId(salonObjId) } }, {$project: {bucketName: 1}}])
+        result = await result.toArray();
+        const count = JSON.parse(JSON.stringify(result[0]));
+        let bucketName = await count.bucketName;
+        db.connection.close();
+        if(bucketName === undefined) {console.log("failed to find bucketName: ") ;return -1;}
+        bucketName = bucketName + "/accounts/user/data/public/photos/stylists"
+        //upload to public
+        awsHandler.uploadFileWithCallBack(key, bucketName, pathF, addToStylistGalleryOnSuccessListner, salonObjId, userId)
+    } catch (error) {
+
+        console.log("addToSalonGallery --- failed to find add to gallery: ")
+        throw new Error(error)
+    }
+}
+
+
+
+const addToStylistGalleryOnSuccessListner = async (err, data, salonObjId, userId) =>{
+    if (err){ console.log(err, err.stack); return -1;}
+    console.log("--addToStylistGalleryOnSuccessListner--");
+    try{
+        console.log(data)
+        const db = await getDatabaseByName("afroturf");
+        const result = await db.db.collection("salons").update(
+            {$and : [{"_id": ObjectId(salonObjId)}]},
+            {$addToSet: {"stylists.$[stylist].gallery":data}},
+            {arrayFilters: [{$and: [{"stylist.userId":userId}]}]}
+        );
+        db.connection.close();
+        console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
+    return  result.result.ok, result.result.nModified;
+    }catch(err){
+        db.connection.close();
+        throw new Error(err);
+    }
+}
+
+
+
+
+
+
+
+const addToUserAvatar = async (userId,key, pathF) => {
+    console.log("--addToUserAvatar--");
+    try {
+        //get salon bucketId from salon
+
+        const db = await getDatabaseByName("afroturf");
+        let  result = await db.db.collection("users").aggregate([{ $match: { _id: ObjectId(userId) } }, {$project: {bucketName: 1}}])
+        result = await result.toArray();
+        const count = JSON.parse(JSON.stringify(result[0]));
+        let bucketName = await count.bucketName;
+        db.connection.close();
+        if(bucketName === undefined) {console.log("failed to find bucketName: ") ;return -1;}
+        bucketName = bucketName + "/accounts/user/data/public/photos/profiles"
+        //upload to public
+        awsHandler.uploadFileWithCallBack(key, bucketName, pathF, addToUserAvatarOnSuccessListner,"", userId)
+    } catch (error) {
+
+        console.log("addToUserAvatar --- failed to find add to avatar: ")
+        throw new Error(error)
+    }
+}
+const addToUserAvatarOnSuccessListner = async (err, data, salonObjId, userId) =>{
+    if (err){ console.log(err, err.stack); return -1;}
+    console.log("--addToUserAvatarOnSuccessListner--");
+    try{
+        console.log(data)
+        const db = await getDatabaseByName("afroturf");
+        const result = await db.db.collection("users").update(
+            {$and : [{"_id": ObjectId(userId)}]},
+            {$addToSet: {avatar:data}}
+        );
+        db.connection.close();
+        console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
+    return  result.result.ok, result.result.nModified;
+    }catch(err){
+        db.connection.close();
+        throw new Error(err);
+    }
+}
+
+
+const addToSalonAvatar = async (salonObjId,key, pathF) => {
+    console.log("--addToSalonAvatar--");
+    try {
+        //get salon bucketId from salon
+
+        const db = await getDatabaseByName("afroturf");
+        let  result = await db.db.collection("salons").aggregate([{ $match: { _id: ObjectId(salonObjId) } }, {$project: {bucketName: 1}}])
+        result = await result.toArray();
+        const count = JSON.parse(JSON.stringify(result[0]));
+        let bucketName = await count.bucketName;
+        db.connection.close();
+        if(bucketName === undefined) {console.log("failed to find bucketName: ") ;return -1;}
+        bucketName = bucketName + "/accounts/user/data/public/photos/profiles"
+        //upload to public
+        awsHandler.uploadFileWithCallBack(key, bucketName, pathF, addToSalonAvatarOnSuccessListner,salonObjId, "")
+    } catch (error) {
+
+        console.log("addToUserAvatar --- failed to find add to avatar: ")
+        throw new Error(error)
+    }
+}
+const addToSalonAvatarOnSuccessListner = async (err, data, salonObjId, userId) =>{
+    if (err){ console.log(err, err.stack); return -1;}
+    console.log("--addToSalonAvatarOnSuccessListner--");
+    try{
+        console.log(data)
+        const db = await getDatabaseByName("afroturf");
+        const result = await db.db.collection("salons").update(
+            {$and : [{"_id": ObjectId(salonObjId)}]},
+            {$addToSet: {avatar:data}}
+        );
+        db.connection.close();
+        console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
+    return  result.result.ok, result.result.nModified;
+    }catch(err){
+        db.connection.close();
+        throw new Error(err);
+    }
+}
+
+
+/*
+
+ADD COMMENTS TO SALON AND STYLIST GALARY
+
+
+*/
+
+const commentOnStylistGalleryObject = async (key, from, userId,salonObjId, comment) =>{
+    try{
+        const data = schema.commentEntry(from, comment);
+        console.log("commentOnStylistGalleryObject")
+        const db = await getDatabaseByName("afroturf");
+        const result = await db.db.collection("salons").update(
+            {$and : [{"_id": ObjectId(salonObjId)}]},
+            {$addToSet: {"stylists.$[st].gallery.$[c].comments":data}},
+            {arrayFilters: [{"c.Key":key}, {"st.userId":userId}]}
+        );
+        db.connection.close();
+        console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
+    return  result.result.ok, result.result.nModified;
+    }catch(err){
+        throw new Error(err);
+    }
+}
+
+commentOnStylistGalleryObject("accounts/user/data/public/photos/stylists/371dbcad-7789-42f3-9fe2-40c29eb55ab9name=img.jpg","5b7d187730d4801a6891ffde","5b7d187730d4801a6891ffde","5b7d240bb22b4e2390677e3c", "DAMN WOW REALLY" )
+
+
+//addToSalonGallery("5b7d240bb22b4e2390677e3c", "", "");
+
+
+
+
 //getNextMessageCount("5b75591bcdd59c569872c135");
 //sendMessage("I LOVE THIS SALON IT IS SO AWESOME WOW THE PASSION.", "5b75697a2cdfe55c7858a842", 0,"5b75694638a96a6f201c8ddc")
 //sendReview("I LOVE THIS SALON IT IS SO AWESOME WOW THE PASSION.","5b75697a2cdfe55c7858a842", 1, "5b75694438a96a6f201c8ddb" )
 
 
-followSalon("5b75697a2cdfe55c7858a842", "5b5a37b3fb6fc07c4c24d80d")
+//followSalon("5b75697a2cdfe55c7858a842", "5b5a37b3fb6fc07c4c24d80d")
 
 
-//createSalon("5b72a32fc2352417f49992f7", "Overflow", "Mandeni, 4491", "Thokoza Road", [-29.135888, 31.402572], "hairstyles", 1);
+//createSalon("5b7d187730d4801a6891ffde", "THE NEW GRACE", "Mandeni, 4491", "Bhidla Road", [-30.135888, 31.402572], "hairstyles", 1);
 // addServicesToSalon("5b74167ded4ae581304ec740", "manicures");
 // console.log("------")
 // addsubserviceToSalonServices("5b74167ded4ae581304ec740", "manicures", "colorful", "M1F", 150, "beautiful darkgrey nails that are amazing for summer")
 //createAnyCollection("afroturf", "reviews", schema.reviews);
 //createAnyCollection("afroturf", "rooms", schema.rooms);
 
-//createUser("Jamly", "Cole", "password123", "JamJamCole", "+2778645284"); //remove multiple username
+//createUser("Cole", "Lane", "password123", "Cole@LaneDi", "+2771645472"); //remove multiple username
+
+module.exports = {
+    addToSalonGallery,
+    addToStylistGallery,
+    addToUserAvatar,
+    addToSalonAvatar,
+}
+
