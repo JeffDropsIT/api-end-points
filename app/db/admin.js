@@ -849,7 +849,7 @@ ADD COMMENTS TO SALON AND STYLIST GALARY
 
 */
 
-const commentOnStylistGalleryObject = async (key, from, userId,salonObjId, comment) =>{
+const commentOnStylistGalleryObject = async (ETag, key, from, userId,salonObjId, comment) =>{
     try{
         const data = schema.commentEntry(from, comment);
         console.log("commentOnStylistGalleryObject")
@@ -857,7 +857,7 @@ const commentOnStylistGalleryObject = async (key, from, userId,salonObjId, comme
         const result = await db.db.collection("salons").update(
             {$and : [{"_id": ObjectId(salonObjId)}]},
             {$addToSet: {"stylists.$[st].gallery.$[c].comments":data}},
-            {arrayFilters: [{"c.Key":key}, {"st.userId":userId}]}
+            {arrayFilters: [{$or:[{"c.Key":key}, {"c.ETag":ETag}]}, {"st.userId":userId}]}
         );
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
@@ -867,7 +867,7 @@ const commentOnStylistGalleryObject = async (key, from, userId,salonObjId, comme
     }
 }
 
-commentOnStylistGalleryObject("accounts/user/data/public/photos/stylists/371dbcad-7789-42f3-9fe2-40c29eb55ab9name=img.jpg","5b7d187730d4801a6891ffde","5b7d187730d4801a6891ffde","5b7d240bb22b4e2390677e3c", "DAMN WOW REALLY" )
+commentOnStylistGalleryObject("\"a812ce71a5f6b5ed3bb11b8660ab3fae\"", "","5b7d187730d4801a6891ffde","5b7d187730d4801a6891ffde","5b7d240bb22b4e2390677e3c", "DAMN WOW REALLY" )
 
 
 //addToSalonGallery("5b7d240bb22b4e2390677e3c", "", "");
