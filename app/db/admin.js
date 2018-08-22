@@ -866,9 +866,25 @@ const commentOnStylistGalleryObject = async (ETag, key, from, userId,salonObjId,
         throw new Error(err);
     }
 }
-
-commentOnStylistGalleryObject("\"a812ce71a5f6b5ed3bb11b8660ab3fae\"", "","5b7d187730d4801a6891ffde","5b7d187730d4801a6891ffde","5b7d240bb22b4e2390677e3c", "DAMN WOW REALLY" )
-
+const commentOnSalonGalleryObject = async (ETag, key, from,salonObjId, comment) =>{
+    try{
+        const data = schema.commentEntry(from, comment);
+        console.log("commentOnSalonGalleryObject")
+        const db = await getDatabaseByName("afroturf");
+        const result = await db.db.collection("salons").update(
+            {$and : [{"_id": ObjectId(salonObjId)}]},
+            {$addToSet: {"gallery.$[c].comments":data}},
+            {arrayFilters: [{$or:[{"c.Key":key}, {"c.ETag":ETag}]}]}
+        );
+        db.connection.close();
+        console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
+    return  result.result.ok, result.result.nModified;
+    }catch(err){
+        throw new Error(err);
+    }
+}
+//commentOnStylistGalleryObject("\"a812ce71a5f6b5ed3bb11b8660ab3fae\"", "","5b7d187730d4801a6891ffde","5b7d187730d4801a6891ffde","5b7d240bb22b4e2390677e3c", "DAMN WOW REALLY" )
+commentOnSalonGalleryObject("\"d41d8cd98f00b204e9800998ecf8427e\"","", "5b7d187730d4801a6891ffde","5b7d240bb22b4e2390677e3c", "I HATE THIS PICTURE LOOK AT HIS HAIR")
 
 //addToSalonGallery("5b7d240bb22b4e2390677e3c", "", "");
 
