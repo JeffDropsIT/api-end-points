@@ -9,7 +9,7 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "aws-sdk": "^2.298.0",
+    "aws-sdk": "^2.299.0",
     "is-empty": "^1.2.0",
     "koa": "^2.5.2",
     "koa-body": "^4.0.4",

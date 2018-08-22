@@ -91,9 +91,9 @@ const createUser = async (fname, lname, password, username, phone) =>{
         _id = result.ok == 1 ?  result._id: null;
         if(_id !==null){
             console.log("Creating users chat room. . .and reviewsDoc :id "+_id)
-            createNewUsersPrivateChatRoom(_id, username);
+            createNewUsersPrivateChatRoom(_id, username, "users");
             awsHandler.createUserDefaultBucket(fname).then(p => updateUser({bucketName: p}, _id));
-            createReviewsDoc(_id);
+            createReviewsDoc(_id, "users");
         }else{
             return -1;
         }
@@ -236,9 +236,9 @@ const createSalon = async (userId, name, address, street, coordinates, sName, hi
         if(_id !== null){
             addSalonToUserAccount(userId, _id, hiring, salonId);
             console.log("Creating users chat room. . .and reviewsDoc")
-            createNewUsersPrivateChatRoom(_id, name);
+            createNewUsersPrivateChatRoom(_id, name, "salons");
             awsHandler.createUserDefaultBucket(name).then(p => updateSalon({bucketName: p}, _id));
-            createReviewsDoc(_id);
+            createReviewsDoc(_id, "salons");
             console.log("--added to owner account-- "+_id);
         }else{
             console.log("--failed to add owner account--");
@@ -380,7 +380,7 @@ const deleteReview = async (serviceName) => {
 
 //rooms And reviews
 
-const createNewUsersPrivateChatRoom = async (userId, username) => {
+const createNewUsersPrivateChatRoom = async (userId, username, collectionName) => {
 
         
     try {
@@ -395,7 +395,7 @@ const createNewUsersPrivateChatRoom = async (userId, username) => {
         _id = addedRoom.ok == 1 ?  addedRoom._id: null;
         //if successful
         if(_id !== null){
-            addRoomToUserAccount(userId, _id);
+            addRoomToUserAccount(userId, _id, collectionName);
             console.log("--added to user account-- "+_id);
         }else{
             console.log("--failed to add owner account--");
@@ -409,10 +409,10 @@ const createNewUsersPrivateChatRoom = async (userId, username) => {
 
 }
 
-const addRoomToUserAccount = async (userId, roomId) =>{
+const addRoomToUserAccount = async (userId, roomId, collectionName) =>{
     try {
         const db = await getDatabaseByName("afroturf");
-        const result = await db.db.collection("users").update(
+        const result = await db.db.collection(collectionName).update(
             {"_id": ObjectId(userId)},
             {$addToSet: {roomDocIdList:{roomDocId:roomId}}}, 
         );
@@ -423,7 +423,7 @@ const addRoomToUserAccount = async (userId, roomId) =>{
         throw new Error(error);
     }
 }
-const createReviewsDoc = async (userId) =>{
+const createReviewsDoc = async (userId, collectionName) =>{
     try {
         const reviewDoc = await schema.createNewReviewDocForm(userId);
         console.log("--createReviewsDoc--");
@@ -434,7 +434,7 @@ const createReviewsDoc = async (userId) =>{
         _id = addedReviewDoc.ok == 1 ?  addedReviewDoc._id: null;
         //if successful
         if(_id !== null){
-            addReviewsDocIdToUserAccount(userId, _id);
+            addReviewsDocIdToUserAccount(userId, _id, collectionName);
             console.log("--added to review doc user account-- "+_id);
         }else{
             console.log("--failed to add user account--");
@@ -446,10 +446,10 @@ const createReviewsDoc = async (userId) =>{
     }
 }
 
-const addReviewsDocIdToUserAccount = async (userId, reviewsDocId) =>{
+const addReviewsDocIdToUserAccount = async (userId, reviewsDocId, collectionName) =>{
     try {
         const db = await getDatabaseByName("afroturf");
-        const result = await db.db.collection("users").update(
+        const result = await db.db.collection(collectionName).update(
             {"_id": ObjectId(userId)},
             {$set: {reviewsDocId:reviewsDocId}}, 
         );
@@ -883,8 +883,34 @@ const commentOnSalonGalleryObject = async (ETag, key, from,salonObjId, comment) 
         throw new Error(err);
     }
 }
+
+
+
+
+/*
+
+ADD SHARED MEDIA QUERIES
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //commentOnStylistGalleryObject("\"a812ce71a5f6b5ed3bb11b8660ab3fae\"", "","5b7d187730d4801a6891ffde","5b7d187730d4801a6891ffde","5b7d240bb22b4e2390677e3c", "DAMN WOW REALLY" )
-commentOnSalonGalleryObject("\"d41d8cd98f00b204e9800998ecf8427e\"","", "5b7d187730d4801a6891ffde","5b7d240bb22b4e2390677e3c", "I HATE THIS PICTURE LOOK AT HIS HAIR")
+//commentOnSalonGalleryObject("\"d41d8cd98f00b204e9800998ecf8427e\"","", "5b7d187730d4801a6891ffde","5b7d240bb22b4e2390677e3c", "I HATE THIS PICTURE LOOK AT HIS HAIR")
 
 //addToSalonGallery("5b7d240bb22b4e2390677e3c", "", "");
 
@@ -899,14 +925,14 @@ commentOnSalonGalleryObject("\"d41d8cd98f00b204e9800998ecf8427e\"","", "5b7d1877
 //followSalon("5b75697a2cdfe55c7858a842", "5b5a37b3fb6fc07c4c24d80d")
 
 
-//createSalon("5b7d187730d4801a6891ffde", "THE NEW GRACE", "Mandeni, 4491", "Bhidla Road", [-30.135888, 31.402572], "hairstyles", 1);
+//createSalon("5b7dd26c21a41857ccfcd7a2", "THE LAB", "GYUB, 1542", "QWERTY Road", [-30.135888, 31.402572], "makeup", 1);
 // addServicesToSalon("5b74167ded4ae581304ec740", "manicures");
 // console.log("------")
 // addsubserviceToSalonServices("5b74167ded4ae581304ec740", "manicures", "colorful", "M1F", 150, "beautiful darkgrey nails that are amazing for summer")
 //createAnyCollection("afroturf", "reviews", schema.reviews);
 //createAnyCollection("afroturf", "rooms", schema.rooms);
 
-//createUser("Cole", "Lane", "password123", "Cole@LaneDi", "+2771645472"); //remove multiple username
+//createUser("Alex", "Blade", "password123", "bladeX", "+2771645472"); //remove multiple username
 
 module.exports = {
     addToSalonGallery,
