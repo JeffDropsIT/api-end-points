@@ -13,8 +13,8 @@ const Router = require("koa-router");
 const awsHandler = require('./aws/aws-handler');
 const uuid = require("uuid");
 const admin = require("./app/db/admin")
-
-
+const userOps = require("./app/db/user-operations");
+const auth = require("./app/db/authentication");
 const router = new Router();
 
 // log requests
@@ -33,48 +33,103 @@ router.get("/", async function(ctx, next) {
 // serve files from ./public
 
 
-
-
-
-
-
-
-
-router.post("/avatar/salon", async function(ctx) {
-  // ignore non-POSTs
-  //   if ('POST' != ctx.method) return await next();
-  
-
-  const file = ctx.request.files.file;
-  console.log(" Tot: "+file.length)
-  if(file.length !== undefined){
-    for (let i = 0 ; i < file.length; i++){
-      const pathF = file[i].path;
-      const reader = await fs.createReadStream(pathF);
-      console.log("file[i].path) "+file[i].path+ " ");
-      const key = await uuid.v4()+"name="+file[i].name.replace(" ", "");
-      //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
-      admin.addToSalonAvatar("5b7d240bb22b4e2390677e3c", key, pathF);
-      const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles", Math.random().toString() + "."+file[i].name.split(".")[1]));
-      reader.pipe(stream);
-      
-    }
-  }else{
-    const pathF = file.path;
-    const reader = await fs.createReadStream(pathF);
-    console.log("file[i].path) "+file.path+ " ");
-    const key = await uuid.v4()+"name="+file.name.replace(" ", "");
-    //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
-    admin.addToSalonAvatar("5b7d240bb22b4e2390677e3c", key, pathF);
-    const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles/", Math.random().toString() + "."+file.name.split(".")[1]));
-    reader.pipe(stream);
-    console.log("DONE")
-  }
-  
-  
-
-  ctx.redirect('/');
+//register
+router.post('/afroturf/user/register'
+, async ctx => {
+    const username = ctx.request.body.username;
+    const password = ctx.request.body.password;
+    const fname = ctx.request.body.fname;
+    const res = await userOps.createUser(fname, "", password, username, "", "");
+    
+    console.log(ctx.request.body.password);
+    ctx.body = res === 200 ? "successfully added "+res : " something went wrong, username might already exist "+res ;
 });
+
+
+//login
+
+router.post('/afroturf/user/login'
+, async ctx => {
+    const username = ctx.request.body.username;
+    const password = ctx.request.body.password;
+    const res = await auth.authenticateUser(username,password);
+    
+    console.log(ctx.request.body.password);
+    ctx.body = res.res === 200 ? "successfully authenticated "+res.res+"\n\n\n\n user: \n" +JSON.stringify(res.user) : " something went wrong, incorrect username/password  "+res ;
+});
+
+//edit a user
+
+router.post('/afroturf/user/edit/profile', async ctx => {
+  console.log(ctx.request.body);
+  const res = await userOps.updateUser(ctx.request.body, ctx.request.body._id);
+});
+
+
+//create salon api/afroturf/create/salon
+
+//edit salon details api/afroturf/salon/edit/profile
+
+//favourite salon api/afroturf/user/favorite/salon
+
+//write review api/afroturf/user/review/salon
+
+//write message api/afroturf/user/message/room
+ 
+//book a salon api/afroturf/user/book/service/salon (geneic booking)
+
+//book a stylist api/afroturf/user/book/service/salon/stylist  (specific booking)
+
+//apply to a salon as stylist api/afroturf/user/apply/salon
+
+//respond to application api/afroturf/user/applications/status
+
+//respond to booking api/afroturf/salon/applications/status
+
+
+
+
+
+
+
+
+
+
+// router.post("/avatar/salon", async function(ctx) {
+//   // ignore non-POSTs
+//   //   if ('POST' != ctx.method) return await next();
+  
+
+//   const file = ctx.request.files.file;
+//   console.log(" Tot: "+file.length)
+//   if(file.length !== undefined){
+//     for (let i = 0 ; i < file.length; i++){
+//       const pathF = file[i].path;
+//       const reader = await fs.createReadStream(pathF);
+//       console.log("file[i].path) "+file[i].path+ " ");
+//       const key = await uuid.v4()+"name="+file[i].name.replace(" ", "");
+//       //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
+//       admin.addToSalonAvatar("5b7d240bb22b4e2390677e3c", key, pathF);
+//       const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles", Math.random().toString() + "."+file[i].name.split(".")[1]));
+//       reader.pipe(stream);
+      
+//     }
+//   }else{
+//     const pathF = file.path;
+//     const reader = await fs.createReadStream(pathF);
+//     console.log("file[i].path) "+file.path+ " ");
+//     const key = await uuid.v4()+"name="+file.name.replace(" ", "");
+//     //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
+//     admin.addToSalonAvatar("5b7d240bb22b4e2390677e3c", key, pathF);
+//     const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles/", Math.random().toString() + "."+file.name.split(".")[1]));
+//     reader.pipe(stream);
+//     console.log("DONE")
+//   }
+  
+  
+
+//   ctx.redirect('/');
+// });
 
 
 
@@ -84,116 +139,116 @@ router.post("/avatar/salon", async function(ctx) {
 
 app.use(serve(path.join(__dirname, '/public')));
 
-// handle uploads
-router.post("/gallery/stylist", async function(ctx) {
-  // ignore non-POSTs
-  //   if ('POST' != ctx.method) return await next();
+// // handle uploads
+// router.post("/gallery/stylist", async function(ctx) {
+//   // ignore non-POSTs
+//   //   if ('POST' != ctx.method) return await next();
   
 
-  const file = ctx.request.files.file;
-  console.log(" Tot: "+file.length)
-  if(file.length !== undefined){
-    for (let i = 0 ; i < file.length; i++){
-      const pathF = file[i].path;
-      const reader = await fs.createReadStream(pathF);
-      console.log("file[i].path) "+file[i].path+ " ");
-      const key = await uuid.v4()+"name="+file[i].name.replace(" ", "");
-      //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
-      admin.addToStylistGallery("5b7d187730d4801a6891ffde","5b7d240bb22b4e2390677e3c", key, pathF);
-      const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles", Math.random().toString() + "."+file[i].name.split(".")[1]));
-      reader.pipe(stream);
+//   const file = ctx.request.files.file;
+//   console.log(" Tot: "+file.length)
+//   if(file.length !== undefined){
+//     for (let i = 0 ; i < file.length; i++){
+//       const pathF = file[i].path;
+//       const reader = await fs.createReadStream(pathF);
+//       console.log("file[i].path) "+file[i].path+ " ");
+//       const key = await uuid.v4()+"name="+file[i].name.replace(" ", "");
+//       //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
+//       admin.addToStylistGallery("5b7d187730d4801a6891ffde","5b7d240bb22b4e2390677e3c", key, pathF);
+//       const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles", Math.random().toString() + "."+file[i].name.split(".")[1]));
+//       reader.pipe(stream);
       
-    }
-  }else{
-    const pathF = file.path;
-    const reader = await fs.createReadStream(pathF);
-    console.log("file[i].path) "+file.path+ " ");
-    const key = await uuid.v4()+"name="+file.name.replace(" ", "");
-    //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
-    admin.addToStylistGallery("5b7d187730d4801a6891ffde","5b7d240bb22b4e2390677e3c", key, pathF);
-    const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles", Math.random().toString() + "."+file.name.split(".")[1]));
-    reader.pipe(stream);
-    console.log("DONE")
-  }
+//     }
+//   }else{
+//     const pathF = file.path;
+//     const reader = await fs.createReadStream(pathF);
+//     console.log("file[i].path) "+file.path+ " ");
+//     const key = await uuid.v4()+"name="+file.name.replace(" ", "");
+//     //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
+//     admin.addToStylistGallery("5b7d187730d4801a6891ffde","5b7d240bb22b4e2390677e3c", key, pathF);
+//     const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles", Math.random().toString() + "."+file.name.split(".")[1]));
+//     reader.pipe(stream);
+//     console.log("DONE")
+//   }
   
   
 
-  ctx.redirect('/');
-});
+//   ctx.redirect('/');
+// });
 
 
-router.post("/avatar/user", async function(ctx) {
-  // ignore non-POSTs
-  //   if ('POST' != ctx.method) return await next();
+// router.post("/avatar/user", async function(ctx) {
+//   // ignore non-POSTs
+//   //   if ('POST' != ctx.method) return await next();
   
 
-  const file = ctx.request.files.file;
-  console.log(" Tot: "+file.length)
-  if(file.length !== undefined){
-    for (let i = 0 ; i < file.length; i++){
-      const pathF = file[i].path;
-      const reader = await fs.createReadStream(pathF);
-      console.log("file[i].path) "+file[i].path+ " ");
-      const key = await uuid.v4()+"name="+file[i].name.replace(" ", "");
-      //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
-      admin.addToUserAvatar("5b7d187730d4801a6891ffde", key, pathF);
-      const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles", Math.random().toString() + "."+file[i].name.split(".")[1]));
-      reader.pipe(stream);
+//   const file = ctx.request.files.file;
+//   console.log(" Tot: "+file.length)
+//   if(file.length !== undefined){
+//     for (let i = 0 ; i < file.length; i++){
+//       const pathF = file[i].path;
+//       const reader = await fs.createReadStream(pathF);
+//       console.log("file[i].path) "+file[i].path+ " ");
+//       const key = await uuid.v4()+"name="+file[i].name.replace(" ", "");
+//       //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
+//       admin.addToUserAvatar("5b7d187730d4801a6891ffde", key, pathF);
+//       const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles", Math.random().toString() + "."+file[i].name.split(".")[1]));
+//       reader.pipe(stream);
       
-    }
-  }else{
-    const pathF = file.path;
-    const reader = await fs.createReadStream(pathF);
-    console.log("file[i].path) "+file.path+ " ");
-    const key = await uuid.v4()+"name="+file.name.replace(" ", "");
-    //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
-    admin.addToUserAvatar("5b7d187730d4801a6891ffde", key, pathF);
-    const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles/", Math.random().toString() + "."+file.name.split(".")[1]));
-    reader.pipe(stream);
-    console.log("DONE")
-  }
+//     }
+//   }else{
+//     const pathF = file.path;
+//     const reader = await fs.createReadStream(pathF);
+//     console.log("file[i].path) "+file.path+ " ");
+//     const key = await uuid.v4()+"name="+file.name.replace(" ", "");
+//     //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
+//     admin.addToUserAvatar("5b7d187730d4801a6891ffde", key, pathF);
+//     const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles/", Math.random().toString() + "."+file.name.split(".")[1]));
+//     reader.pipe(stream);
+//     console.log("DONE")
+//   }
   
   
 
-  ctx.redirect('/');
-});
+//   ctx.redirect('/');
+// });
 
 
-router.post("/gallery", async function(ctx) {
-  // ignore non-POSTs
-  //   if ('POST' != ctx.method) return await next();
+// router.post("/gallery", async function(ctx) {
+//   // ignore non-POSTs
+//   //   if ('POST' != ctx.method) return await next();
   
 
-  const file = ctx.request.files.file;
-  console.log(" Tot: "+file.length)
-  if(file.length !== undefined){
-    for (let i = 0 ; i < file.length; i++){
-      const pathF = file[i].path;
-      const reader = await fs.createReadStream(pathF);
-      console.log("file[i].path) "+file[i].path+ " ");
-      const key = await uuid.v4()+"name="+file[i].name.replace(" ", "");
-      //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
-      admin.addToSalonGallery("5b7d240bb22b4e2390677e3c", key, pathF);
-      const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/", Math.random().toString() + "."+file[i].name.split(".")[1]));
-      reader.pipe(stream);
+//   const file = ctx.request.files.file;
+//   console.log(" Tot: "+file.length)
+//   if(file.length !== undefined){
+//     for (let i = 0 ; i < file.length; i++){
+//       const pathF = file[i].path;
+//       const reader = await fs.createReadStream(pathF);
+//       console.log("file[i].path) "+file[i].path+ " ");
+//       const key = await uuid.v4()+"name="+file[i].name.replace(" ", "");
+//       //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
+//       admin.addToSalonGallery("5b7d240bb22b4e2390677e3c", key, pathF);
+//       const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/", Math.random().toString() + "."+file[i].name.split(".")[1]));
+//       reader.pipe(stream);
       
-    }
-  }else{
-    const pathF = file.path;
-    const reader = await fs.createReadStream(pathF);
-    console.log("file[i].path) "+file.path+ " ");
-      const key = await uuid.v4()+"name="+file.name.replace(" ", "");
-      //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
-      admin.addToSalonGallery("5b7d240bb22b4e2390677e3c", key, pathF);
-      const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/", Math.random().toString() + "."+file.name.split(".")[1]));
-      reader.pipe(stream);
-      console.log("DONE")
-  }
+//     }
+//   }else{
+//     const pathF = file.path;
+//     const reader = await fs.createReadStream(pathF);
+//     console.log("file[i].path) "+file.path+ " ");
+//       const key = await uuid.v4()+"name="+file.name.replace(" ", "");
+//       //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
+//       admin.addToSalonGallery("5b7d240bb22b4e2390677e3c", key, pathF);
+//       const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/", Math.random().toString() + "."+file.name.split(".")[1]));
+//       reader.pipe(stream);
+//       console.log("DONE")
+//   }
   
   
 
-  ctx.redirect('/');
-});
+//   ctx.redirect('/');
+// });
 
 app.use(router.routes());
 app.use(router.allowedMethods());
