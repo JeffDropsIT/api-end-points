@@ -65,27 +65,56 @@ router.post('/afroturf/user/edit/profile', async ctx => {
   const res = await userOps.updateUser(ctx.request.body, ctx.request.body._id);
 });
 
-
-//create salon api/afroturf/create/salon
-
-//edit salon details api/afroturf/salon/edit/profile
-
-//favourite salon api/afroturf/user/favorite/salon
-
-//write review api/afroturf/user/review/salon
-
-//write message api/afroturf/user/message/room
- 
-//book a salon api/afroturf/user/book/service/salon (geneic booking)
-
+//create salon /afroturf/user/profile/create/salon
+router.post('/afroturf/user/profile/create/salon', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.createSalon(ctx.request.body, ctx.request.body._id);
+});
+//edit salon details /afroturf/user/profile/edit/salon/dashboard
+router.post('/afroturf/user/profile/edit/salon/dashboard', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.createSalon(ctx.request.body, ctx.request.body._id);
+});
+//favourite salon /afroturf/user/profile/salon/id/favorite
+router.post('/afroturf/user/profile/salon/id/favorite', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.addToFavorite(ctx.request.body, ctx.request.body._id);
+});
+//write review /afroturf/user/profile/salon/id/favorite
+router.post('/afroturf/user/profile/salon/id/review', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.writeReview(ctx.request.body, ctx.request.body._id);
+});
+//write message /afroturf/user/profile/messages/room'
+router.post('/afroturf/user/profile/messages/room', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.sendMessage(ctx.request.body, ctx.request.body._id);
+});
+//book a salon /afroturf/user/profile/bookings/salon/id (geneic booking)
+router.post('/afroturf/user/profile/bookings/salon/service/id', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.bookSalon(ctx.request.body, ctx.request.body._id);
+});
 //book a stylist api/afroturf/user/book/service/salon/stylist  (specific booking)
-
+router.post('/afroturf/user/profile/bookings/salon/service/stylist ', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.bookSalonStylist(ctx.request.body, ctx.request.body._id);
+});
 //apply to a salon as stylist api/afroturf/user/apply/salon
-
-//respond to application api/afroturf/user/applications/status
-
+router.post('/afroturf/user/profile/apply/salon', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.applyAsStylist(ctx.request.body, ctx.request.body._id);
+});
+//respond to application api/afroturf/user/profile/applications/status
+router.post('api/afroturf/user/profile/applications/status', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.respondToApplication(ctx.request.body, ctx.request.body._id);
+});
 //respond to booking api/afroturf/salon/applications/status
-
+router.post('api/afroturf/user/profile/applications/status', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.respondToApplication(ctx.request.body, ctx.request.body._id);
+});
 
 
 
