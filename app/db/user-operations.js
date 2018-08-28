@@ -53,9 +53,9 @@ const updateUser = async (userData, userId) =>{
 
 
 
-const followSalon = async (userId, salonObjId) =>{
+const followSalon = async (ctx) =>{
     try {
-        
+        const userId = ctx.query.userId, salonObjId = ctx.query.salonObjId;
         const db = await generic.getDatabaseByName("afroturf");
         const result = await db.db.collection("users").update(
             {$and: [{"_id": ObjectId(userId)}, {"following.salonObjId":{$ne:salonObjId}}]},
@@ -74,7 +74,8 @@ const followSalon = async (userId, salonObjId) =>{
         throw new Error(error);
     }
 }
-const sendMessage = async (payload, from, type, roomDocId) =>{
+const sendMessage = async (ctx) =>{
+    const payload = ctx.query.payload, from = ctx.query.from, roomDocId = ctx.query.roomDocId, type = parseInt(ctx.query.type);
     let messageId = await counters.getNextMessageCount(roomDocId);
     messageId = messageId.toString();
     try {
@@ -100,7 +101,9 @@ const sendMessage = async (payload, from, type, roomDocId) =>{
 
 }
 
-const sendReview = async (payload, from, rating, to) =>{
+const sendReview = async (ctx) =>{
+    console.log("sendReview")
+    const payload = ctx.query.payload, from = ctx.query.from, to = ctx.query.to, rating = parseInt(ctx.query.rating);
     let reviewIdIn = await counters.getNextReviewInCount(to);
     reviewIdIn = reviewIdIn.toString();
     let reviewIdOut = await counters.getNextReviewOutCount(from);
@@ -139,10 +142,11 @@ const sendReview = async (payload, from, rating, to) =>{
 
 }
 
-//simple tests
-//createUser("Larry", "Robertson", "afroturf", "Larryking", "+27716396363", "");
 
 module.exports = {
     createUser,
-    updateUser
+    updateUser,
+    followSalon,
+    sendReview,
+    sendMessage,
 }

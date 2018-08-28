@@ -14,6 +14,8 @@ const awsHandler = require('./aws/aws-handler');
 const uuid = require("uuid");
 const admin = require("./app/db/admin")
 const userOps = require("./app/db/user-operations");
+const salonOps = require("./app/db/salon-operations");
+const stylistOps = require("./app/db/stylist-operations");
 const auth = require("./app/db/authentication");
 const router = new Router();
 
@@ -63,32 +65,43 @@ router.post('/afroturf/user/login'
 router.post('/afroturf/user/edit/profile', async ctx => {
   console.log(ctx.request.body);
   const res = await userOps.updateUser(ctx.request.body, ctx.request.body._id);
+  ctx.body = res === 200 ? "successfully edited user " : "Failed to edit user";
 });
 
 //create salon /afroturf/user/profile/create/salon
 router.post('/afroturf/user/profile/create/salon', async ctx => {
   console.log(ctx.request.body);
-  const res = await salonOps.createSalon(ctx.request.body, ctx.request.body._id);
+  const body = ctx.request.body;
+  const name = body.name, address = body.address, street = address.split(",")[1], coordinates = [parseFloat(body.latitude), parseFloat(body.longitude)], sName = "haircuts", hiring = 1;
+  const userId = "5b7e8e21d59eae1de05d6984";
+  console.log(name)
+  const res = await salonOps.createSalon(userId, name, address, street, coordinates, sName, hiring);
+  ctx.body = res === 200 ? "successfully created salon " : "Failed to add salon";
 });
+
+
 //edit salon details /afroturf/user/profile/edit/salon/dashboard
 router.post('/afroturf/user/profile/edit/salon/dashboard', async ctx => {
   console.log(ctx.request.body);
-  const res = await salonOps.createSalon(ctx.request.body, ctx.request.body._id);
+  const res = await salonOps.updateSalon(ctx);
 });
 //favourite salon /afroturf/user/profile/salon/id/favorite
-router.post('/afroturf/user/profile/salon/id/favorite', async ctx => {
-  console.log(ctx.request.body);
-  const res = await salonOps.addToFavorite(ctx.request.body, ctx.request.body._id);
+router.get('/afroturf/user/profile/salon/:id/follow', async ctx => {
+  
+  const res = await userOps.followSalon(ctx);
+  ctx.body = res;
 });
 //write review /afroturf/user/profile/salon/id/favorite
-router.post('/afroturf/user/profile/salon/id/review', async ctx => {
+router.get('/afroturf/user/profile/salon/id/review', async ctx => {
   console.log(ctx.request.body);
-  const res = await salonOps.writeReview(ctx.request.body, ctx.request.body._id);
+  const res = await userOps.sendReview(ctx);
+  ctx.body = res;
 });
 //write message /afroturf/user/profile/messages/room'
-router.post('/afroturf/user/profile/messages/room', async ctx => {
+router.get('/afroturf/user/profile/messages/room', async ctx => {
   console.log(ctx.request.body);
-  const res = await salonOps.sendMessage(ctx.request.body, ctx.request.body._id);
+  const res = await userOps.sendMessage(ctx);
+  ctx.body = res;
 });
 //book a salon /afroturf/user/profile/bookings/salon/id (geneic booking)
 router.post('/afroturf/user/profile/salon/service/bookings', async ctx => {
@@ -101,17 +114,19 @@ router.post('/afroturf/user/profile/salon/service/stylist/bookings ', async ctx 
   const res = await salonOps.bookSalonStylist(ctx.request.body, ctx.request.body._id);
 });
 //apply to a salon as stylist api/afroturf/user/apply/salon
-router.post('/afroturf/user/profile/salon/apply', async ctx => {
-  console.log(ctx.request.body);
-  const res = await salonOps.applyAsStylist(ctx.request.body, ctx.request.body._id);
+router.get('/afroturf/user/profile/salon/apply', async ctx => {
+  console.log(ctx.query.userId);
+  console.log(ctx.query.salonObjId);
+  const res = await stylistOps.applyAsStylist(ctx);
+  ctx.body = res;
 });
 //respond to application api/afroturf/user/profile/applications/status
-router.post('api/afroturf/user/profile/salon/dashboard/applications/status', async ctx => {
-  console.log(ctx.request.body);
-  const res = await salonOps.respondToApplication(ctx.request.body, ctx.request.body._id);
+router.get('/afroturf/user/profile/salon/dashboard/applications/status', async ctx => {
+  const res = await salonOps.acceptStylistRequest(ctx);
+  ctx.body = res;
 });
 //respond to booking api/afroturf/salon/salon/dashboard/bookings/status
-router.post('api/afroturf/user/profile/salon/dashboard/bookings/status', async ctx => {
+router.post('/afroturf/user/profile/salon/dashboard/bookings/status', async ctx => {
   console.log(ctx.request.body);
   const res = await salonOps.respondToApplication(ctx.request.body, ctx.request.body._id);
 });
