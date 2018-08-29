@@ -141,6 +141,119 @@ const users = {
 
 };
 
+const orders = {
+    bsonType: "object",
+    properties:{
+        salonObjId:{
+            bsonType: "string",
+            description: "must be a string and is required"
+        },
+        stylistOrders: {
+            bsonType:"array",
+            items:{
+                bsonType: "object",
+                properties:{
+                    orderId:{
+                        bsonType: "string",
+                        description: "must be a string and is required"
+                    },
+                    timeSlot:{
+                        bsonType: "date",
+                        description: "must be a string and is required"
+                    },
+                    item:{
+                        bsonType: "string",
+                        description: "must be a string and is required"
+                    },
+                    code:{
+                        bsonType: "string",
+                        description: "must be a string and is required"
+                    },
+                    price:{
+                        bsonType: "float",
+                        description: "must be a string and is required"
+                    },
+                    description:{
+                        bsonType: "string",
+                        description: "must be a string and is required"
+                    },
+                    assigned:{
+                        bsonType: "boolean",
+                        description: "must be a string and is required"
+                    },
+                    assignedTo:{
+                        bsonType: "string",
+                        description: "must be a string and is required"
+                    },
+                    approved:{
+                        bsonType: "boolean",
+                        description: "must be a string and is required"
+                    },
+                    cancelled:{
+                        bsonType: "string",
+                        description: "must be a string and is required"
+                    },
+                    created: {
+                        bsonType: "date",
+                        description: "must be a date and is required"
+                    }
+                }
+            }
+        },
+        salonOrders: {
+            bsonType:"array",
+            items:{
+                bsonType: "object",
+                properties:{
+                    orderId:{
+                        bsonType: "string",
+                        description: "must be a string and is required"
+                    },
+                    item:{
+                        bsonType: "string",
+                        description: "must be a string and is required"
+                    },
+                    code:{
+                        bsonType: "string",
+                        description: "must be a string and is required"
+                    },
+                    timeSlot:{
+                        bsonType: "date",
+                        description: "must be a string and is required"
+                    },
+                    price:{
+                        bsonType: "float",
+                        description: "must be a string and is required"
+                    },
+                    description:{
+                        bsonType: "string",
+                        description: "must be a string and is required"
+                    },
+                    assigned:{
+                        bsonType: "boolean",
+                        description: "must be a string and is required"
+                    },
+                    assignedTo:{
+                        bsonType: "string",
+                        description: "must be a string and is required"
+                    },
+                    approved:{
+                        bsonType: "boolean",
+                        description: "must be a string and is required"
+                    },
+                    cancelled:{
+                        bsonType: "string",
+                        description: "must be a string and is required"
+                    },
+                    created: {
+                        bsonType: "date",
+                        description: "must be a date and is required"
+                    }
+                }
+            }
+        }
+    }
+}
 
 const salons = {
     bsonType: "object",
@@ -663,6 +776,80 @@ const reviews = {
 
 //templates
 
+
+
+
+
+const createNewOrder = async (salonObjId) =>{
+    const form = {
+        salonObjId: salonObjId,
+        stylistOrders: [],
+        salonOrders: []
+    }
+    return form;
+}
+
+const salonOrder = async (data) =>{
+    const form = {
+        orderId: data.orderId,
+        customerId: data.customerId,
+        item: data.serviceName,
+        code: data.code,
+        created: new Date(),
+        price: data.price,
+        description: data.description,
+        status: "pending",
+        assigned: false,
+        assignedTo: null,
+        approved: false,
+        available:false,
+        cancelled: false,
+        timeSlot: data.timeSlot
+    }
+    return form;
+}
+const booking = async data => {
+    const form = {
+        orderId: data.orderId,
+        customerId: data.customerId,
+        item: data.serviceName,
+        code: data.code,
+        created: new Date(),
+        price: data.price,
+        description: data.description,
+        status: "pending",
+        assigned: true,
+        assignedTo: data.assignedTo,
+        approved: false,
+        cancelled: false,
+        available: false,
+        timeSlot: data.timeSlot
+    }
+    return form;
+}
+const stylistOrder = async (data) =>{
+    const form = {
+        orderId: data.orderId,
+        customerId: data.customerId,
+        item: data.serviceName,
+        code: data.code,
+        created: new Date(),
+        price: data.price,
+        description: data.description,
+        status: "pending",
+        assigned: true,
+        assignedTo: data.assignedTo,
+        approved: false,
+        cancelled: false,
+        available: false,
+        timeSlot: data.timeSlot
+    }
+    return form;
+}
+
+
+
+
 const gallaryEntry = (fileType, views, key, caption) => {
     const form = {
         "fileType": fileType,
@@ -882,6 +1069,10 @@ module.exports = {
     createNewMessageForm,
     createNewMemberForm,
     gallaryEntry,
-    commentEntry
+    commentEntry,
+    createNewOrder,
+    salonOrder,
+    booking,
+    stylistOrder,
 
 }

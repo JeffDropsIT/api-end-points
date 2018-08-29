@@ -26,7 +26,8 @@ const createSalon = async (userId, name, address, street, coordinates, sName, hi
         //if successful
         if(_id !== null){
             addSalonToUserAccount(userId, _id, hiring, salonId);
-            console.log("Creating users chat room. . .and reviewsDoc")
+            console.log("Creating users chat room. . .and reviewsDoc");
+            createOrderDoc(userId, _id)
             generic.createNewUsersPrivateChatRoom(_id, name, "salons");
             awsHandler.createUserDefaultBucket(name).then(p => updateSalon({bucketName: p}, _id));
             generic.createReviewsDoc(_id, "salons");
@@ -44,6 +45,50 @@ const createSalon = async (userId, name, address, street, coordinates, sName, hi
     
  
 
+}
+//addtosalonOrders
+//addtostylistOrders
+const createOrderDoc = async (userId, salonObjId) => {
+    //get currect user
+   
+    console.log("--createOrderDoc--");
+    const data = await schema.createNewOrder(salonObjId);
+    console.log(data);
+
+        //add this to users db
+    console.log("--createOrderDoc--");
+
+    let _id;
+    
+    const addedSalon = await generic.insertIntoCollection("afroturf", "orders",data);
+    _id = addedSalon.ok == 1 ?  addedSalon._id: null;
+
+
+    //if successful
+    if(_id !== null){
+        addOrderDocToUserAccount(userId, _id);
+        return 200;
+    }else{
+        console.log("--failed to add owner account orders Doc--");
+        return -1
+    }
+    
+}
+const addOrderDocToUserAccount = async (userId, orderDocId) => {
+    //get currect user
+    console.log("--addOrderDocToUserAccount--");
+    try{
+        const db = await generic.getDatabaseByName("afroturf");
+        const result = await db.db.collection("users").update(
+            {"_id": ObjectId(userId)},
+            {$set: {orderDoc:orderDocId}}, 
+        );
+        db.connection.close();
+        console.log(result.result.ok, result.result.nModified);
+    return  result.result.ok, result.result.nModified;
+    }catch(err){
+        throw new Error(err);
+    }
 }
 
 const addSalonToUserAccount = async (userId, salonObjId, hiring, salonId) => {
@@ -225,7 +270,7 @@ const getUser = async (userId)=>{
     }
 }
 
-
+createSalon("5b7dd26c21a41857ccfcd7a2", "JEFFDOWNTOWN", "Pretoria, 0083, The Red Street", "The red Street", [32.212121,21.12313], "Haircuts", 1)
 module.exports ={
     createSalon,
     updateSalon,
