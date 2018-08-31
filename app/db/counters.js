@@ -138,11 +138,39 @@ const getNextSequenceValue = async (sequenceName, collectionIndex) => {
     }
     };
 
-
+const getOrderNumber = async(orderId, orderFor)=>{
+    console.log("OrderId: ", orderId)
+    try {
+        const db = await generic.getDatabaseByName("afroturf");
+        let result = await db.db.collection("orders").aggregate([
+            { $match: { _id: ObjectId(orderId) } },
+            {$project:{count:{$size: orderFor}}}
+        ]);
+        
+        result = await result.toArray();
+        if(!empty(result)){
+            console.log("DATA IS THERE. . . ")
+            console.log(result)
+            let count = JSON.parse(JSON.stringify(result[0]));
+            db.connection.close();
+            return count.count + 1;
+        }else{
+            console.log("STYLIST PRESENT. . .")
+            let count = JSON.parse(JSON.stringify(result));
+            db.connection.close();
+            console.log(count);
+            if(count === NaN) {return 1;}else return 1;
+        }
+    } catch (error) {
+        console.log("failed to getNextMessageCount Count")
+        throw new Error(error);
+    }
+}
 module.exports = {
     getNextMessageCount,
     getNextReviewOutCount,
     getNextStylistInCount,
     getNextReviewInCount,
-    getNextSequenceValue
+    getNextSequenceValue,
+    getOrderNumber,
 }
