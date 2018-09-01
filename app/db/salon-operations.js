@@ -99,18 +99,18 @@ const addtosalonOrders = async(userId, salonObjId) => {
     //look up salon owner
     const orderDocObj = await getOrderSalonDoc(salonObjId);
     const data = {
-        orderId: "salon-"+await counters.getOrderNumber(orderDocObj.orderDoc,"$salonOrders"),
         customerId: userId,
         serviceName: "haircuts",
         salonObjId:salonObjId,
         code: "F23M",
         price: 100,
+        paymentStatus: "POA",
         description: "Faded haircut :)",
         timeSlot: new Date('August 30, 2018 19:15:30')
     }
     console.log("--addtosalonOrders--");
-    const salonOrder = await schema.salonOrder(data);
-    const res = await addBookingUserAccount(userId, data);
+    const salonOrder = await schema.salonOrder(data, orderDocObj.orderDoc);
+    const res = await addBookingUserAccount(userId, salonOrder);
     if(res.ok!==1 && res.nModified!==1){
         console.log(401 + "Failed to add booking to user account");
         return 401 + "Failed to add booking to user account"
@@ -245,24 +245,22 @@ const addBookingUserAccount = async(userId, data) =>{
     }
 
 }
-
 const addtostylistOrders = async(userId, salonObjId) => {
     //look up salon owner
     const orderDocObj = await getOrderSalonDoc(salonObjId);
     const data = {
-        orderId: "stylist-"+ await counters.getOrderNumber(orderDocObj.orderDoc,"$stylistOrders"),
         customerId: userId,
         serviceName: "haircuts",
         code: "F23M",
         price: 100,
         salonObjId:salonObjId,
-        assignedTo: "stylistIdGoesHere",
+        assignedTo: "5b7e9b1495e2e31ef888b64d",
         description: "Faded haircut :)",
         timeSlot: new Date('August 30, 2018 19:15:30')
     }
     console.log("--addtosalonOrders--");
-    const salonOrder = await schema.stylistOrder(data);
-    const res = await addBookingUserAccount(userId, data);
+    const salonOrder = await schema.stylistOrder(data, orderDocObj.orderDoc);
+    const res = await addBookingUserAccount(userId, salonOrder);
     if(res.ok!==1 && res.nModified!==1){
         console.log(401 + "Failed to add booking to user account");
         return 401 + "Failed to add booking to user account"
@@ -275,6 +273,12 @@ const addtostylistOrders = async(userId, salonObjId) => {
                 {"_id": ObjectId(orderDocObj.orderDoc)},
                 {$addToSet: {stylistOrders:salonOrder}}, 
             );
+            const result3 = await db.db.collection("users").update({
+                $and:[{"_id": ObjectId(data.assignedTo)}]},
+                {$addToSet: {stylistBookings:salonOrder}}
+            );
+            db.connection.close();
+            console.log(result3.result.ok, result3.result.nModified);
             db.connection.close();
             console.log(result.result.ok, result.result.nModified);
         return  result.result.ok, result.result.nModified;
@@ -285,7 +289,7 @@ const addtostylistOrders = async(userId, salonObjId) => {
 
 }
 //test
-//addtosalonOrders("5b7e8d6291de652110e648ca","5b8902930548d434f87ad900");
+//addtostylistOrders("5b7e8d6291de652110e648ca","5b8902930548d434f87ad900");
 
 const getOrderByOrderNumber = async(orderNumber, salonObjId) =>{
     const db = await generic.getDatabaseByName("afroturf");
@@ -318,30 +322,148 @@ const getOrderByOrderNumber = async(orderNumber, salonObjId) =>{
 //test
 //getOrderByOrderNumber("stylist-1","5b8902930548d434f87ad900");
 
+
+const getBookedTimeSlotForStylist = async(stylistId, date) =>{
+    const db = await generic.getDatabaseByName("afroturf");
+    const salonCursor = await db.db.collection("users").aggregate([
+        {$match : {$or:[{"stylistBookings.assignedTo": stylistId}, {"_id": ObjectId(stylistId)}]}},
+        {
+            $project: {
+                timeSlot:{
+                    $filter: {
+                        input: "$stylistBookings",
+                        as: "this",
+                        cond:{$and : [{$eq : ["$$this.assignedTo",stylistId ]}, {$gte:["$$this.timeSlot", new Date(date)]}]}
+                     }
+                }
+             }
+        }
+    ])
+    const salon = await salonCursor.toArray();
+    
+    if(!empty(salon)){
+        console.log("OrderByNumber. . . ")
+        console.log(salon)
+        let count = JSON.parse(JSON.stringify(salon));
+        db.connection.close();        
+        return count;
+    }
+    db.connection.close();
+}
+
+
+//test
+//getBookedTimeSlotForStylist("5b7e9b1495e2e31ef888b64d","August 31, 2018 15:00:00")
+
+
+const getBookedTimeSlotForSalon = async(salonObjId, date) =>{
+    const db = await generic.getDatabaseByName("afroturf");
+    const salonCursor = await db.db.collection("orders").aggregate([
+        {$match : {$or:[{"salonOrders.salonObjId": salonObjId}]}},
+        {
+            $project: {
+                timeSlot:{
+                    $filter: {
+                        input: "$salonOrders",
+                        as: "this",
+                        cond:{$and : [{$eq : ["$$this.salonObjId",salonObjId ]}, {$gte:["$$this.timeSlot", new Date(date)]}]}
+                     }
+                }
+             }
+        }
+    ])
+    const salon = await salonCursor.toArray();
+    
+    if(!empty(salon)){
+        console.log("OrderByNumber. . . ")
+        console.log(salon)
+        let count = JSON.parse(JSON.stringify(salon));
+        db.connection.close();        
+        return count;
+    }else{
+        console.log("NO such salon")
+    }
+    db.connection.close();
+}
+
+
+//test
+//getBookedTimeSlotForSalon("5b8902930548d434f87ad900", "August 10, 2018 15:00:00")
 const acceptOrder = async (data) =>{
 
 
     console.log("--acceptOrder--");
     try{
-        const db = await generic.getDatabaseByName("afroturf");
-        const result = await db.db.collection("orders").updateOne(
-            { "salonObjId": data.salonObjId,salonOrders:{$elemMatch :{"orderId": data.orderId}}},
-            {$set: {"salonOrders.$":data}}, 
-        );
-        console.log(result.result.ok, result.result.nModified);
-        const res = { ok: result.result.ok, nModified:result.result.nModified};
-
-        if(res.ok === 1 && res.nModified === 1){
-            const result2 = await db.db.collection("users").updateOne(
-                { "booking.salonObjId": data.salonObjId,booking:{$elemMatch :{"orderId": data.orderId}}},
-                {$set: {booking:data}}, 
+        
+        if(data.orderId.includes("salon")){
+            console.log("accepting a salon order");
+            const db = await generic.getDatabaseByName("afroturf");
+            const result = await db.db.collection("orders").update({
+                $and:[{"salonOrders.salonObjId": data.salonObjId}, {"salonOrders.orderId": data.orderId}]},
+                {$set: {"salonOrders.$[order].status":data.status, "salonOrders.$[order].assigned":data.assigned, 
+                    "salonOrders.$[order].assignedTo":data.assignedTo,  "salonOrders.$[order].approved":data.approved, 
+                    "salonOrders.$[order].available":data.available,  "salonOrders.$[order].cancelled":data.cancelled, 
+                    "salonOrders.$[order].timeSlot":new Date(data.timeSlot), "salonOrders.$[order].paymentStatus":data.paymentStatus, "salonOrders.$[order].modified":new Date()}},
+                {arrayFilters: [{$and: [{"order.salonObjId": data.salonObjId}, {"order.orderId": data.orderId}]}], multi : true } 
             );
-            db.connection.close();
-            console.log(result2.result.ok, result2.result.nModified);
-            return  { ok: result2.result.ok, nModified:result2.result.nModified};
+        
+            console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
+            const res = { ok: result.result.ok, nModified:result.result.nModified};
+            
+            if(res.ok === 1 && res.nModified === 1){
+                const result2 = await db.db.collection("users").update({
+                    $and:[{"booking.salonObjId": data.salonObjId}, {"booking.orderId": data.orderId}]},
+                    {$set: {"booking.$[order].status":data.status, "booking.$[order].assigned":data.assigned, 
+                        "booking.$[order].assignedTo":data.assignedTo,  "booking.$[order].approved":data.approved, 
+                        "booking.$[order].available":data.available,  "booking.$[order].cancelled":data.cancelled, 
+                        "booking.$[order].timeSlot":new Date(data.timeSlot), "booking.$[order].modified":new Date()}},
+                    {arrayFilters: [{$and: [{"order.salonObjId": data.salonObjId}, {"order.orderId": data.orderId}]}], multi : true } 
+                );
+                db.connection.close();
+                console.log(result2.result.ok, result2.result.nModified);
+                return  { ok: result2.result.ok, nModified:result2.result.nModified};
 
+            }
+            db.connection.close();
+        }else{
+            console.log("accepting a stylist order");
+            const db = await generic.getDatabaseByName("afroturf");
+            const result = await db.db.collection("orders").update({
+                $and:[{"stylistOrders.salonObjId": data.salonObjId}, {"stylistOrders.orderId": data.orderId}]},
+                {$set: {"stylistOrders.$[order].status":data.status, "stylistOrders.$[order].assigned":data.assigned, 
+                    "stylistOrders.$[order].assignedTo":data.assignedTo,  "stylistOrders.$[order].approved":data.approved, 
+                    "stylistOrders.$[order].available":data.available,  "stylistOrders.$[order].cancelled":data.cancelled, 
+                    "stylistOrders.$[order].timeSlot":new Date(data.timeSlot), "stylistOrders.$[order].modified":new Date()}},
+                {arrayFilters: [{$and: [{"order.salonObjId": data.salonObjId}, {"order.orderId": data.orderId}]}], multi : true } 
+            );
+        
+            console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
+            const res = { ok: result.result.ok, nModified:result.result.nModified};
+            
+            if(res.ok === 1 && res.nModified === 1){
+                const result2 = await db.db.collection("users").update({
+                    $and:[{"booking.salonObjId": data.salonObjId}, {"booking.orderId": data.orderId}]},
+                    {$set: {"booking.$[order].status":data.status, "booking.$[order].assigned":data.assigned, 
+                        "booking.$[order].assignedTo":data.assignedTo,  "booking.$[order].approved":data.approved, 
+                        "booking.$[order].available":data.available,  "booking.$[order].cancelled":data.cancelled, 
+                        "booking.$[order].timeSlot":new Date(data.timeSlot), "booking.$[order].paymentStatus":data.paymentStatus, "booking.$[order].modified":new Date()}},
+                    {arrayFilters: [{$and: [{"order.salonObjId": data.salonObjId}, {"order.orderId": data.orderId}]}], multi : true } 
+                );
+                const result3 = await db.db.collection("users").update({
+                    $and:[{"_id": ObjectId(data.assignedTo)}]},
+                    {$set: {"stylistBookings.$[order].status":data.status, "stylistBookings.$[order].assigned":data.assigned, 
+                        "stylistBookings.$[order].assignedTo":data.assignedTo,  "stylistBookings.$[order].approved":data.approved, 
+                        "stylistBookings.$[order].available":data.available,  "stylistBookings.$[order].cancelled":data.cancelled, 
+                        "stylistBookings.$[order].timeSlot":new Date(data.timeSlot), "stylistBookings.$[order].paymentStatus":data.paymentStatus, "stylistBookings.$[order].modified":new Date()}},
+                    {arrayFilters: [{$and: [{"order.salonObjId": data.salonObjId}, {"order.orderId": data.orderId}]}], multi : true } 
+                );
+            
+                db.connection.close();
+                console.log(result3.result.ok, result3.result.nModified);
+                return  { ok: result3.result.ok, nModified:result3.result.nModified};
+
+            }
         }
-        db.connection.close();
     
     }catch(err){
         throw new Error(err);
@@ -350,21 +472,21 @@ const acceptOrder = async (data) =>{
 }
 //test
 const data  = {
-    "orderId": "salon-3",
+    "orderId": "stylist-6",
     "customerId": "data.customerId",
     "item": "haircuts",
     "code": "F23M",
     "price": 100,
     "salonObjId": "5b8902930548d434f87ad900",
     "description": "Faded haircut :)",
-    "status": "pending",
+    "status": "active",
     "assigned": true,
-    "assignedTo": "to some stylist",
+    "assignedTo": "5b7e9b1495e2e31ef888b64d",
     "approved": true,
     "available": true,
     "cancelled": false
 }
-acceptOrder(data);
+//acceptOrder(data);
 
 
 const getStylistOrdersByDateAfter = async(salonObjId, date) => {
@@ -668,11 +790,23 @@ const acceptStylistRequest = async (ctx) => {
 }
 
 
-
+const getUser = async (userId)=>{
+    try{
+        const db = await generic.getDatabaseByName("afroturf");
+        const result = await db.db.collection("users").aggregate([{$match: {_id:ObjectId(userId)} }, {$project: {username:1, fname:1, reviewsDocId:1, gender:1, avatar:1}}]).toArray();
+        db.connection.close();
+       console.log("getUser done")
+        return  JSON.parse(JSON.stringify(result));
+    }catch(err){
+        throw new Error(err);
+    }
+}
 const addStylistToSalon = async (userId, salonObjId) => {
+    console.log("addStylistToSalon")
     const stylist = await getUser(userId);
-    //console.log()
+    console.log("passed getUser ", stylist)
     let stylistId = await counters.getNextStylistInCount(salonObjId);
+    console.log("passed getUser ", stylistId)
     stylistId = stylistId;
 
     if(stylist == "[]"){
@@ -686,6 +820,10 @@ const addStylistToSalon = async (userId, salonObjId) => {
             $and:[{_id: ObjectId(salonObjId)}, {"stylists.userId": {$ne: stylist[0]._id}}]},
             {$addToSet: {stylists:schema.stylistJSON(stylist[0], stylistId, stylist[0]._id )}}
         );
+        const result2 = await db.db.collection("users").update({
+            $and:[{_id: ObjectId(userId)}]},
+            {$set: {stylistStatus:{status:"active", salonObjId:salonObjId}, stylistBookings:[]}}
+        );
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
         return  {ok : result.result.ok, nModified:  result.result.nModified}
@@ -694,17 +832,8 @@ const addStylistToSalon = async (userId, salonObjId) => {
     }
 }
 
-const getUser = async (userId)=>{
-    try{
-        const db = await generic.getDatabaseByName("afroturf");
-        const result = await db.db.collection("users").aggregate([{$match: {_id:ObjectId(userId)} }, {$project: {username:1, fname:1, reviewsDocId:1, gender:1, avatar:1}}]).toArray();
-        db.connection.close();
-       
-        return  JSON.parse(JSON.stringify(result));
-    }catch(err){
-        throw new Error(err);
-    }
-}
+//test
+//addStylistToSalon("5b7e9b1495e2e31ef888b64d", "5b8902930548d434f87ad900");
 
 //createSalon("5b7dd26c21a41857ccfcd7a2", "THE MILE", "Pretoria, 0083, The Blue Street", "The BLue Street", [31.212121,22.12313], "manicure", 1)
 module.exports ={

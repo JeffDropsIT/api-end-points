@@ -14,9 +14,10 @@ const getDatabaseByName = async(name) =>{
     
     if(db.isConnected){
       console.log("connected");
+      
+    return { db: db.db("afroturf"), connection: db};
     }
     
-    return { db: db.db(name), connection: db};
   }catch (err) {
     throw new Error(err);
   }

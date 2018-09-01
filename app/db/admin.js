@@ -130,7 +130,7 @@ const applyAsStylist = async (userId, salonObjId) => {
     try{
         const db = await getDatabaseByName("afroturf");
         const result = await db.db.collection("users").update({
-            $and:[{"salons.salonObjId": ObjectId(salonObjId)}, {"salons.role": "salonOwner"}, { "salons.hiring": 1 }, {"stylistRequests.userId": {$ne: ObjectId(userId)}}]},
+            $and:[{"salons.salonObjId": salonObjId}, {"salons.role": "salonOwner"}, { "salons.hiring": 1 }, {"stylistRequests.userId": {$ne: userId}}]},
             {$addToSet: {stylistRequests:data}}, 
         );
         db.connection.close();
@@ -147,7 +147,7 @@ const acceptStylistRequest = async (userId, salonObjId, status, permissions) => 
         const result = await db.db.collection("users").update({
             $and:[{"salons.salonObjId": ObjectId(salonObjId)}, {"salons.role": "salonOwner"}]},
             {$set: {"stylistRequests.$[stylist].status":status, "stylistRequests.$[stylist].stylistAccess":permissions}},
-            {arrayFilters: [{$and: [{"stylist.salonObjId": ObjectId(salonObjId)}, {"stylist.userId": ObjectId(userId)}]}], multi : true } 
+            {arrayFilters: [{$and: [{"stylist.salonObjId": salonObjId}, {"stylist.userId": userId}]}], multi : true } 
         );
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);

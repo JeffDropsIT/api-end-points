@@ -1,10 +1,31 @@
-const generic = require("./generic");
+const mongodb = require("mongodb");
+let mongodbClient = mongodb.MongoClient;
 const empty = require("is-empty");
 const ObjectId = require('mongodb').ObjectID;
 //these can be one method which takes in the _id, collectionName and array <identifier>
+
+
+//get database by Name
+const getDatabaseByName = async(name) =>{
+    let url = 'mongodb://admin:password123@ds153841.mlab.com:53841/afroturf';
+  try{
+    
+    const db = await mongodbClient.connect(url,{useNewUrlParser : true});
+    
+    if(db.isConnected){
+      console.log("connected");
+      
+    return { db: db.db("afroturf"), connection: db};
+    }
+    
+  }catch (err) {
+    throw new Error(err);
+  }
+};
 const getNextStylistInCount = async(salonId) =>{
     try {
-        const db = await generic.getDatabaseByName("afroturf");
+        console.log("getNextStylistInCount ")
+        const db = await getDatabaseByName("afroturf");
         let result = await db.db.collection("salons").aggregate([
             { $match: { _id: ObjectId(salonId) } },
             {$project:{count:{$size: "$stylists"}}}
@@ -35,7 +56,7 @@ const getNextStylistInCount = async(salonId) =>{
 
 const getNextReviewOutCount = async(userId) =>{
     try {
-        const db = await generic.getDatabaseByName("afroturf");
+        const db = await getDatabaseByName("afroturf");
         let result = await db.db.collection("reviews").aggregate([
             { $match: { "userId": userId } },
             {$project:{count:{$size: "$reviewsOut"}}}
@@ -65,7 +86,7 @@ const getNextReviewOutCount = async(userId) =>{
 
 const getNextReviewInCount = async(userId) =>{
     try {
-        const db = await generic.getDatabaseByName("afroturf");
+        const db = await getDatabaseByName("afroturf");
         let result = await db.db.collection("reviews").aggregate([
             { $match: { "userId": userId } },
             {$project:{count:{$size: "$reviewsIn"}}}
@@ -95,7 +116,7 @@ const getNextReviewInCount = async(userId) =>{
 
 const getNextMessageCount = async(roomDocId) =>{
     try {
-        const db = await generic.getDatabaseByName("afroturf");
+        const db = await getDatabaseByName("afroturf");
         let result = await db.db.collection("rooms").aggregate([
             { $match: { _id: ObjectId(roomDocId) } },
             {$project:{count:{$size: "$messages"}}}
@@ -123,7 +144,7 @@ const getNextMessageCount = async(roomDocId) =>{
 }
 const getNextSequenceValue = async (sequenceName, collectionIndex) => {
     try {
-        const db = await generic.getDatabaseByName("afroturf");
+        const db = await getDatabaseByName("afroturf");
         const sequenceDocument = await db.db.collection(collectionIndex).findAndModify(
             {_id: sequenceName },
             [],
@@ -141,7 +162,7 @@ const getNextSequenceValue = async (sequenceName, collectionIndex) => {
 const getOrderNumber = async(orderId, orderFor)=>{
     console.log("OrderId: ", orderId)
     try {
-        const db = await generic.getDatabaseByName("afroturf");
+        const db = await getDatabaseByName("afroturf");
         let result = await db.db.collection("orders").aggregate([
             { $match: { _id: ObjectId(orderId) } },
             {$project:{count:{$size: orderFor}}}
@@ -166,6 +187,8 @@ const getOrderNumber = async(orderId, orderFor)=>{
         throw new Error(error);
     }
 }
+
+
 module.exports = {
     getNextMessageCount,
     getNextReviewOutCount,

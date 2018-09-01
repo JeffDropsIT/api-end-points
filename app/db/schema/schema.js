@@ -1,4 +1,4 @@
-
+const counters = require("../counters");
 
 const users = {
     bsonType: "object",
@@ -789,9 +789,9 @@ const createNewOrder = async (salonObjId) =>{
     return form;
 }
 
-const salonOrder = async (data) =>{
+const salonOrder = async (data, orderDoc) =>{
     const form = {
-        orderId: data.orderId,
+        orderId: "salon-"+await counters.getOrderNumber(orderDoc,"$salonOrders"),
         customerId: data.customerId,
         item: data.serviceName,
         code: data.code,
@@ -804,6 +804,7 @@ const salonOrder = async (data) =>{
         assignedTo: null,
         approved: false,
         available:false,
+        paymentStatus: data.paymentStatus,
         cancelled: false,
         timeSlot: data.timeSlot
     }
@@ -820,6 +821,7 @@ const booking = async data => {
         salonObjId:data.salonObjId,
         description: data.description,
         status: "pending",
+        paymentStatus: data.paymentStatus,
         assigned: true,
         assignedTo: data.assignedTo,
         approved: false,
@@ -829,15 +831,16 @@ const booking = async data => {
     }
     return form;
 }
-const stylistOrder = async (data) =>{
+const stylistOrder = async (data, orderDoc) =>{
     const form = {
-        orderId: data.orderId,
+        orderId: "stylist-"+await counters.getOrderNumber(orderDoc,"$salonOrders"),
         customerId: data.customerId,
         item: data.serviceName,
         code: data.code,
         salonObjId:data.salonObjId,
         created: new Date(),
         price: data.price,
+        paymentStatus: data.paymentStatus,
         description: data.description,
         status: "pending",
         assigned: true,

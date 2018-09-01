@@ -1,7 +1,7 @@
 const AWS = require("aws-sdk");
 
-//AWS.config.loadFromPath('../../aws/AwsConfig.json'); 
-AWS.config.loadFromPath('C:\\Users\\Developer\\Desktop\\outkast\\api-end-points\\aws\\AwsConfig.json'); 
+AWS.config.loadFromPath('../../aws/AwsConfig.json'); 
+//AWS.config.loadFromPath('C:\\Users\\Developer\\Desktop\\outkast\\api-end-points\\aws\\AwsConfig.json'); 
 const s3 = new AWS.S3({apiVersion: '2006-03-01'});
 const uuid = require("uuid");
 const fs = require('fs');
