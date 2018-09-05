@@ -141,6 +141,68 @@ router.post('/afroturf/user/profile/salon/dashboard/bookings/status', async ctx 
 
 
 
+//get available time slots /afroturf/user/profile/salon/bookings/available
+router.get('/afroturf/user/profile/salon/bookings/unavailable', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.getBookedTimeSlotForSalon(ctx);
+  ctx.body = res;
+});
+
+//get available orders after /afroturf/user/profile/salon/bookings/available
+router.get('/afroturf/user/profile/salon/bookings/stylist/unavailable', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.getBookedTimeSlotForStylist(ctx);
+  ctx.body = res;
+});
+
+//get available orders after /afroturf/user/profile/salon/bookings/available
+router.get('/afroturf/user/profile/salon/bookings/stylist/duration/unavailable-btwn', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.getStylistOrdersByDateBetween(ctx);
+  ctx.body = res;
+});
+//get available orders after /afroturf/user/profile/salon/bookings/available
+router.get('/afroturf/user/profile/salon/bookings/duration/unavailable-btwn', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.getSalonOrdersByDateBetween(ctx);
+  ctx.body = res;
+});
+
+//get available orders after /afroturf/user/profile/salon/bookings/available
+router.get('/afroturf/user/profile/salon/bookings/stylist/duration/unavailable-b', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.getStylistOrdersByDateBefore(ctx);
+  ctx.body = res;
+});
+
+//get available orders after /afroturf/user/profile/salon/bookings/available
+router.get('/afroturf/user/profile/salon/bookings/duration/unavailable-b', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.getSalonOrdersByDateBefore(ctx);
+  ctx.body = res;
+});
+
+//get available orders after /afroturf/user/profile/salon/bookings/available
+router.get('/afroturf/user/profile/salon/bookings/:orderNumber', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.getOrderByOrderNumber(ctx);
+  ctx.body = res;
+});
+
+
+//get bookings doc /afroturf/user/profile/salon/bookings/available
+router.get('/afroturf/user/profile/salon/bookings', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.getSalonOrdersDoc(ctx);
+  ctx.body = res;
+});
+
+
+
+
+
+
+
 
 
 

@@ -163,7 +163,7 @@ const getSalonOrdersByDateAfter = async(ctx) => {
 
 
 const getSalonOrdersByDateBefore = async(ctx) => {
-    const salonObjId = ctx.query.salonObjId, date = ctx.query.date;
+    const salonObjId = ctx.query.salonObjId, date = ctx.query.before;
     const db = await generic.getDatabaseByName("afroturf");
     const salonCursor = await db.db.collection("orders").aggregate([
         {$match : {"salonObjId": salonObjId}},
@@ -282,8 +282,10 @@ const addtostylistOrders = async(ctx) => {
 //test
 //addtostylistOrders("5b7e8d6291de652110e648ca","5b8902930548d434f87ad900");
 
-const getOrderByOrderNumber = async(orderNumber, salonObjId) =>{
+const getOrderByOrderNumber = async(ctx) =>{
+    const orderNumber = ctx.params.orderNumber, salonObjId = ctx.query.salonObjId;
     const db = await generic.getDatabaseByName("afroturf");
+    console.log("getOrderByOrderNumber ", orderNumber);
     const salonCursor = await db.db.collection("orders").aggregate([
         {$match : {$and : [{salonObjId:salonObjId},{$or:[{"salonOrders.orderId": orderNumber}, {"stylistOrders.orderId": orderNumber}]}]}},
         {
@@ -291,6 +293,13 @@ const getOrderByOrderNumber = async(orderNumber, salonObjId) =>{
                 stylistOrders:{
                     $filter: {
                         input: "$stylistOrders",
+                        as: "this",
+                        cond:{$and : [{$eq : ["$$this.orderId",orderNumber ]}]}
+                     }
+                },
+                salonOrders:{
+                    $filter: {
+                        input: "$salonOrders",
                         as: "this",
                         cond:{$and : [{$eq : ["$$this.orderId",orderNumber ]}]}
                      }
@@ -314,7 +323,9 @@ const getOrderByOrderNumber = async(orderNumber, salonObjId) =>{
 //getOrderByOrderNumber("stylist-1","5b8902930548d434f87ad900");
 
 
-const getBookedTimeSlotForStylist = async(stylistId, date) =>{
+const getBookedTimeSlotForStylist = async(ctx) =>{
+    
+    const stylistId = ctx.query.salonObjId, date = ctx.query.date;
     const db = await generic.getDatabaseByName("afroturf");
     const salonCursor = await db.db.collection("users").aggregate([
         {$match : {$or:[{"stylistBookings.assignedTo": stylistId}, {"_id": ObjectId(stylistId)}]}},
@@ -347,13 +358,15 @@ const getBookedTimeSlotForStylist = async(stylistId, date) =>{
 //getBookedTimeSlotForStylist("5b7e9b1495e2e31ef888b64d","August 31, 2018 15:00:00")
 
 
-const getBookedTimeSlotForSalon = async(salonObjId, date) =>{
+const getBookedTimeSlotForSalon = async(ctx) =>{
+    const salonObjId = ctx.query.salonObjId, date = ctx.query.after;
+    console.log(date)
     const db = await generic.getDatabaseByName("afroturf");
     const salonCursor = await db.db.collection("orders").aggregate([
         {$match : {$or:[{"salonOrders.salonObjId": salonObjId}]}},
         {
             $project: {
-                timeSlot:{
+                salonOrders:{
                     $filter: {
                         input: "$salonOrders",
                         as: "this",
@@ -368,7 +381,7 @@ const getBookedTimeSlotForSalon = async(salonObjId, date) =>{
     if(!empty(salon)){
         console.log("OrderByNumber. . . ")
         console.log(salon)
-        let count = JSON.parse(JSON.stringify(salon));
+        let count = JSON.parse(JSON.stringify(salon))[0];
         db.connection.close();        
         return count;
     }else{
@@ -484,7 +497,8 @@ const data  = {
 //acceptOrder(data);
 
 
-const getStylistOrdersByDateAfter = async(salonObjId, date) => {
+const getStylistOrdersByDateAfter = async(ctx) => {
+    const salonObjId = ctx.query.salonObjId, date = ctx.query.after;
     const db = await generic.getDatabaseByName("afroturf");
     const salonCursor = await db.db.collection("orders").aggregate([
         {$match : {"salonObjId": salonObjId}},
@@ -515,7 +529,8 @@ const getStylistOrdersByDateAfter = async(salonObjId, date) => {
 //getStylistOrdersByDateAfter("5b8902930548d434f87ad900", "August 29, 2019 19:15:30")
 
 
-const getStylistOrdersByDateBefore = async(salonObjId, date) => {
+const getStylistOrdersByDateBefore = async(ctx) => {
+    const salonObjId = ctx.query.salonObjId, date = ctx.query.before;
     const db = await generic.getDatabaseByName("afroturf");
     const salonCursor = await db.db.collection("orders").aggregate([
         {$match : {"salonObjId": salonObjId}},
@@ -546,7 +561,8 @@ const getStylistOrdersByDateBefore = async(salonObjId, date) => {
 //getStylistOrdersByDateBefore("5b8902930548d434f87ad900", "August 10, 2018 19:15:30")
 
 
-const getStylistOrdersByDateBetween = async(salonObjId, date, date2) => {
+const getStylistOrdersByDateBetween = async(ctx) => {
+    const salonObjId = ctx.query.salonObjId, date = ctx.query.after, date2 = ctx.query.before;
     const db = await generic.getDatabaseByName("afroturf");
     const salonCursor = await db.db.collection("orders").aggregate([
         {$match : {"salonObjId": salonObjId}},
@@ -576,7 +592,8 @@ const getStylistOrdersByDateBetween = async(salonObjId, date, date2) => {
 //test
 //getStylistOrdersByDateBetween("5b8902930548d434f87ad900", "August 30, 2018 18:15:30", "August 31, 2018 20:15:30" )
 
-const getSalonOrdersDoc = async(salonObjId) => {
+const getSalonOrdersDoc = async(ctx) => {
+    const salonObjId = ctx.query.salonObjId;
     const db = await generic.getDatabaseByName("afroturf");
     const salonCursor = await db.db.collection("orders").aggregate([
         {$match : {"salonObjId": salonObjId}},
@@ -864,4 +881,14 @@ module.exports ={
     addtosalonOrders,
     addtostylistOrders,
     acceptOrder,
+    getBookedTimeSlotForSalon,
+    getStylistOrdersByDateAfter,
+    getBookedTimeSlotForStylist,
+    getSalonOrdersDoc,
+    getStylistOrdersByDateBetween,
+    getSalonOrdersByDateBetween,
+    getStylistOrdersByDateBefore,
+    getSalonOrdersByDateBefore,
+    getOrderByOrderNumber
+
 }
