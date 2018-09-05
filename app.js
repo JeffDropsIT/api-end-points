@@ -140,6 +140,7 @@ router.post('/afroturf/user/profile/salon/dashboard/bookings/status', async ctx 
 });
 
 
+//not added to table
 
 //get available time slots /afroturf/user/profile/salon/bookings/available
 router.get('/afroturf/user/profile/salon/bookings/unavailable', async ctx => {
