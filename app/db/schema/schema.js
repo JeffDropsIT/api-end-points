@@ -792,7 +792,7 @@ const createNewOrder = async (salonObjId) =>{
 const salonOrder = async (data, orderDoc) =>{
     const form = {
         orderId: "salon-"+await counters.getOrderNumber(orderDoc,"$salonOrders"),
-        customerId: data.customerId,
+        customerId: data.userId,
         item: data.serviceName,
         code: data.code,
         created: new Date(),
@@ -806,14 +806,14 @@ const salonOrder = async (data, orderDoc) =>{
         available:false,
         paymentStatus: data.paymentStatus,
         cancelled: false,
-        timeSlot: data.timeSlot
+        timeSlot: new Date(data.timeSlot)
     }
     return form;
 }
 const booking = async data => {
     const form = {
         orderId: data.orderId,
-        customerId: data.customerId,
+        customerId: data.userId,
         item: data.serviceName,
         code: data.code,
         created: new Date(),
@@ -834,7 +834,7 @@ const booking = async data => {
 const stylistOrder = async (data, orderDoc) =>{
     const form = {
         orderId: "stylist-"+await counters.getOrderNumber(orderDoc,"$salonOrders"),
-        customerId: data.customerId,
+        customerId: data.userId,
         item: data.serviceName,
         code: data.code,
         salonObjId:data.salonObjId,
@@ -981,14 +981,14 @@ const stylistJSON =  (data, stylistId, id)=>{
 
 //rooms
 
-const createNewRoomForm = async (roomName, roomStatus, roomType) =>{
+const createNewRoomForm = async (roomName, roomStatus, roomType, members) =>{
     const form = {
         "details":{
             "roomName": roomName,
             "roomStatus": roomStatus, 
         },
         "roomType": roomType,
-        "members": [],
+        "members": members,
         "messages": []
 
     }
@@ -1007,12 +1007,13 @@ const createNewMemberForm = async (status, userId) =>{
 }
 
 
-const createNewMessageForm = async (messageId, payload, from, type) =>{
+const createNewMessageForm = async (messageId, payload, from, to, type) =>{
     const form = {
         "messageId": messageId,
         "payload": payload, 
         "created": new Date(),
         "from": from,
+        "to": to,
         "type": type
 
     }

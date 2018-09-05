@@ -58,13 +58,13 @@ const insertIntoCollection = async (dbName, collectionName, data) =>{
 
 
 
-const createNewUsersPrivateChatRoom = async (userId, username, collectionName) => {
+const createNewUsersPrivateChatRoom = async (collectionName, members) => {
 
         
     try {
         //add this to users db
         //const userData = await getUser(userId);
-        const room = await schema.createNewRoomForm(username, "online", "private");
+        const room = await schema.createNewRoomForm("chat Room", "online", "private", members);
         console.log("--createNewUsersPrivateChatRoom--");
     
         let _id;
@@ -73,8 +73,11 @@ const createNewUsersPrivateChatRoom = async (userId, username, collectionName) =
         _id = addedRoom.ok == 1 ?  addedRoom._id: null;
         //if successful
         if(_id !== null){
-            addRoomToUserAccount(userId, _id, collectionName);
-            console.log("--added to user account-- "+_id);
+            members.forEach(async element =>{
+               await addRoomToUserAccount(element, _id, collectionName);
+               await console.log("--added to user account  userId: "+element+ " roomID: " + _id);
+            });
+            return 1;
         }else{
             console.log("--failed to add owner account--");
             return -1
@@ -117,8 +120,18 @@ const addRoomToUserAccount = async (userId, roomId, collectionName) =>{
             {"_id": ObjectId(userId)},
             {$addToSet: {roomDocIdList:{roomDocId:roomId}}}, 
         );
-        db.connection.close();
         console.log(result.result.ok, result.result.nModified);
+        if(result.result.ok === 1 && result.result.nModified === 0){
+            //check if salonId implement
+            const result2 = await db.db.collection("salons").update(
+            {"_id": ObjectId(userId)},
+            {$addToSet: {roomDocIdList:{roomDocId:roomId}}}, 
+            );
+
+            console.log("salon room id was just added")
+            console.log(result2.result.ok, result2.result.nModified);
+        }
+        db.connection.close();
     return  result.result.ok, result.result.nModified;
     } catch (error) {
         throw new Error(error);

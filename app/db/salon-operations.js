@@ -11,9 +11,13 @@ const empty = require("is-empty");
 
 // CRUD  salon 
 //at least one services is required to create a salon
-const createSalon = async (userId, name, address, street, coordinates, sName, hiring) =>{
+const createSalon = async (ctx) =>{
     try {
             //add this to users db
+        const body = ctx.request.body;
+        const name = body.name, address = body.address, street = address.split(",")[1], coordinates = [parseFloat(body.latitude), parseFloat(body.longitude)], sName = "haircuts", hiring = 1;
+        const userId = body.userId; //"5b7e8e21d59eae1de05d6984";
+        console.log(name)
         console.log("--createSalon--");
         const salonId = await counters.getNextSequenceValue("salonId", "salonIndexes")
         const salon = await schema.createNewSalonForm(salonId,name, address, street, coordinates, sName);
@@ -28,7 +32,7 @@ const createSalon = async (userId, name, address, street, coordinates, sName, hi
             addSalonToUserAccount(userId, _id, hiring, salonId);
             console.log("Creating users chat room. . .and reviewsDoc");
             createOrderDoc(userId, _id)
-            generic.createNewUsersPrivateChatRoom(_id, name, "salons");
+            generic.createNewUsersPrivateChatRoom("salons", [_id]);
             awsHandler.createUserDefaultBucket(name).then(p => updateSalon({bucketName: p}, _id));
             generic.createReviewsDoc(_id, "salons");
             console.log("--added to owner account-- "+_id);
@@ -95,21 +99,13 @@ const getOrderSalonDoc = async (salonObjId) => {
 //getOrderSalonDoc("5b8902930548d434f87ad900");
 
 //addtosalonOrders
-const addtosalonOrders = async(userId, salonObjId) => {
+const addtosalonOrders = async(ctx) => {
     //look up salon owner
+    
+    const userId = ctx.request.body.userId, salonObjId = ctx.request.body.salonObjId;
     const orderDocObj = await getOrderSalonDoc(salonObjId);
-    const data = {
-        customerId: userId,
-        serviceName: "haircuts",
-        salonObjId:salonObjId,
-        code: "F23M",
-        price: 100,
-        paymentStatus: "POA",
-        description: "Faded haircut :)",
-        timeSlot: new Date('August 30, 2018 19:15:30')
-    }
     console.log("--addtosalonOrders--");
-    const salonOrder = await schema.salonOrder(data, orderDocObj.orderDoc);
+    const salonOrder = await schema.salonOrder(ctx.request.body, orderDocObj.orderDoc);
     const res = await addBookingUserAccount(userId, salonOrder);
     if(res.ok!==1 && res.nModified!==1){
         console.log(401 + "Failed to add booking to user account");
@@ -124,7 +120,7 @@ const addtosalonOrders = async(userId, salonObjId) => {
             );
             db.connection.close();
             console.log(result.result.ok, result.result.nModified);
-        return  result.result.ok, result.result.nModified;
+        return  result.result.ok && result.result.nModified === 1 ? 200 : 401;
         }catch(err){
             throw new Error(err);
         }
@@ -134,7 +130,8 @@ const addtosalonOrders = async(userId, salonObjId) => {
 //test
 //addtosalonOrders("5b7e8d6291de652110e648ca","5b8902930548d434f87ad900");
 
-const getSalonOrdersByDateAfter = async(salonObjId, date) => {
+const getSalonOrdersByDateAfter = async(ctx) => {
+    const salonObjId = ctx.query.salonObjId, date = ctx.query.date;
     const db = await generic.getDatabaseByName("afroturf");
     const salonCursor = await db.db.collection("orders").aggregate([
         {$match : {"salonObjId": salonObjId}},
@@ -165,7 +162,8 @@ const getSalonOrdersByDateAfter = async(salonObjId, date) => {
 //getSalonOrdersByDateAfter("5b8902930548d434f87ad900", "August 29, 2018 19:15:30")
 
 
-const getSalonOrdersByDateBefore = async(salonObjId, date) => {
+const getSalonOrdersByDateBefore = async(ctx) => {
+    const salonObjId = ctx.query.salonObjId, date = ctx.query.date;
     const db = await generic.getDatabaseByName("afroturf");
     const salonCursor = await db.db.collection("orders").aggregate([
         {$match : {"salonObjId": salonObjId}},
@@ -196,7 +194,8 @@ const getSalonOrdersByDateBefore = async(salonObjId, date) => {
 //getSalonOrdersByDateBefore("5b8902930548d434f87ad900", "August 31, 2018 19:15:30")
 
 
-const getSalonOrdersByDateBetween = async(salonObjId, date, date2) => {
+const getSalonOrdersByDateBetween = async(ctx) => {
+    const salonObjId = ctx.query.salonObjId, date = ctx.query.after, date2 = ctx.query.before;
     const db = await generic.getDatabaseByName("afroturf");
     const salonCursor = await db.db.collection("orders").aggregate([
         {$match : {"salonObjId": salonObjId}},
@@ -245,21 +244,13 @@ const addBookingUserAccount = async(userId, data) =>{
     }
 
 }
-const addtostylistOrders = async(userId, salonObjId) => {
+const addtostylistOrders = async(ctx) => {
     //look up salon owner
+    const userId = ctx.request.body.userId, salonObjId = ctx.request.body.salonObjId;
     const orderDocObj = await getOrderSalonDoc(salonObjId);
-    const data = {
-        customerId: userId,
-        serviceName: "haircuts",
-        code: "F23M",
-        price: 100,
-        salonObjId:salonObjId,
-        assignedTo: "5b7e9b1495e2e31ef888b64d",
-        description: "Faded haircut :)",
-        timeSlot: new Date('August 30, 2018 19:15:30')
-    }
+
     console.log("--addtosalonOrders--");
-    const salonOrder = await schema.stylistOrder(data, orderDocObj.orderDoc);
+    const salonOrder = await schema.stylistOrder(ctx.request.body, orderDocObj.orderDoc);
     const res = await addBookingUserAccount(userId, salonOrder);
     if(res.ok!==1 && res.nModified!==1){
         console.log(401 + "Failed to add booking to user account");
@@ -274,14 +265,14 @@ const addtostylistOrders = async(userId, salonObjId) => {
                 {$addToSet: {stylistOrders:salonOrder}}, 
             );
             const result3 = await db.db.collection("users").update({
-                $and:[{"_id": ObjectId(data.assignedTo)}]},
+                $and:[{"_id": ObjectId(ctx.request.body.assignedTo)}]},
                 {$addToSet: {stylistBookings:salonOrder}}
             );
             db.connection.close();
             console.log(result3.result.ok, result3.result.nModified);
             db.connection.close();
             console.log(result.result.ok, result.result.nModified);
-        return  result.result.ok, result.result.nModified;
+        return  result.result.ok && result.result.nModified === 1 ? 200 : 401;
         }catch(err){
             throw new Error(err);
         }
@@ -389,9 +380,9 @@ const getBookedTimeSlotForSalon = async(salonObjId, date) =>{
 
 //test
 //getBookedTimeSlotForSalon("5b8902930548d434f87ad900", "August 10, 2018 15:00:00")
-const acceptOrder = async (data) =>{
+const acceptOrder = async (ctx) =>{
 
-
+    const data = ctx.request.body;
     console.log("--acceptOrder--");
     try{
         
@@ -421,7 +412,8 @@ const acceptOrder = async (data) =>{
                 );
                 db.connection.close();
                 console.log(result2.result.ok, result2.result.nModified);
-                return  { ok: result2.result.ok, nModified:result2.result.nModified};
+                const res = { ok: result2.result.ok, nModified:result2.result.nModified};
+                return  res.ok && res.nModified === 1 ? 200 : 401;
 
             }
             db.connection.close();
@@ -460,7 +452,10 @@ const acceptOrder = async (data) =>{
             
                 db.connection.close();
                 console.log(result3.result.ok, result3.result.nModified);
-                return  { ok: result3.result.ok, nModified:result3.result.nModified};
+                
+                const res2 = { ok: result3.result.ok, nModified:result3.result.nModified};
+                return  res2.ok && res2.nModified === 1 ? 200 : 401;
+                
 
             }
         }
@@ -666,11 +661,30 @@ const addSalonToUserAccount = async (userId, salonObjId, hiring, salonId) => {
         throw new Error(err);
     }
 }
-
+const updateSalonContent = async (ctx) =>{
+   //put object to update in a salon
+   try{
+        const salonObjId = ctx.request.body._id.$oid, salonData = ctx.request.body;
+        delete salonData._id;
+        console.log("_Id:  ", salonObjId)
+        const db = await generic.getDatabaseByName("afroturf");
+        const result = await db.db.collection("salons").update(
+            {"_id": ObjectId(salonObjId)},
+            {$set: salonData}
+        );
+        
+        db.connection.close();
+        console.log(result.result.ok, result.result.nModified);
+        const res = {ok: result.result.ok, modified: result.result.nModified};
+        return  res.ok === 1 && res.modified === 1 ? 200 : 401;
+    }catch(err){
+        throw new Error(err);
+    }
+}
 const updateSalon = async (salonData, salonObjId) =>{
     //put object to update in a salon
     try{
-        const salonObjId = ctx.request.salonObjId, salonData = ctx.request.body;
+        //const salonObjId = ctx.request.salonObjId, salonData = ctx.request.body;
         const db = await generic.getDatabaseByName("afroturf");
         const result = await db.db.collection("salons").update(
             {"_id": ObjectId(salonObjId)},
@@ -763,23 +777,24 @@ const addsubserviceToSalonServices = async (salonObjId, serviceName, type, code,
 
 const acceptStylistRequest = async (ctx) => {
     try{
-        const userId = ctx.query.userId, 
-        salonObjId = ctx.query.salonObjId,
-        status = ctx.query.status,
-        permissions = ctx.query.permissions;
+        const userId = ctx.request.body.userId, 
+        salonObjId = ctx.request.body.salonObjId,
+        status = ctx.request.body.status,
+        permissions = ctx.request.body.permissions;
         if(status == undefined || permissions === undefined){return 401 + "status: null or permission: null"}
-
+        const data = await schema.getApplicationJson(userId,salonObjId);
+        data.status = status; data.stylistAccess = permissions
         const db = await generic.getDatabaseByName("afroturf");
         const result = await db.db.collection("users").update({
             $and:[{"salons.salonObjId": salonObjId}, {"salons.role": "salonOwner"}]},
-            {$set: {"stylistRequests.$[stylist].status":status, "stylistRequests.$[stylist].stylistAccess":[permissions]}},
+            {$set: {"stylistRequests.$[stylist].status":status, "stylistRequests.$[stylist].stylistAccess":permissions}},
             {arrayFilters: [{$and: [{"stylist.salonObjId": salonObjId}, {"stylist.userId": userId}]}], multi : true } 
         );
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
         if(result.result.ok === 1 && result.result.nModified === 1){
-            const res = await addStylistToSalon(userId, salonObjId);
-            return  res.ok,res.nModified;
+            const res = await addStylistToSalon(userId, salonObjId, data);
+            return  res.ok && res.nModified === 1 ? 200 : 401;
         }else{
             return  401 + " error accepting";
         }
@@ -801,7 +816,7 @@ const getUser = async (userId)=>{
         throw new Error(err);
     }
 }
-const addStylistToSalon = async (userId, salonObjId) => {
+const addStylistToSalon = async (userId, salonObjId, data) => {
     console.log("addStylistToSalon")
     const stylist = await getUser(userId);
     console.log("passed getUser ", stylist)
@@ -820,10 +835,15 @@ const addStylistToSalon = async (userId, salonObjId) => {
             $and:[{_id: ObjectId(salonObjId)}, {"stylists.userId": {$ne: stylist[0]._id}}]},
             {$addToSet: {stylists:schema.stylistJSON(stylist[0], stylistId, stylist[0]._id )}}
         );
-        const result2 = await db.db.collection("users").update({
-            $and:[{_id: ObjectId(userId)}]},
-            {$set: {stylistStatus:{status:"active", salonObjId:salonObjId}, stylistBookings:[]}}
+        // const result2 = await db.db.collection("users").update({
+        //     $and:[{_id: ObjectId(userId)}]},
+        //     {$set: {stylistStatus:{status:"active", salonObjId:salonObjId}, stylistBookings:[]}}
+        // );
+        const result3 = await db.db.collection("users").update({
+            $and:[{_id: ObjectId(userId)}, {"EmploymentStatus.salonObjId": salonObjId} ]},
+            {$set: {EmploymentStatus:data, stylistBookings:[]}}
         );
+        
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
         return  {ok : result.result.ok, nModified:  result.result.nModified}
@@ -833,11 +853,15 @@ const addStylistToSalon = async (userId, salonObjId) => {
 }
 
 //test
-//addStylistToSalon("5b7e9b1495e2e31ef888b64d", "5b8902930548d434f87ad900");
+//addStylistToSalon("5b8f75f4de5f7e1964ca5137", "5b8f7f7b0e22dc20a4588e27", data2);
 
 //createSalon("5b7dd26c21a41857ccfcd7a2", "THE MILE", "Pretoria, 0083, The Blue Street", "The BLue Street", [31.212121,22.12313], "manicure", 1)
 module.exports ={
     createSalon,
     updateSalon,
-    acceptStylistRequest
+    acceptStylistRequest,
+    updateSalonContent,
+    addtosalonOrders,
+    addtostylistOrders,
+    acceptOrder,
 }

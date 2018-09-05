@@ -4,13 +4,16 @@ const generic = require("./generic");
 const counters = require("./counters");
 const schema = require("./schema/schema");
 const ObjectId = require('mongodb').ObjectID;
+const empty = require("is-empty");
 
 
 
-
-const createUser = async (fname, lname, password, username, phone, email) =>{
+const createUser = async (ctx) =>{
     email = "afroturf@gmail.com"; //default
-    
+
+    const username = ctx.request.body.username;
+    const password = ctx.request.body.password;
+    const fname = ctx.request.body.fname;
     try {
         console.log("--createusers--");
         const status = await generic.checkIfUserNameEmailPhoneExist(username) ;
@@ -28,7 +31,7 @@ const createUser = async (fname, lname, password, username, phone, email) =>{
         _id = result.ok == 1 ?  result._id: null;
         if(_id !==null){
             console.log("Creating users chat room. . .and reviewsDoc :id "+_id)
-            generic.createNewUsersPrivateChatRoom(_id, username, "users");
+            //generic.createNewUsersPrivateChatRoom(_id, username, "users");
             awsHandler.createUserDefaultBucket(fname).then(p => updateUser({bucketName: p}, _id));
             generic.createReviewsDoc(_id, "users");
         }else{
@@ -43,43 +46,94 @@ const createUser = async (fname, lname, password, username, phone, email) =>{
 
 
 
-const updateUser = async (userData, userId) =>{
-
+const updateUser = async (ctx) =>{
+    let userData = ctx.request.body, userId = ctx.request.body._id;
+    delete userData._id;
     console.log("--updateUser--");
-    const result = await generic.updateCollectionDocument("afroturf", "users",userData,userId).then(p => console.log("success "+p));
-    console.log("ok: "+result, "modified: "+ result);
-    return  1;
+    const result = await generic.updateCollectionDocument("afroturf", "users",userData,userId);
+    console.log("ok: "+result.result.ok, "modified: "+ result.result.modified);
+    return  result.result.nModified === 1 && result.result.ok === 1 ? 200 : 401;
 };
 
 
 
 const followSalon = async (ctx) =>{
     try {
-        const userId = ctx.query.userId, salonObjId = ctx.query.salonObjId;
+        const userId = ctx.request.body._id.$oid, salonObjId = ctx.request.body.salonObjId;
+        const id = ctx.params.id;
+        console.log("ID: ", id);
         const db = await generic.getDatabaseByName("afroturf");
         const result = await db.db.collection("users").update(
             {$and: [{"_id": ObjectId(userId)}, {"following.salonObjId":{$ne:salonObjId}}]},
             {$addToSet: {following:{salonObjId:salonObjId}}},
         );
+        if(result.result.ok === 1 && result.result.nModified === 1){
+            console.log("Adding to followers")
+            const result = await db.db.collection("salons").update(
+                {$and: [{"salonId": parseInt(id)}, {"_id": ObjectId(salonObjId)}]},
+                {$addToSet: {followers:{userId:userId}}},
+            );
+        }
         db.connection.close();
         console.log(result.result.ok, result.result.nModified);
-        if(result.result.nModified === 0 && result.result.ok ===1){
-            console.log("failed to insert possible causes salon already present");
+        if(result.result.nModified === 0 && result.result.ok === 1){
+            console.log("failed to insert possible causes salon already following");
             //handle error accordingly
         }
-    return  result.result.ok, result.result.nModified;
+    return result.result.nModified === 1 && result.result.ok === 1 ? 200 : 401;
 
     } catch (error) {
         console.log("failed to followSalon. . .\n salonObjId: "+salonObjId)
         throw new Error(error);
     }
 }
-const sendMessage = async (ctx) =>{
-    const payload = ctx.query.payload, from = ctx.query.from, roomDocId = ctx.query.roomDocId, type = parseInt(ctx.query.type);
-    let messageId = await counters.getNextMessageCount(roomDocId);
-    messageId = messageId.toString();
+const getUsersRoomDocId = async (members) =>{
     try {
-        const message = await schema.createNewMessageForm(messageId, payload, from, type);
+        console.log("getUsersRoomDocId");
+        const db = await generic.getDatabaseByName("afroturf");
+        const result = await db.db.collection("rooms").aggregate([
+            {$match: {$and : [ {"members": { $all: members}}, {"roomType": "private"}]}},
+            {
+            $project: {
+                messages:1, _id: 1
+             }
+            }
+        ]);
+        const resultArray = await result.toArray();
+        const resultJson =  JSON.parse(JSON.stringify(resultArray));
+       // console.log(resultJson[0]);
+        if(!empty(resultJson)){
+            return resultJson;
+        }else{
+            //create room for members
+            console.log("Room for users does not exist");
+            
+            const res = await generic.createNewUsersPrivateChatRoom("users",members);
+            if(res === 1){
+                return await getUsersRoomDocId(members);
+            }
+        }
+        
+    } catch (error) {
+        throw new Error(error);
+    }
+}
+
+
+//test
+//getUsersRoomDocId(["5b8f7f7b0e22dc20a4588e27", "5b8f75f4de5f7e1964ca5137" ]);
+
+const sendMessage = async (ctx) =>{
+     try {
+        const payload = ctx.request.body.payload, from = ctx.request.body.from, to = ctx.request.body.to, type = ctx.request.body.type;
+        let roomDocId = await getUsersRoomDocId([from, to]);
+        console.log("roomDocId 1: ",roomDocId[0]._id);
+        roomDocId = roomDocId[0]._id;
+        let messageId = await counters.getNextMessageCount(roomDocId);
+        messageId = messageId.toString();
+        
+        console.log("roomDocId 2: ",roomDocId);
+        const message = await schema.createNewMessageForm(messageId, payload, from, to, type);
         const db = await generic.getDatabaseByName("afroturf");
         const result = await db.db.collection("rooms").update(
             {$and: [{"_id": ObjectId(roomDocId)}, {"messages.messageId" :{$ne: messageId}} ]},
@@ -91,7 +145,7 @@ const sendMessage = async (ctx) =>{
             console.log("duplicate id present");
             //handle error accordingly
         }
-    return  result.result.ok, result.result.nModified;
+    return result.result.nModified === 1 && result.result.ok === 1 ? 200 : 401;
 
     } catch (error) {
         console.log("failed to sendMessge. . .\n messageId: "+messageId.toString()+" payload: "+payload)
@@ -103,7 +157,7 @@ const sendMessage = async (ctx) =>{
 
 const sendReview = async (ctx) =>{
     console.log("sendReview")
-    const payload = ctx.query.payload, from = ctx.query.from, to = ctx.query.to, rating = parseInt(ctx.query.rating);
+    const payload = ctx.request.body.payload, from = ctx.request.body.from, to = ctx.request.body.to, rating = ctx.request.body.rating;
     let reviewIdIn = await counters.getNextReviewInCount(to);
     reviewIdIn = reviewIdIn.toString();
     let reviewIdOut = await counters.getNextReviewOutCount(from);
@@ -132,7 +186,8 @@ const sendReview = async (ctx) =>{
             console.log("duplicate id present");
             //handle error accordingly
         }
-    return  { ok: result.result.ok, modified: result.result.nModified, ok2: resultOne.result.ok, modified2: resultOne.result.nModified}
+        const res =  { ok: result.result.ok, modified: result.result.nModified, ok2: resultOne.result.ok, modified2: resultOne.result.nModified}
+        return  res.ok && res.ok2 && res.modified && res.modified2 === 1 ? 200 : 401
 
     } catch (error) {
         console.log("failed to sendReview. . .\n sendReview: "+reviewOut.toString())

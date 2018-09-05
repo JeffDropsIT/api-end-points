@@ -29,7 +29,10 @@ const hashPassword = async (password) =>{
     return hash;
 };
 
-const authenticateUser = async (username,password) =>{
+const authenticateUser = async (ctx) =>{
+    
+    const username = ctx.request.body.username;
+    const password = ctx.request.body.password;
     const user = await getUserAuth(username);
     const isPassword = await bcrypt.compareSync(password, user.password);
     if(isPassword){
