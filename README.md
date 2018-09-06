@@ -41,9 +41,9 @@ For more information about using Node.js on Heroku, see these Dev Center article
 ## Afroturf basic RESTful API
 
 
-| ENDPOINTS                                                                  | HTTP VERB       | ACTION                                |
-| :---------------------------------------------------------------------------| :---------------: |: --------------------------------------|
-| /afroturf/user/register                                                    | POST            | Registers user                        |
+| ENDPOINTS                                                                  | HTTP VERB        | ACTION                               |
+| :--------------------------------------------------------------------------| :---------------:|: --------------------------------    |
+| /afroturf/user/register                                                    | POST             | Registers user                       |
 | /afroturf/user/login                                                       | POST            | Login user                            |
 | /afroturf/user/edit/profile                                                | POST            | Edit a user                           |
 | /afroturf/user/profile/create/salon                                        | POST            | Create salon                          |
