@@ -41,12 +41,12 @@ For more information about using Node.js on Heroku, see these Dev Center article
 ## Afroturf basic RESTful API
 
 
-| ENDPOINTS                                                                  | HTTP VERB        | ACTION                               |
-| :--------------------------------------------------------------------------| :---------------:|: --------------------------------: |
-| /afroturf/user/register                                                    | POST             | Registers user                       |
-| /afroturf/user/login                                                       | POST             | Login user                           |
-| /afroturf/user/edit/profile                                                | POST             | Edit a user                          |
-| /afroturf/user/profile/create/salon                                        | POST             | Create salon                         |
+| ENDPOINTS                                                                  | HTTP VERB        | ACTION                           |
+| :--------------------------------------------------------------------------| :---------------:| -------------------------------- |
+| /afroturf/user/register                                                    | POST             | Registers user                   |
+| /afroturf/user/login                                                       | POST             | Login user                       |
+| /afroturf/user/edit/profile                                                | POST             | Edit a user                      |
+| /afroturf/user/profile/create/salon                                        | POST             | Create salon                     |
 | /afroturf/user/profile/edit/salon/dashboard                                | POST             | Edit salon details                   |
 | /afroturf/user/profile/salon/:id/follow                                    | POST             | Follow salon                         |
 | /afroturf/user/profile/salon/:id/review                                    | POST             | Write a review stylist/salon         |
