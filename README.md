@@ -43,20 +43,25 @@ For more information about using Node.js on Heroku, see these Dev Center article
 
 | ENDPOINTS                                                                  | HTTP VERB       | ACTION                                |
 | ---------------------------------------------------------------------------| --------------- | --------------------------------------|
-| /afroturf/user/register                                                    | POST            | registers user                        |
-| /afroturf/user/login                                                       | POST            | login user                            |
-| /afroturf/user/edit/profile                                                | POST            | edit a user                           |
-| /afroturf/user/profile/create/salon                                        | POST            | create salon                          |
-| /afroturf/user/profile/edit/salon/dashboard                                | POST            | edit salon details                    |
-| /afroturf/user/profile/salon/:id/follow                                    | POST            | follow salon                          |
-| /afroturf/user/profile/salon/:id/review                                    | POST            | write a review stylist/salon          |
-| /afroturf/user/profile/messages/room                                       | POST            | send a message to user/stylist/salon  |
-| /afroturf/user/profile/salon/apply                                         | POST            | apply to a salon as stylist           |
-| /afroturf/user/profile/salon/dashboard/applications/status                 | POST            | accept stylist request                |
-| /afroturf/user/profile/salon/service/bookings                              | POST            | book a service in a salon             |
-| /afroturf/user/profile/salon/service/stylist/bookings                      | POST            | book a service by a stylist           |
-| /afroturf/user/profile/salon/dashboard/bookings/status                     | POST            | book a service in a salon             |
-| /afroturf/user/profile/salon/service/bookings                              | POST            | accept booking from stylist/salon     |
+| /afroturf/user/register                                                    | POST            | Registers user                        |
+| /afroturf/user/login                                                       | POST            | Login user                            |
+| /afroturf/user/edit/profile                                                | POST            | Edit a user                           |
+| /afroturf/user/profile/create/salon                                        | POST            | Create salon                          |
+| /afroturf/user/profile/edit/salon/dashboard                                | POST            | Edit salon details                    |
+| /afroturf/user/profile/salon/:id/follow                                    | POST            | Follow salon                          |
+| /afroturf/user/profile/salon/:id/review                                    | POST            | Write a review stylist/salon          |
+| /afroturf/user/profile/messages/room                                       | POST            | Send a message to user/stylist/salon  |
+| /afroturf/user/profile/salon/apply                                         | POST            | Apply to a salon as stylist           |
+| /afroturf/user/profile/salon/dashboard/applications/status                 | POST            | Accept stylist request                |
+| /afroturf/user/profile/salon/service/bookings                              | POST            | Book a service in a salon             |
+| /afroturf/user/profile/salon/service/stylist/bookings                      | POST            | Book a service by a stylist           |
+| /afroturf/user/profile/salon/dashboard/bookings/status                     | POST            | Book a service in a salon             |
+| /afroturf/user/profile/salon/service/bookings                              | POST            | Accept booking from stylist/salon     |
+| /afroturf/user/profile/edit/salon/dashboard/subservices                    | PUT             | Add Subservice To Salon Services|
+| /afroturf/user/profile/edit/salon/dashboard/services                       | PUT             | Add Services To Salon                 |
+| /afroturf/user/profile/edit/salon/dashboard/services/avatar                | PUT             | Add Service Avatar                    |
+| /afroturf/user/profile/edit/salon/dashboard/services                       | PATCH           | Update Service Name                   |
+| /afroturf/user/profile/edit/salon/dashboard/subservices                    | PATCH           | Update Subservice                     |
 | /afroturf/user/profile/salon/bookings                                      | GET             | Returns bookings for a salon          |
 | /afroturf/user/profile/salon/bookings/:orderNumber                         | GET             | Returns booking by order Number       |
 | /afroturf/user/profile/salon/bookings/duration/unavailable-b               | GET             | Returns Salon Orders By Date Before   |
