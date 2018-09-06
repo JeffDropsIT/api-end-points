@@ -42,7 +42,7 @@ For more information about using Node.js on Heroku, see these Dev Center article
 
 
 | ENDPOINTS                                                                  | HTTP VERB        | ACTION                               |
-| :--------------------------------------------------------------------------| :---------------:| :----------------------------------: |
+| :--------------------------------------------------------------------------| :---------------:| :---------------------------------- |
 | /afroturf/user/register                                                    | POST             | Registers user                       |
 | /afroturf/user/login                                                       | POST             | Login user                           |
 | /afroturf/user/edit/profile                                                | POST             | Edit a user                          |
