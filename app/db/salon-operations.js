@@ -733,29 +733,60 @@ const changeAccountStatusSalon = async (salonObjId, status) => {
 }
 // CRUD services i.e manicure, pedicure, massages, makeup and hairstyles
 
-const changeServiceName = async (serviceName, name) =>{
-    //update service
+
+const updateSubservice = async (ctx) => {
+    //later use $unset
+    const salonObjId = ctx.request.body.salonObjId, type = ctx.request.body.type, price = ctx.request.body.price, 
+    description = ctx.request.body.description, url = ctx.request.body.url; code = ctx.request.body.code, serviceName = ctx.request.body.serviceName;
+    console.log("--addServicesToSalon--");
+    try{
+        
+        const db = await generic.getDatabaseByName("afroturf");
+        if(type && description && price && url !== (null || undefined)){
+            
+            const data = schema.createNewSubserviceForm(type, code, price, description, url);
+            console.log("ALL PRESENT 1")
+            
+            const result = await db.db.collection("salons").update(
+                {$and : [{"_id": ObjectId(salonObjId)}]},
+                {$set: {"services.$[subservice].subservices.$[service].price":data.price, "services.$[subservice].subservices.$[service].url":data.url,
+                 "services.$[subservice].subservices.$[service].description":data.description, "services.$[subservice].subservices.$[service].type":data.type}},
+                {arrayFilters: [{$and: [{"subservice._id":serviceName},{"subservice.subservices.code": {$eq:data.code}}]},{"service.code": code}]}
+            );
+            db.connection.close();
+            console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
+            return  result.result.ok &&result.result.nModified === 1 ? 200 : 401;
+            
+        }
+    
+    }catch(err){
+        throw new Error(err);
+    }
+    
+}
+const updateServiceName = async (ctx) => {
+    //later use $unset
+    const salonObjId = ctx.request.body.salonObjId, serviceName = ctx.request.body.serviceName, serviceNameNew = ctx.request.body.serviceNameNew;
+    console.log("--addServicesToSalon--");
     try{
         const db = await generic.getDatabaseByName("afroturf");
         const result = await db.db.collection("salons").update(
-            {$and: [{"_id": ObjectId(salonObjId)}, {"services._id": serviceName}]},
-            {"services.name":name, "services._id":name}
+            {$and: [{"_id": ObjectId(salonObjId)}, {"services.name": serviceName}]},
+            {$set: {"services.$._id":serviceNameNew, "services.$.name": serviceNameNew}}, 
         );
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
-    return  result.result.ok, result.result.nModified;
+    return  result.result.ok &&result.result.nModified === 1 ? 200 : 401;
     }catch(err){
         throw new Error(err);
     }
 
 }
-const deleteService = async (serviceName) => {
-    //later use $unset
-}
 
-const addServicesToSalon = async (salonObjId, serviceName) => {
+const addServicesToSalon = async (ctx) => {
     //check if service already exist if not proceed
     //get currect user
+    const salonObjId = ctx.request.body.salonObjId, serviceName = ctx.request.body.serviceName;
     console.log("--addServicesToSalon--");
     const data = await schema.createNewServicesForm(serviceName);
     try{
@@ -766,16 +797,19 @@ const addServicesToSalon = async (salonObjId, serviceName) => {
         );
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
-    return  result.result.ok, result.result.nModified;
+    return  result.result.ok &&result.result.nModified === 1 ? 200 : 401;
     }catch(err){
         throw new Error(err);
     }
 }
 
-const addsubserviceToSalonServices = async (salonObjId, serviceName, type, code, price, description) => {
+const addsubserviceToSalonServices = async (ctx) => {
     //get currect user
+    const salonObjId = ctx.request.body.salonObjId, 
+    serviceName = ctx.request.body.serviceName, type = ctx.request.body.type, code = ctx.request.body.code,
+    price = ctx.request.body.price, description = ctx.request.body.description, url = ctx.request.body.url;
     console.log("--addsubserviceToSalonServices--");
-    const data = schema.createNewSubserviceForm(type, code, price, description);
+    const data = schema.createNewSubserviceForm(type, code, price, description, url);
     try{
         const db = await generic.getDatabaseByName("afroturf");
         const result = await db.db.collection("salons").update(
@@ -785,13 +819,27 @@ const addsubserviceToSalonServices = async (salonObjId, serviceName, type, code,
         );
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
-    return  result.result.ok, result.result.nModified;
+    return  result.result.ok && result.result.nModified === 1 ? 200 : 401;
     }catch(err){
-        db.connection.close();
         throw new Error(err);
     }
 }
-
+const  addServiceAvatar = async (ctx) => {
+    const salonObjId = ctx.request.body.salonObjId, serviceName = ctx.request.body.serviceName, url = ctx.request.body.url;
+    console.log("--addServicesToSalon--");
+    try{
+        const db = await generic.getDatabaseByName("afroturf");
+        const result = await db.db.collection("salons").update(
+            {$and: [{"_id": ObjectId(salonObjId)}, {"services.name": serviceName}]},
+            {$set: {"services.$.url":url}}, 
+        );
+        db.connection.close();
+        console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
+    return  result.result.ok &&result.result.nModified === 1 ? 200 : 401;
+    }catch(err){
+        throw new Error(err);
+    }
+}
 const acceptStylistRequest = async (ctx) => {
     try{
         const userId = ctx.request.body.userId, 
@@ -889,6 +937,11 @@ module.exports ={
     getSalonOrdersByDateBetween,
     getStylistOrdersByDateBefore,
     getSalonOrdersByDateBefore,
-    getOrderByOrderNumber
+    getOrderByOrderNumber,
+    addsubserviceToSalonServices,
+    addServicesToSalon,
+    updateServiceName,
+    updateSubservice,
+    addServiceAvatar,
 
 }

@@ -200,6 +200,44 @@ router.get('/afroturf/user/profile/salon/bookings', async ctx => {
 
 
 
+//crud salon content
+
+//add subservice To Salon Services /afroturf/user/profile/edit/salon/dashboard
+router.put('/afroturf/user/profile/edit/salon/dashboard/subservices', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.addsubserviceToSalonServices(ctx);
+  ctx.body = res;
+});
+
+//add service To Salon Services /afroturf/user/profile/edit/salon/dashboard
+router.put('/afroturf/user/profile/edit/salon/dashboard/services', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.addServicesToSalon(ctx);
+  ctx.body = res;
+});
+//add service avatar To a Salon service  /afroturf/user/profile/edit/salon/dashboard
+router.put('/afroturf/user/profile/edit/salon/dashboard/services/avatar', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.addServiceAvatar(ctx);
+  ctx.body = res;
+});
+
+//update service name for a salon /afroturf/user/profile/edit/salon/dashboard
+router.patch('/afroturf/user/profile/edit/salon/dashboard/services', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.updateServiceName(ctx);
+  ctx.body = res;
+});
+
+//update service name for a salon /afroturf/user/profile/edit/salon/dashboard
+router.patch('/afroturf/user/profile/edit/salon/dashboard/subservices', async ctx => {
+  console.log(ctx.request.body);
+  const res = await salonOps.updateSubservice(ctx);
+  ctx.body = res;
+});
+
+
+
 
 
 
