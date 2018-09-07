@@ -245,21 +245,21 @@ const servicesFilterLocal = async ctx => {
         
         ctx.body = await salonClient.getServicesByNameTypePriceRangeCodeAndSalonId(userLocation, radius, limit, serviceName, servicetype, price_gte, price_lte, code,salonId);
 
-        return ctx.body;
+        
     
     }else if(location !== undefined && serviceName !== undefined && price_lte !==undefined
         && radius !== undefined && servicetype !== undefined 
         && price_gte !==undefined&& salonId !==undefined){
             console.log("getServicesByNameTypePriceRangeAndSalonId");
             ctx.body = await salonClient.getServicesByNameTypePriceRangeAndSalonId(userLocation, radius, limit, serviceName, servicetype, price_gte, price_lte,salonId);
-            return ctx.body;
+            
         
     }else if(location !== undefined && serviceName !== undefined && price_lte !==undefined
         && radius !== undefined 
         && price_gte !==undefined&& salonId !==undefined){
             console.log("getServicesByNamePriceRangeAndSalonId");
             ctx.body = await salonClient.getServicesByNamePriceRangeAndSalonId(userLocation, radius, limit, serviceName, price_gte, price_lte,salonId);
-            return ctx.body;
+            
         
     }else if(location !== undefined && serviceName !== undefined 
         && radius !== undefined && salonId !== undefined
@@ -269,7 +269,6 @@ const servicesFilterLocal = async ctx => {
             console.log(servicetype+" getServicesByNameTypeSalonId - "+serviceName)
             ctx.body = await salonClient.getServicesByNameTypeSalonId(userLocation, radius, limit, serviceName, servicetype, salonId);
 
-            return ctx.body;
     }else if(location !== undefined && serviceName !== undefined 
         && radius !== undefined && salonId !== undefined
         && limit !== undefined){
@@ -284,7 +283,7 @@ const servicesFilterLocal = async ctx => {
             
             console.log(servicetype+" getServicesSalonId - "+serviceName)
             ctx.body = await salonClient.getServicesSalonId(userLocation, radius, limit, salonId);
-            return ctx.body;
+         
     }
 
 
@@ -327,7 +326,6 @@ const servicesFilterGlobal = async ctx => {
         console.log("getServicesByNameTypePriceRangeCode ---345 ");
         ctx.body = await salonClient.getServicesByNameTypePriceRangeCode(userLocation, radius, limit, serviceName, servicetype, price_gte, price_lte, code);
 
-        return ctx.body;
     
     }else if(location !== undefined && serviceName !== undefined && price_lte !==undefined
         && radius !== undefined && servicetype !== undefined 
@@ -341,7 +339,7 @@ const servicesFilterGlobal = async ctx => {
         && price_gte !==undefined){
             console.log("getServicesByNamePriceRange -- 348");
             ctx.body = await salonClient.getServicesByNamePriceRange(userLocation, radius, limit, serviceName, price_gte, price_lte);
-            return ctx.body;
+            
         
     }else if(location !== undefined && serviceName !== undefined 
         && radius !== undefined
@@ -351,7 +349,6 @@ const servicesFilterGlobal = async ctx => {
             console.log(servicetype+" getServicesByNameType ----349 "+serviceName)
             ctx.body = await salonClient.getServicesByNameType(userLocation, radius, limit, serviceName, servicetype);
 
-            return ctx.body;
     }else if(location !== undefined && serviceName !== undefined 
         && radius !== undefined
         && limit !== undefined){
@@ -359,7 +356,7 @@ const servicesFilterGlobal = async ctx => {
             //if contains - all below price else if + all above price
             console.log(servicetype+" getServicesByName -360 "+serviceName)
             ctx.body = await salonClient.getServicesByName(userLocation, radius, limit,serviceName);
-            return ctx.body;
+      
     }
 
 

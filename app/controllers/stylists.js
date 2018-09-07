@@ -15,7 +15,7 @@ const getStylistById = async ctx =>{
         const userLocation = await task.toLocationObject(location);
         ctx.body = await 
         salonClient.getStylistById(salonId, stylistId, userLocation, radius);
-        return ctx.body;
+        
     }
 };
 
@@ -43,7 +43,6 @@ const stylistQueries = async ctx =>{
             ctx.body = await 
             salonClient.getSalonByStylistNameRatingGender(userLocation, radius, name,limit, rating, gender);
             
-            return ctx.body;
     }else if(location !== undefined && radius !== undefined
         && limit !== undefined && gender !== undefined
          && rating !== undefined){
@@ -53,20 +52,19 @@ const stylistQueries = async ctx =>{
             ctx.body = await 
             salonClient.getSalonByStylistRatingGender(userLocation, radius, limit, rating, gender);
      
-            return ctx.body;
     }else if(location !== undefined && radius !== undefined
         && limit !== undefined && rating !== undefined){
             console.log("getSalonByStylistRating - iiiin")
             const userLocation = await task.toLocationObject(location);
             ctx.body = await salonClient.getSalonByStylistRating(userLocation, radius, limit, rating);
-        return ctx.body;
+        
     }
     else if(location !== undefined && radius !== undefined
         && limit !== undefined ){
             console.log("getSalonAllStylist - iiiin")
             const userLocation = await task.toLocationObject(location);
             ctx.body = await salonClient.getSalonAllStylist(userLocation, radius);
-        return ctx.body;
+        
     }
     
 };
@@ -91,7 +89,7 @@ const stylistQueriesLocal = async ctx =>{
         && limit !== undefined && gender !== undefined
         && rating !== undefined && salonId !== undefined){
             console.log("getSalonByStylistNameRatingGenderAndSalonId stylist")
-            return await 
+            ctx.body = await 
             salonClient
             .getSalonByStylistNameRatingGenderAndSalonId(userLocation, radius, name,limit, rating, gender, salonId);
     }else if(location !== undefined && radius !== undefined
@@ -99,19 +97,19 @@ const stylistQueriesLocal = async ctx =>{
         && rating !== undefined && salonId !== undefined){
 
             console.log("getSalonByStylistRatingGenderAndSalonId stylist")
-            return await 
+            tx.body =  await 
             salonClient
             .getSalonByStylistRatingGenderAndSalonId(userLocation, radius,limit, rating, gender, salonId);
     }else if(location !== undefined && radius !== undefined
         && limit !== undefined && rating !== undefined 
         &&salonId !== undefined){
             console.log("getSalonByStylistRatingAndSalonId stylist")
-            return await 
+            tx.body =  await 
             salonClient.getSalonByStylistRatingAndSalonId(userLocation, radius, limit, rating, gender, salonId);
     }else if(location !== undefined && radius !== undefined
         && salonId !== undefined){
             console.log("get all SalonStylistBySalonId stylist")
-            return await salonClient
+            tx.body =  await salonClient
             .getSalonStylistBySalonId(userLocation, radius ,salonId);
     }
     

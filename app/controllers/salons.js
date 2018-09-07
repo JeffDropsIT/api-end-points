@@ -16,7 +16,7 @@ const getSalonBySalonId = async ctx => {
         salonId !== undefined &&radius !== undefined){
         const userLocation = await task.toLocationObject(location);
         ctx.body = await salonClient.getSalonBySalonId(salonId, userLocation, radius);
-        return ctx.body;
+        
     }
 
 
@@ -46,7 +46,7 @@ const getSalonByNameOrRating = async ctx => {
         && limit !== undefined ){
           const userLocation = await task.toLocationObject(location);
           ctx.body = await salonClient.getSalonByRating(rating, userLocation, radius,limit);
-          return ctx.body;
+          
       }
     
 
@@ -63,7 +63,7 @@ const getNearestSalons = async ctx =>{
     if(location !== undefined && radius !== undefined && limit !== undefined ){
         const userLocation = await task.toLocationObject(location);
         ctx.body = await salonClient.getNearestSalons(userLocation, radius,limit);
-        return ctx.body;
+        
     }
 };
 
@@ -78,7 +78,7 @@ const getAllNearestSalonsShallow = async ctx => {
         && radius !== undefined){
         const userLocation = await task.toLocationObject(location);
         ctx.body = await salonClient.getAllNearestSalonsShallow(userLocation, radius);
-        return ctx.body;
+        
     }
 
 
@@ -102,7 +102,7 @@ const getSalonByNameShallow = async ctx =>{
         ctx.body = await
          salonClient.getSalonByNameShallow
          (name, userLocation, radius,limit);
-        return ctx.body;
+        
     }
 };
 const getSalonBySalonIdShallow = async ctx =>{
@@ -116,7 +116,7 @@ const getSalonBySalonIdShallow = async ctx =>{
         const userLocation = await task.toLocationObject(location);
         ctx.body = await 
         salonClient.getSalonBySalonIdShallow(salonId, userLocation, radius);
-        return ctx.body;
+        
     }
 }
 
@@ -124,7 +124,7 @@ const getSalonBySalonIdShallow = async ctx =>{
 const getAllSalons = async ctx =>{
 
     ctx.body = await salonClient.getAllSalons();
-    return ctx.body;
+    
 }
 
 //filter 

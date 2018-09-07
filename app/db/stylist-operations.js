@@ -23,7 +23,7 @@ const applyAsStylist = async (ctx) => {
             {$addToSet: {stylistRequests:data}}, 
         );
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
-        const res = result.result.ok && result.result.nModified === 1 ? 200 : 401;
+        const res = result.result.ok && result.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
         if(res === 200){
     
             console.log("--applyAsStylist updating my profile--");
@@ -35,7 +35,7 @@ const applyAsStylist = async (ctx) => {
         }
         
         db.connection.close();
-        return  res;
+        ctx.body =  res;
     }catch(err){
         throw new Error(err);
     }

@@ -49,8 +49,8 @@ const isUserSalonOwner = async (userId) => {
             return  res;
         }else{
             
-            console.log("No document found")
-            let res = {bool: true, result:[]};
+            console.log("No document found no salons for user")
+            let res = {bool: false, result:[]};
             return res;
         }
     }catch(err){
@@ -73,7 +73,7 @@ const getSalon = async (salonObjId) => {
             return res;
         }else{
             
-            console.log("No document found")
+            console.log("No document found getSalon")
             let res = [];
             return res;
         }
@@ -81,13 +81,15 @@ const getSalon = async (salonObjId) => {
         throw new Error(err);
     }
 }
+
+
 //test
 //isUserSalonOwner("5b8f75f4de5f7e1964ca5137");
 const getSalons = async (salonList) =>{
     console.log("getSalons")
     try{
         let salonCollection = [];
-        salonList.forEach( async element => {
+        for ( let element of salonList){
             let salon = await [ await getSalon(element.salonObjId)];
             let reviews = await [await getReview(salon[0]._id, salon[0].reviewsDocId)];
             let rooms  = await getUsersRooms(salon[0]._id, salon[0].roomDocIdList);
@@ -95,8 +97,7 @@ const getSalons = async (salonList) =>{
             await salon.push(reviews)
             await console.log(salon);
             await salonCollection.push(salon);
-
-        });
+        }
         console.log("DONE")
         return await salonCollection;
     }catch(err){
@@ -125,20 +126,21 @@ const getSalonProfile = async(userId) =>{
     }
 }
 //test
-getSalonProfile("5b8f75f4de5f7e1964ca5137");
+//getSalonProfile("5b8f75f4de5f7e1964ca5137");
 
 const getUserProfile = async (user) => {
     try{
         let profile = [];
+        
+        const status = await generic.checkIfUserNameEmailPhoneExist(user.username);
         if( status === 0){ 
-            console.log("username or phone number does not exit"+ username);
+            console.log("username or phone number does not exit"+ user.username);
             return 404; //user not found
         }
-        const review = await getReview(user._id.$oid, user.reviewsDocId);
-        const rooms  = await getUsersRooms(user._id.$oid, user.roomDocIdList);
+        const review = await getReview(user._id, user.reviewsDocId);
+        const rooms  = await getUsersRooms(user._id, user.roomDocIdList);
         profile.push(review);
         profile.push(rooms);
-        db.connection.close();
         console.log(profile)
         return  profile;
     }catch(err){
@@ -176,7 +178,7 @@ const getRoom = async (userId, roomDocId) => {
             return  await JSON.parse(JSON.stringify(arrResults[0]));
         }else{
             
-            console.log("No document found")
+            console.log("No document found getRoom")
             return -1;
         }
     }catch(err){
@@ -191,12 +193,12 @@ const getUsersRooms = async (userId, roomDocIdList) => {
 
     try{
         let roomsCollection = [];
-        roomDocIdList.forEach( async element => {
+    
+        for(let element of roomDocIdList){
             let roomObj = await getRoom(userId, element.roomDocId);
             console.log(roomObj);
             roomsCollection.push(roomObj);
-
-        });
+        }
         console.log("DONE")
         return roomsCollection;
     }catch(err){
@@ -218,11 +220,30 @@ const authenticateUser = async (ctx) =>{
     if(isPassword){
         console.log("password correct"); //ok
         delete user.password
-        const userData = await getUserProfile(user);
-        return JSON.parse(JSON.stringify({res: 200, user:user, userData:userData}));
+        ctx.body =  JSON.parse(JSON.stringify({res: 200, message:"successfully performed operation ", data:[user]}));
     }else{
         console.log("password incorrect "+password);
-        return JSON.parse(JSON.stringify({res: 401, user:[]})) //unauthorized 
+        ctx.body = JSON.parse(JSON.stringify({res: 401, message:"successfully performed operation ", data:[] })) //unauthorized 
+    }
+
+
+}
+
+const getAllUserData = async (ctx) =>{
+    console.log("getAllUserData");
+    const username = ctx.request.body.username;
+    const password = ctx.request.body.password;
+    const user = await getUserAuth(username);
+    const isPassword = await bcrypt.compareSync(password, user.password);
+    if(isPassword){
+        console.log("password correct"); //ok
+        delete user.password
+        const userData = await getUserProfile(user);
+        const salonData = await getSalonProfile(user._id)
+        ctx.body =  JSON.parse(JSON.stringify({res: 200, message:"successfully performed operation ", data:[userData, salonData]}));
+    }else{
+        console.log("password incorrect "+password);
+        ctx.body =  JSON.parse(JSON.stringify({res: 401, user:[]})) //unauthorized 
     }
 
 
@@ -237,4 +258,5 @@ const authenticateUser = async (ctx) =>{
 module.exports = {
     hashPassword, 
     authenticateUser,
+    getAllUserData
 }

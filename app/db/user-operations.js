@@ -35,10 +35,10 @@ const createUser = async (ctx) =>{
             awsHandler.createUserDefaultBucket(fname).then(p => updateUser({bucketName: p}, _id));
             generic.createReviewsDoc(_id, "users");
         }else{
-            return -1;
+            ctx.body =  {res:401, message: "Ops something went wrong"};
         }
         
-        return  await result.ok === 1 ? 200: 401;
+        ctx.body =  result.ok === 1 ? {res: 200,  message: "successfully performed operation"} : {res:401,  message: "Ops something went wrong, username already exist"};
     } catch (error) {
         throw new Error(error);
     }
@@ -52,13 +52,15 @@ const updateUser = async (ctx) =>{
     console.log("--updateUser--");
     const result = await generic.updateCollectionDocument("afroturf", "users",userData,userId);
     console.log("ok: "+result.result.ok, "modified: "+ result.result.modified);
-    return  result.result.nModified === 1 && result.result.ok === 1 ? 200 : 401;
+    ctx.body =  result.result.nModified === 1 && result.result.ok === 1 ? {res: 200,  message: "successfully performed operation"} : {res:401,  message: "Ops something went wrong, failed to update user"};
+    
 };
 
 
 
 const followSalon = async (ctx) =>{
     try {
+        console.log(ctx.request.body);
         const userId = ctx.request.body._id.$oid, salonObjId = ctx.request.body.salonObjId;
         const id = ctx.params.id;
         console.log("ID: ", id);
@@ -80,7 +82,9 @@ const followSalon = async (ctx) =>{
             console.log("failed to insert possible causes salon already following");
             //handle error accordingly
         }
-    return result.result.nModified === 1 && result.result.ok === 1 ? 200 : 401;
+        
+        ctx.body =  result.result.ok && result.result.nModified === 1 ?  {res: 200,  message: "successfully performed operation"} : {res: 200,  message: "failed to perform operation"};
+    
 
     } catch (error) {
         console.log("failed to followSalon. . .\n salonObjId: "+salonObjId)
@@ -145,7 +149,8 @@ const sendMessage = async (ctx) =>{
             console.log("duplicate id present");
             //handle error accordingly
         }
-    return result.result.nModified === 1 && result.result.ok === 1 ? 200 : 401;
+        
+        ctx.body =  result.result.ok && result.result.nModified === 1 ?  {res: 200,  message: "successfully performed operation"} : {res: 200,  message: "failed to perform operation"};
 
     } catch (error) {
         console.log("failed to sendMessge. . .\n messageId: "+messageId.toString()+" payload: "+payload)
@@ -187,7 +192,7 @@ const sendReview = async (ctx) =>{
             //handle error accordingly
         }
         const res =  { ok: result.result.ok, modified: result.result.nModified, ok2: resultOne.result.ok, modified2: resultOne.result.nModified}
-        return  res.ok && res.ok2 && res.modified && res.modified2 === 1 ? 200 : 401
+        ctx.body = res.ok && res.ok2 && res.modified && res.modified2 === 1 ?  {res: 200,  message: "successfully performed operation"} : {res: 200,  message: "failed to perform operation"};
 
     } catch (error) {
         console.log("failed to sendReview. . .\n sendReview: "+reviewOut.toString())

@@ -14,7 +14,8 @@ const empty = require("is-empty");
 const createSalon = async (ctx) =>{
     try {
             //add this to users db
-        const body = ctx.request.body;
+        console.log(ctx.request.body)
+        const body = ctx.request.body ;
         const name = body.name, address = body.address, street = address.split(",")[1], coordinates = [parseFloat(body.latitude), parseFloat(body.longitude)], sName = "haircuts", hiring = 1;
         const userId = body.userId; //"5b7e8e21d59eae1de05d6984";
         console.log(name)
@@ -36,10 +37,10 @@ const createSalon = async (ctx) =>{
             awsHandler.createUserDefaultBucket(name).then(p => updateSalon({bucketName: p}, _id));
             generic.createReviewsDoc(_id, "salons");
             console.log("--added to owner account-- "+_id);
-            return 200;
+            ctx.body =  {res:200, message: "successfully performed operation"}
         }else{
             console.log("--failed to add owner account--");
-            return -1
+            ctx.body = {res:401, message: "failed to perform operation"};
     }
     } catch (error) {
         throw new Error(error);
@@ -120,7 +121,7 @@ const addtosalonOrders = async(ctx) => {
             );
             db.connection.close();
             console.log(result.result.ok, result.result.nModified);
-        return  result.result.ok && result.result.nModified === 1 ? 200 : 401;
+        ctx.body =  result.result.ok && result.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
         }catch(err){
             throw new Error(err);
         }
@@ -186,7 +187,7 @@ const getSalonOrdersByDateBefore = async(ctx) => {
         console.log(salon)
         let count = JSON.parse(JSON.stringify(salon));
         db.connection.close();        
-        return count;
+        ctx.body =  {res:200, message: "sucessfully retrieved data", data: count};
     }
     db.connection.close();
 }
@@ -218,14 +219,13 @@ const getSalonOrdersByDateBetween = async(ctx) => {
         console.log(salon)
         let count = JSON.parse(JSON.stringify(salon));
         db.connection.close();        
-        return count;
+        ctx.body =  {res:200, message: "sucessfully retrieved data", data: count};
     }
     db.connection.close();
 }
 //test
 //getSalonOrdersByDateBetween("5b8902930548d434f87ad900", "August 31, 2018 18:15:30", "August 31, 2018 20:15:30" )
 //addtostylistOrders
-
 
 
 const addBookingUserAccount = async(userId, data) =>{
@@ -272,7 +272,7 @@ const addtostylistOrders = async(ctx) => {
             console.log(result3.result.ok, result3.result.nModified);
             db.connection.close();
             console.log(result.result.ok, result.result.nModified);
-        return  result.result.ok && result.result.nModified === 1 ? 200 : 401;
+            ctx.body =  result.result.ok && result.result.nModified === 1 ?  {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
         }catch(err){
             throw new Error(err);
         }
@@ -314,7 +314,7 @@ const getOrderByOrderNumber = async(ctx) =>{
         console.log(salon)
         let count = JSON.parse(JSON.stringify(salon));
         db.connection.close();        
-        return count;
+        ctx.body =  {res:200, message: "sucessfully retrieved data", data: count};
     }
     db.connection.close();
 }
@@ -348,7 +348,7 @@ const getBookedTimeSlotForStylist = async(ctx) =>{
         console.log(salon)
         let count = JSON.parse(JSON.stringify(salon));
         db.connection.close();        
-        return count;
+        ctx.body =  {res:200, message: "sucessfully retrieved data", data: count};
     }
     db.connection.close();
 }
@@ -383,7 +383,7 @@ const getBookedTimeSlotForSalon = async(ctx) =>{
         console.log(salon)
         let count = JSON.parse(JSON.stringify(salon))[0];
         db.connection.close();        
-        return count;
+        ctx.body =  {res:200, message: "sucessfully retrieved data", data: count};
     }else{
         console.log("NO such salon")
     }
@@ -426,7 +426,8 @@ const acceptOrder = async (ctx) =>{
                 db.connection.close();
                 console.log(result2.result.ok, result2.result.nModified);
                 const res = { ok: result2.result.ok, nModified:result2.result.nModified};
-                return  res.ok && res.nModified === 1 ? 200 : 401;
+                
+                ctx.body = res.ok && res.nModified === 1 ?  {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
 
             }
             db.connection.close();
@@ -467,7 +468,8 @@ const acceptOrder = async (ctx) =>{
                 console.log(result3.result.ok, result3.result.nModified);
                 
                 const res2 = { ok: result3.result.ok, nModified:result3.result.nModified};
-                return  res2.ok && res2.nModified === 1 ? 200 : 401;
+                ctx.body =  res2.ok && res2.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
+                
                 
 
             }
@@ -520,8 +522,8 @@ const getStylistOrdersByDateAfter = async(ctx) => {
         console.log("DATA IS THERE. . . ")
         console.log(salon)
         let count = JSON.parse(JSON.stringify(salon));
-        db.connection.close();        
-        return count;
+        db.connection.close();   
+        ctx.body = {res:200, message: "sucessfully retrieved data", data:count} 
     }
     db.connection.close();
 }
@@ -552,8 +554,8 @@ const getStylistOrdersByDateBefore = async(ctx) => {
         console.log("DATA IS THERE. . . ")
         console.log(salon)
         let count = JSON.parse(JSON.stringify(salon));
-        db.connection.close();        
-        return count;
+        db.connection.close();      
+        ctx.body = {res:200, message: "sucessfully retrieved data", data:count} 
     }
     db.connection.close();
 }
@@ -584,8 +586,8 @@ const getStylistOrdersByDateBetween = async(ctx) => {
         console.log("DATA IS THERE. . . ")
         console.log(salon)
         let count = JSON.parse(JSON.stringify(salon));
-        db.connection.close();        
-        return count;
+        db.connection.close();  
+        ctx.body = {res:200, message: "sucessfully retrieved data", data:count} 
     }
     db.connection.close();
 }
@@ -612,7 +614,7 @@ const getSalonOrdersDoc = async(ctx) => {
         db.connection.close();
         console.log("GET ORDERSLIST")
         console.log(count)
-        return count;
+        ctx.body = {res:200, message: "sucessfully retrieved data", data:count} 
     }
 }
 
@@ -681,6 +683,7 @@ const addSalonToUserAccount = async (userId, salonObjId, hiring, salonId) => {
 const updateSalonContent = async (ctx) =>{
    //put object to update in a salon
    try{
+       console.log(ctx.request.body)
         const salonObjId = ctx.request.body._id.$oid, salonData = ctx.request.body;
         delete salonData._id;
         console.log("_Id:  ", salonObjId)
@@ -693,7 +696,9 @@ const updateSalonContent = async (ctx) =>{
         db.connection.close();
         console.log(result.result.ok, result.result.nModified);
         const res = {ok: result.result.ok, modified: result.result.nModified};
-        return  res.ok === 1 && res.modified === 1 ? 200 : 401;
+        
+        ctx.body =   res.ok === 1 && res.modified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
+        
     }catch(err){
         throw new Error(err);
     }
@@ -755,8 +760,8 @@ const updateSubservice = async (ctx) => {
             );
             db.connection.close();
             console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
-            return  result.result.ok &&result.result.nModified === 1 ? 200 : 401;
-            
+            ctx.body =   result.result.ok &&result.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
+ 
         }
     
     }catch(err){
@@ -776,7 +781,7 @@ const updateServiceName = async (ctx) => {
         );
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
-    return  result.result.ok &&result.result.nModified === 1 ? 200 : 401;
+        ctx.body =   result.result.ok &&result.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
     }catch(err){
         throw new Error(err);
     }
@@ -797,7 +802,7 @@ const addServicesToSalon = async (ctx) => {
         );
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
-    return  result.result.ok &&result.result.nModified === 1 ? 200 : 401;
+        ctx.body =   result.result.ok &&result.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
     }catch(err){
         throw new Error(err);
     }
@@ -819,7 +824,7 @@ const addsubserviceToSalonServices = async (ctx) => {
         );
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
-    return  result.result.ok && result.result.nModified === 1 ? 200 : 401;
+        ctx.body =   result.result.ok &&result.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
     }catch(err){
         throw new Error(err);
     }
@@ -835,7 +840,7 @@ const  addServiceAvatar = async (ctx) => {
         );
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
-    return  result.result.ok &&result.result.nModified === 1 ? 200 : 401;
+        ctx.body =   result.result.ok &&result.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
     }catch(err){
         throw new Error(err);
     }
@@ -859,7 +864,7 @@ const acceptStylistRequest = async (ctx) => {
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
         if(result.result.ok === 1 && result.result.nModified === 1){
             const res = await addStylistToSalon(userId, salonObjId, data);
-            return  res.ok && res.nModified === 1 ? 200 : 401;
+            ctx.body =   res.ok && res.nModified === 1? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
         }else{
             return  401 + " error accepting";
         }
