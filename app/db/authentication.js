@@ -30,6 +30,102 @@ const hashPassword = async (password) =>{
     return hash;
 };
 
+const isUserSalonOwner = async (userId) => {
+    //check if userhas salon
+    try{
+        
+        console.log("isUserSalonOwner")
+        const db = await generic.getDatabaseByName("afroturf");
+        const result = await db.db.collection("users").aggregate([{$match:{$and : [{"_id":ObjectId(userId)}, {"salons.role": "salonOwner"}]}}, 
+        {$project : {salons: 1}}
+    
+    ]) //user reviews doc
+        const arrResults = await result.toArray();
+        db.connection.close();
+        if(!empty(arrResults)){
+                
+            await console.log(JSON.parse(JSON.stringify(arrResults[0])));
+            let res = {bool: true, result: await JSON.parse(JSON.stringify(arrResults[0]))};
+            return  res;
+        }else{
+            
+            console.log("No document found")
+            let res = {bool: true, result:[]};
+            return res;
+        }
+    }catch(err){
+        throw new Error(err);
+    }
+}
+
+const getSalon = async (salonObjId) => {
+    try{
+        
+        console.log("getSalon")
+        const db = await generic.getDatabaseByName("afroturf");
+        const result = await db.db.collection("salons").aggregate([{$match:{$and : [{"_id":ObjectId(salonObjId)}]}}]) //user reviews doc
+        const arrResults = await result.toArray();
+        db.connection.close();
+        if(!empty(arrResults)){
+                
+            await console.log(JSON.parse(JSON.stringify(arrResults[0])));
+            let res = await JSON.parse(JSON.stringify(arrResults[0]));
+            return res;
+        }else{
+            
+            console.log("No document found")
+            let res = [];
+            return res;
+        }
+    }catch(err){
+        throw new Error(err);
+    }
+}
+//test
+//isUserSalonOwner("5b8f75f4de5f7e1964ca5137");
+const getSalons = async (salonList) =>{
+    console.log("getSalons")
+    try{
+        let salonCollection = [];
+        salonList.forEach( async element => {
+            let salon = await [ await getSalon(element.salonObjId)];
+            let reviews = await [await getReview(salon[0]._id, salon[0].reviewsDocId)];
+            let rooms  = await getUsersRooms(salon[0]._id, salon[0].roomDocIdList);
+            await salon.push(rooms)
+            await salon.push(reviews)
+            await console.log(salon);
+            await salonCollection.push(salon);
+
+        });
+        console.log("DONE")
+        return await salonCollection;
+    }catch(err){
+        throw new Error(err);
+    }
+}
+
+//test
+//getSalon("5b8f7f7b0e22dc20a4588e27").roomDocIdList
+const getSalonProfile = async(userId) =>{
+    try{
+        let salonProfile = [];
+        let res = await isUserSalonOwner(userId);
+        if(!res.bool){ 
+            console.log("Not salon owner"+ user.username);
+            return 404; //user not found
+        }
+        const salonList = await res.result.salons;
+        const salons  = await getSalons(salonList);
+        await salonProfile.push(salons);
+        await console.log("----- getSalonProfile data ----")
+        await console.log(salonProfile)
+        return  await salonProfile;
+    }catch(err){
+        throw new Error(err);
+    }
+}
+//test
+getSalonProfile("5b8f75f4de5f7e1964ca5137");
 
 const getUserProfile = async (user) => {
     try{
