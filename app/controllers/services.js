@@ -233,54 +233,53 @@ const servicesFilterLocal = async ctx => {
     
     let limit = ctx.query.limit;
     let userLocation;
-    if(location !== undefined){
-        userLocation = await task.toLocationObject(location);
-    }
+    
     if(limit == undefined){
         limit = 1000000;
     }
-    if(location !== undefined && serviceName !== undefined && price_lte !==undefined
-    && radius !== undefined && servicetype !== undefined 
+    if(serviceName !== undefined && price_lte !==undefined
+     && servicetype !== undefined 
     &&price_gte !==undefined&&code !== undefined && salonId !==undefined){
-        
+        userLocation = await task.toLocationObject(location);
         ctx.body = await salonClient.getServicesByNameTypePriceRangeCodeAndSalonId(userLocation, radius, limit, serviceName, servicetype, price_gte, price_lte, code,salonId);
 
         
     
-    }else if(location !== undefined && serviceName !== undefined && price_lte !==undefined
-        && radius !== undefined && servicetype !== undefined 
+    }else if(serviceName !== undefined && price_lte !==undefined
+        && servicetype !== undefined 
         && price_gte !==undefined&& salonId !==undefined){
             console.log("getServicesByNameTypePriceRangeAndSalonId");
+            userLocation = await task.toLocationObject(location);
             ctx.body = await salonClient.getServicesByNameTypePriceRangeAndSalonId(userLocation, radius, limit, serviceName, servicetype, price_gte, price_lte,salonId);
             
         
-    }else if(location !== undefined && serviceName !== undefined && price_lte !==undefined
-        && radius !== undefined 
+    }else if(serviceName !== undefined && price_lte !==undefined 
         && price_gte !==undefined&& salonId !==undefined){
             console.log("getServicesByNamePriceRangeAndSalonId");
+            userLocation = await task.toLocationObject(location);
             ctx.body = await salonClient.getServicesByNamePriceRangeAndSalonId(userLocation, radius, limit, serviceName, price_gte, price_lte,salonId);
             
         
-    }else if(location !== undefined && serviceName !== undefined 
-        && radius !== undefined && salonId !== undefined
-        && servicetype !== undefined && limit !== undefined){
+    }else if(serviceName !== undefined 
+        && salonId !== undefined
+        && servicetype !== undefined){
             //get all nearest services by name and price range (above + below -) and salonId
             //if contains - all below price else if + all above price
             console.log(servicetype+" getServicesByNameTypeSalonId - "+serviceName)
+            userLocation = await task.toLocationObject(location);
             ctx.body = await salonClient.getServicesByNameTypeSalonId(userLocation, radius, limit, serviceName, servicetype, salonId);
 
-    }else if(location !== undefined && serviceName !== undefined 
-        && radius !== undefined && salonId !== undefined
-        && limit !== undefined){
+    }else if(serviceName !== undefined 
+        &&  salonId !== undefined){
             //get all nearest services by name and price range (above + below -) and salonId
             //if contains - all below price else if + all above price
             console.log(servicetype+" getServicesByNameSalonId - "+serviceName)
+            userLocation = await task.toLocationObject(location);
             ctx.body = await salonClient.getServicesByNameSalonId(userLocation, radius, limit,serviceName, salonId);
             return ctx.body;
-    }else if(location !== undefined 
-        && radius !== undefined && salonId !== undefined
-        && limit !== undefined){
-            
+    }else if( salonId !== undefined
+      ){
+            userLocation = await task.toLocationObject(location);
             console.log(servicetype+" getServicesSalonId - "+serviceName)
             ctx.body = await salonClient.getServicesSalonId(userLocation, radius, limit, salonId);
          

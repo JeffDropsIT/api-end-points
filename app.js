@@ -126,8 +126,8 @@ router.get('/afroturf/salons/shallow/q',salon.getSalonByNameShallow);
 // /afroturf/salons/shallow/:salonId/?location=23.123,21.3434
 //&radius=100000
 router.get('/afroturf/salons/shallow/:salonId/',salon.getSalonBySalonIdShallow);
-// /afroturf/salons/:salonId/?location=23.123,21.3434
-//&radius=10000
+  // /afroturf/salons/:salonId/?location=23.123,21.3434
+  //&radius=10000
 router.get('/afroturf/salons/:salonId/',salon.getSalonBySalonId);
 //returns all salon reviews by id/salonId
 router.get('/afroturf/salons/stylist/:salonId/:stylistId/q',stylist.getStylistById);

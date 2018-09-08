@@ -1,5 +1,6 @@
 const mongodb = require("mongodb");
 const METERS_TO_KM = 1000;
+const empty = require("is-empty");
 
 let mongodbClient = mongodb.MongoClient;
 let url = 'mongodb://admin:password123@ds153841.mlab.com:53841/afroturf';
@@ -23,6 +24,7 @@ const getDatabaseByName = async(name) =>{
 // get nearest salons
 
 const getNearestSalons = async (Userlocation, radius, limit) => {
+  
 
   try {
     
@@ -55,16 +57,33 @@ const getNearestSalons = async (Userlocation, radius, limit) => {
 }
 //get salon by Name
 const getSalonByName = async (name, userlocation, radius, limit) => {
- 
+
+  console.log("-- getSalonByName-- ")
+  console.log("userLocation: "+typeof(userlocation)+"- content -"+empty(userlocation))
    try{
       const db = await getDatabaseByName("afroturf");
+      if(empty(userlocation)){
+        console.log("userLocation: "+userlocation === null || undefined || "NaN")
+        console.log("NO location: "+userlocation+", radius, limit null")
+        const salonCursor = await db.db.collection("salons").aggregate([ {
+          $match: {name: { $regex: new RegExp("^" + name.toLowerCase()+"$", "i") }}
+  
+          }
+        ]);
+        const salon = await salonCursor.toArray();
+  
+        
+        db.connection.close();
+        return JSON.parse(JSON.stringify(salon));
+      }
+//0763724601 Jes
       const salonCursor = await db.db.collection("salons").aggregate([ {
         $geoNear: {
           near: { coordinates :userlocation}, 
           distanceField: "distance.calculated",
           maxDistance: parseInt(radius)*METERS_TO_KM,
           num: parseInt(limit),
-          query: {name: name},
+          query: {name: {name: { $regex: new RegExp("^" + name.toLowerCase()+"$", "i")} }},
           spherical: true
 
         }
@@ -85,10 +104,26 @@ const getSalonByName = async (name, userlocation, radius, limit) => {
 //get salon by tot rating
 
 const getSalonByRating = async (rating, userlocation, radius, limit) => {
- console.log("getSalonByRating ---")
+ console.log("getSalonByRating --- rating: "+rating)
   try{
+    console.log("Location: "+userlocation+" radius: "+radius )
      const db = await getDatabaseByName("afroturf");
-     const salonCursor = await db.db.collection("salons").aggregate([ {
+     if(empty(userlocation)){
+      console.log("NO location, radius, limit null")
+      const salonCursor = await db.db.collection("salons").aggregate([ {
+        $match: {rating: parseInt(rating)}
+
+        }
+      ]);
+      const salon = await salonCursor.toArray();
+
+      
+      db.connection.close();
+      return JSON.parse(JSON.stringify(salon));
+    }
+
+     const salonCursor = await db.db.collection("salons").aggregate([ 
+       {
        $geoNear: {
          near: { coordinates :userlocation}, 
          distanceField: "distance.calculated",
@@ -99,10 +134,10 @@ const getSalonByRating = async (rating, userlocation, radius, limit) => {
        }
      },
     {
-      $project: {salonId: 1, name:1, location:1, rating:1 , match: {$gte : ["salons.rating", parseInt(rating)]}}
-    },{
-      "$match": { "match": true}
-    }]);
+      $project: {salonId: 1, name:1, location:1, rating:1 }
+    },
+    {$match : {rating:parseInt(rating)}}
+  ]);
      const salon = await salonCursor.toArray();
 
      
@@ -116,14 +151,43 @@ const getSalonByRating = async (rating, userlocation, radius, limit) => {
   }   
 };
 
-const getStylistById = async(salonId, stylistId, userLocation, radius) => {
-    console.log("getStylistById server")
+const getStylistById = async(salonId, stylistId, userlocation, radius) => {
+  
+    console.log("getStylistById server: ")
+    console.log(userlocation)
       const db = await getDatabaseByName("afroturf");
       await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+      if(empty(userlocation)){
+        console.log("NO location, radius, limit null")
+        const stylistCursor = await db.db.collection("salons").aggregate([
+          {
+            $match:{salonId: parseInt(salonId)}
+      
+          },
+          {
+            $project: { stylists: 
+        
+          
+              {
+                $filter: {
+                  input: "$stylists", 
+                  as: "this", 
+                  cond: {$eq : [ "$$this.stylistId", parseInt(stylistId)]}, 
+                }
+              }
+      
+            }
+          }
+        ]);
+        
+        const stylist = await stylistCursor.toArray();
+        db.connection.close();
+        return JSON.parse(JSON.stringify(stylist));
+      }
       const stylistCursor = await db.db.collection("salons").aggregate([
         {
           $geoNear:{
-            near: { coordinates: userLocation},
+            near: { coordinates: userlocation},
             distanceField: "distance.calculated",
             maxDistance: parseInt(radius)*METERS_TO_KM,
             query: {salonId: parseInt(salonId)},
@@ -158,6 +222,18 @@ const getSalonBySalonId = async (salonId, userlocation, radius) => {
   
   try{
      const db = await getDatabaseByName("afroturf");
+     if(empty(userlocation)){
+      console.log("NO location, radius null")
+      const salonCursor = await db.db.collection("salons").aggregate([ {
+        $match:{salonId: parseInt(salonId)}
+      }]);
+      const salon = await salonCursor.toArray();
+ 
+      //console.log("INSIDE connect", JSON.parse(JSON.stringify(salon));
+      db.connection.close();
+      return JSON.parse(JSON.stringify(salon));
+      
+    }
      const salonCursor = await db.db.collection("salons").aggregate([ {
        $geoNear: {
          near: { coordinates :userlocation}, 
@@ -181,14 +257,28 @@ const getSalonBySalonId = async (salonId, userlocation, radius) => {
   }   
  };
   // get salon by salonId shallow getSalonBySalonIdShallow
-const getSalonBySalonIdShallow = async (salonId, Userlocation, radius) => {
+const getSalonBySalonIdShallow = async (salonId, userlocation, radius) => {
   
     try{
        const db = await getDatabaseByName("afroturf");
        await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+       if(empty(userlocation)){
+        console.log("NO location, radius, limit null")
+        const salonCursor = await db.db.collection("salons").aggregate([ {
+          $match:  {salonId: parseInt(salonId)}
+        }, 
+        {
+          $project: {name: 1, location:1, rating: 1, salonId: 1}
+        }]);
+        const salon = await salonCursor.toArray();
+  
+        //console.log("INSIDE connect", JSON.stringify(salon));
+        db.connection.close();
+        return JSON.parse(JSON.stringify(salon));
+      }
        const salonCursor = await db.db.collection("salons").aggregate([ {
          $geoNear: {
-           near: { coordinates :Userlocation}, 
+           near: { coordinates :userlocation}, 
            distanceField: "distance.calculated",
            maxDistance: parseInt(radius)*METERS_TO_KM,
            query: {salonId: parseInt(salonId)},
@@ -213,18 +303,34 @@ const getSalonBySalonIdShallow = async (salonId, Userlocation, radius) => {
    };
 
   //get salon by Name shallow
-const getSalonByNameShallow = async (salonname, Userlocation, radius, limit) => {
+const getSalonByNameShallow = async (salonname, userlocation, radius, limit) => {
+  
     console.log("getSalonByNameShallow hhhhh");
      try{
+
         const db = await getDatabaseByName("afroturf");
         await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+        if(empty(userlocation)){
+          console.log("NO location, radius, limit null")
+          const salonCursor = await db.db.collection("salons").aggregate([ {
+            $match: {name: { $regex: new RegExp("^" + salonname.toLowerCase()+"$", "i") } }
+          }, 
+          {
+            $project: {name: 1, location:1, rating: 1, salonId: 1}
+          }]);
+          const salon = await salonCursor.toArray();
+    
+          //console.log("INSIDE connect", JSON.stringify(salon));
+          db.connection.close();
+          return JSON.parse(JSON.stringify(salon));
+        }
         const salonCursor = await db.db.collection("salons").aggregate([ {
           $geoNear: {
-            near: { coordinates :Userlocation}, 
+            near: { coordinates :userlocation}, 
             distanceField: "distance.calculated",
             maxDistance: parseInt(radius)*METERS_TO_KM,
             num: parseInt(limit),
-            query: {name: salonname},
+            query: {name: { $regex: new RegExp("^" + salonname.toLowerCase()+"$", "i") } },
             spherical: true
   
           }
@@ -246,9 +352,16 @@ const getSalonByNameShallow = async (salonname, Userlocation, radius, limit) => 
     };
 //return salon_id and list of stylist with the input rating
 const getSalonAllStylist = async(userlocation, radius) => {
-
+  
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  if(empty(userlocation)){
+    console.log("NO location, radius, limit null")
+    const stylistCursor = await db.db.collection("salons").find().project({ stylists: 1, salonId: 1})
+    const stylist = await stylistCursor.toArray();
+    db.connection.close();
+    return JSON.parse(JSON.stringify(stylist));
+  }
   const stylistCursor = await db.db.collection("salons").aggregate([
 
 
@@ -272,11 +385,28 @@ const getSalonAllStylist = async(userlocation, radius) => {
   return JSON.parse(JSON.stringify(stylist));
 
 };
+
 //return salon_id and list of stylist with the input rating
 const getSalonStylistBySalonId = async(userlocation, radius,salonId) => {
-
+  
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  if(empty(userlocation)){
+    console.log("userLocation is null,radius is null")
+    const stylistCursor = await db.db.collection("salons").aggregate([
+      {
+        $match: {salonId: parseInt(salonId)}
+  
+      },
+  
+      {
+        $project: { stylists: 1, salonId: 1}
+      }
+    ]);
+    const stylist = await stylistCursor.toArray();
+    db.connection.close();
+    return JSON.parse(JSON.stringify(stylist));
+  }
   const stylistCursor = await db.db.collection("salons").aggregate([
 
 
@@ -305,8 +435,36 @@ const getSalonStylistBySalonId = async(userlocation, radius,salonId) => {
 
 const getSalonByStylistRatingAndSalonId = async(userlocation, radius, limit, rating, gender, salonId) => {
       console.log("getSalonByStylistRatingAndSalonId - server")
+      
+      
       const db = await getDatabaseByName("afroturf");
       await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+      if(empty(userlocation)){
+        console.log("NO location, radius, limit null")
+        const stylistCursor = await db.db.collection("salons").aggregate([
+          {
+            $match:{salonId: parseInt(salonId)}
+      
+          },
+          {
+            $project: { stylists: 
+        
+          
+              {
+                $filter: {
+                  input: "$stylists", 
+                  as: "this", 
+                  cond: {$gte : ["$$this.rating", parseInt(rating)]}
+                }
+              }
+      
+            }
+          }
+        ]);
+        const stylist = await stylistCursor.toArray();
+        db.connection.close();
+        return JSON.parse(JSON.stringify(stylist));
+      }
       const stylistCursor = await db.db.collection("salons").aggregate([
         {
           $geoNear:{
@@ -339,12 +497,159 @@ const getSalonByStylistRatingAndSalonId = async(userlocation, radius, limit, rat
       return JSON.parse(JSON.stringify(stylist));
     
     };
-
+    const getSalonByStylistGenderAndSalonId = async(userlocation, radius, limit, gender, salonId) => {
+      console.log("getSalonByStylistGenderAndSalonId - server")
+      
+      
+      const db = await getDatabaseByName("afroturf");
+      await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+      if(empty(userlocation)){
+        console.log("NO location, radius, limit null")
+        const stylistCursor = await db.db.collection("salons").aggregate([
+          {
+            $match:{salonId: parseInt(salonId)}
+      
+          },
+          {
+            $project: { stylists: 
+        
+          
+              {
+                $filter: {
+                  input: "$stylists", 
+                  as: "this", 
+                  cond: {$gte : ["$$this.gender", gender]}
+                }
+              }
+      
+            }
+          }
+        ]);
+        const stylist = await stylistCursor.toArray();
+        db.connection.close();
+        return JSON.parse(JSON.stringify(stylist));
+      }
+      const stylistCursor = await db.db.collection("salons").aggregate([
+        {
+          $geoNear:{
+            near: {coordinates: userlocation},
+            distanceField: "distance.calculated",
+            maxDistance: parseInt(radius)*METERS_TO_KM,
+            num: parseInt(limit),
+            query: {salonId: parseInt(salonId)},
+            spherical: true
+          }
+    
+        },
+        {
+          $project: { stylists: 
+      
+        
+            {
+              $filter: {
+                input: "$stylists", 
+                as: "this", 
+                cond: {$gte : ["$$this.rating", parseInt(rating)]}
+              }
+            }
+    
+          }
+        }
+      ]);
+      const stylist = await stylistCursor.toArray();
+      db.connection.close();
+      return JSON.parse(JSON.stringify(stylist));
+    
+    };
+    const getSalonByStylistGenderAndSalonId2 = async(userlocation, radius, limit, gender) => {
+      console.log("getSalonByStylistGenderAndSalonId - server")
+      
+      
+      const db = await getDatabaseByName("afroturf");
+      await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+      if(empty(userlocation)){
+        console.log("NO location, radius, limit null")
+        const stylistCursor = await db.db.collection("salons").aggregate([
+          {
+            $project: { stylists: 
+        
+          
+              {
+                $filter: {
+                  input: "$stylists", 
+                  as: "this", 
+                  cond: {$gte : ["$$this.gender", gender]}
+                }
+              }
+      
+            }
+          }
+        ]);
+        const stylist = await stylistCursor.toArray();
+        db.connection.close();
+        return JSON.parse(JSON.stringify(stylist));
+      }
+      const stylistCursor = await db.db.collection("salons").aggregate([
+        {
+          $geoNear:{
+            near: {coordinates: userlocation},
+            distanceField: "distance.calculated",
+            maxDistance: parseInt(radius)*METERS_TO_KM,
+            num: parseInt(limit),
+            query: {salonId: parseInt(salonId)},
+            spherical: true
+          }
+    
+        },
+        {
+          $project: { stylists: 
+      
+        
+            {
+              $filter: {
+                input: "$stylists", 
+                as: "this", 
+                cond: {$gte : ["$$this.rating", parseInt(rating)]}
+              }
+            }
+    
+          }
+        }
+      ]);
+      const stylist = await stylistCursor.toArray();
+      db.connection.close();
+      return JSON.parse(JSON.stringify(stylist));
+    
+    };
 //return salon_id and list of stylist with the input rating
 const getSalonByStylistRating = async(userlocation, radius, limit, rating) => {
+  
   console.log("getSalonByStylistRating - server")
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  if(empty(userlocation)){
+    console.log("NO location, radius, limit null")
+    const stylistCursor = await db.db.collection("salons").aggregate([
+      {
+        $project: { stylists: 
+    
+      
+          {
+            $filter: {
+              input: "$stylists", 
+              as: "this", 
+              cond: {$gte : ["$$this.rating", parseInt(rating)]}
+            }
+          }
+  
+        }
+      }
+    ]);
+    const stylist = await stylistCursor.toArray();
+    db.connection.close();
+    return JSON.parse(JSON.stringify(stylist));
+  
+  }
   const stylistCursor = await db.db.collection("salons").aggregate([
 
 
@@ -381,9 +686,36 @@ const getSalonByStylistRating = async(userlocation, radius, limit, rating) => {
 
 };
 const getSalonByStylistRatingGenderAndSalonId = async(userlocation, radius,limit, rating, gender, salonId) => {
-
+  
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  if(empty(userlocation)){
+    console.log("NO location, radius, limit null")
+    const stylistCursor = await db.db.collection("salons").aggregate([
+      {
+        $match:{salonId: parseInt(salonId)}
+  
+      },
+      {
+        $project: { stylists: 
+    
+      
+          {
+            $filter: {
+              input: "$stylists", 
+              as: "this", 
+              cond: {$and: [{$gte : ["$$this.rating", parseInt(rating)]}, {$eq : ["$$this.gender", gender]}] }
+            }
+          }
+  
+        }
+      }
+    ]);
+    const stylist = await stylistCursor.toArray();
+    db.connection.close();
+    return JSON.parse(JSON.stringify(stylist));
+  
+  }
   const stylistCursor = await db.db.collection("salons").aggregate([
     {
       $geoNear:{
@@ -421,8 +753,29 @@ const getSalonByStylistRatingGenderAndSalonId = async(userlocation, radius,limit
   // //radius=5&filters{ “gender”: “male”, “rating”:”>3”}&limit10
 const getSalonByStylistRatingGender = async(userlocation, radius, limit, rating, gender) => {
     console.log("getSalonByStylistRatingGender - server")
+    
     const db = await getDatabaseByName("afroturf");
     await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+    if(empty(userlocation)){
+      console.log("NO location, radius, limit null")
+      const stylistCursor = await db.db.collection("salons").aggregate([
+        {
+          $project: { stylists: 
+            {
+              $filter: {
+                input: "$stylists", 
+                as: "this", 
+                cond: {$and: [{$gte : ["$$this.rating", parseInt(rating)]}, {$eq : ["$$this.gender", gender]}] }
+              }
+            }
+    
+          }
+        }
+      ]);
+      const stylist = await stylistCursor.toArray();
+      db.connection.close();
+      return JSON.parse(JSON.stringify(stylist));
+    }
     const stylistCursor = await db.db.collection("salons").aggregate([
       {
         $geoNear:{
@@ -458,7 +811,10 @@ const getSalonByStylistRatingGender = async(userlocation, radius, limit, rating,
 // get stylist by name and other
 
 const getSalonByStylistNameRatingGender = async(userlocation, radius, name,limit, rating, gender) => {
-
+  if(empty(userlocation)){
+    console.log("NO location, radius, limit null")
+    return;
+  }
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
   const stylistCursor = await db.db.collection("salons").aggregate([
@@ -495,6 +851,10 @@ const getSalonByStylistNameRatingGender = async(userlocation, radius, name,limit
 
 const getSalonByStylistNameRatingGenderAndSalonId = async(userlocation, radius, name,limit, rating, gender, salonId) => {
   console.log("getSalonByStylistNameRatingGenderAndSalonId server "+salonId)
+  if(empty(userlocation)){
+    console.log("NO location, radius, limit null")
+    return;
+  }
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
   const stylistCursor = await db.db.collection("salons").aggregate([
@@ -534,7 +894,11 @@ const getSalonByStylistNameRatingGenderAndSalonId = async(userlocation, radius, 
 
 
 //get salons nearest shallow query
-const getAllNearestSalonsShallow = async (Userlocation, radius) => {
+const getAllNearestSalonsShallow = async (userlocation, radius) => {
+  if(empty(userlocation)){
+    console.log("NO location, radius, limit null")
+    return;
+  }
   console.log("get salons nearest shallow query");
   try{
      const db = await getDatabaseByName("afroturf");
@@ -543,7 +907,7 @@ const getAllNearestSalonsShallow = async (Userlocation, radius) => {
       
         {
           $geoNear : {
-            near: {coordinates :Userlocation}, 
+            near: {coordinates :userlocation}, 
             distanceField: "dist.calculated",
             maxDistance: parseInt(radius)*METERS_TO_KM,
             spherical: true
@@ -591,6 +955,10 @@ const getAllSalons =  async () => {
 // console.log("**************************services queries**********************************");
 const getServicesByNameTypePriceRangeCodeAndSalonId = async (userlocation, radius, limit, serviceName, servicetype, price_gte, price_lte, code,salonId) =>{
         console.log("getServicesByNameTypePriceRangeCodeAndSalonId server "+userlocation)
+        if(empty(userlocation)){
+          console.log("NO location, radius, limit null")
+          return;
+        }
         const db = await getDatabaseByName("afroturf");
         await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
         const stylistCursor = await db.db.collection("salons").aggregate([
@@ -631,6 +999,10 @@ const getServicesByNameTypePriceRangeCodeAndSalonId = async (userlocation, radiu
 //global
 const getServicesByNameTypePriceRangeCode = async (userlocation, radius, limit, serviceName, servicetype, price_gte, price_lte, code) =>{
   console.log("getServicesByNameTypePriceRangeCode ---346 ");
+  if(empty(userlocation)){
+    console.log("NO location, radius, limit null")
+    return;
+  }
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
   const stylistCursor = await db.db.collection("salons").aggregate([
@@ -670,6 +1042,10 @@ const getServicesByNameTypePriceRangeCode = async (userlocation, radius, limit, 
 
 const getServicesByNameTypePriceRangeAndSalonId = async (userlocation, radius, limit, serviceName, servicetype, price_gte, price_lte,salonId) =>{
   console.log("getServicesByNameTypePriceRangeAndSalonId server "+userlocation)
+  if(empty(userlocation)){
+    console.log("NO location, radius, limit null")
+    return;
+  }
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
   const stylistCursor = await db.db.collection("salons").aggregate([
@@ -713,6 +1089,10 @@ const getServicesByNameTypePriceRangeAndSalonId = async (userlocation, radius, l
 
 const getServicesByNameTypePriceRange = async (userlocation, radius, limit, serviceName, servicetype, price_gte, price_lte) =>{
   console.log("getServicesByNameTypePriceRange server "+userlocation)
+  if(empty(userlocation)){
+    console.log("NO location, radius, limit null")
+    return;
+  }
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
   const stylistCursor = await db.db.collection("salons").aggregate([
@@ -752,6 +1132,10 @@ const getServicesByNameTypePriceRange = async (userlocation, radius, limit, serv
  
 const  getServicesByNamePriceRangeAndSalonId = async (userlocation, radius, limit, serviceName, price_gte, price_lte,salonId) =>{
   console.log("getServicesByNamePriceRangeAndSalonId server "+userlocation)
+  if(empty(userlocation)){
+    console.log("NO location, radius, limit null")
+    //return;
+  }
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
   const stylistCursor = await db.db.collection("salons").aggregate([
@@ -792,8 +1176,35 @@ const  getServicesByNamePriceRangeAndSalonId = async (userlocation, radius, limi
 
 const  getServicesByNamePriceRange = async (userlocation, radius, limit, serviceName, price_gte, price_lte) =>{
   console.log("getServicesByNamePriceRange server "+userlocation)
+  
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  
+  if(empty(userlocation)){
+    console.log("NO location, radius, limit null")
+    const stylistCursor = await db.db.collection("salons").aggregate([{
+         $unwind :'$services'
+      
+      },{
+        $unwind :'$services.'+serviceName
+     
+      }
+      ,{
+        $project: {services: 1, matchPrice : {$and :[{$gte: ['$services.'+serviceName+'.price', parseInt(price_gte)]}, {$lte: ['$services.'+serviceName+'.price', parseInt(price_lte)]}]}}
+      }, 
+      {
+        "$match": {"matchPrice":true}
+      },
+      {
+        $project: {services: 1 }
+      },
+    
+    ]);
+    const stylist = await stylistCursor.toArray();
+    db.connection.close();
+    return JSON.parse(JSON.stringify(stylist)); 
+    
+  }
   const stylistCursor = await db.db.collection("salons").aggregate([
     {
       $geoNear:{
@@ -831,8 +1242,39 @@ const  getServicesByNamePriceRange = async (userlocation, radius, limit, service
 
 const getServicesByNameTypeSalonId = async (userlocation, radius, limit, serviceName, servicetype, salonId) =>{
   console.log("getServicesByNameTypeSalonId server "+userlocation)
+  
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  
+  if(empty(userlocation)){
+    console.log("NO location, radius, limit null")
+    const stylistCursor = await db.db.collection("salons").aggregate([
+      {
+        $match:{salonId: parseInt(salonId)}
+  
+      },{
+         $unwind :'$services'
+      
+      },{
+        $unwind :'$services.'+serviceName
+     
+      }
+      ,{
+        $project: {services: 1, match: { $eq: [ '$services.'+serviceName+'.type', servicetype ] }}
+      }, 
+      {
+        "$match": { "match": true }
+      },
+      {
+        $project: {services: 1 }
+      },
+    
+    ]);
+    const stylist = await stylistCursor.toArray();
+    db.connection.close();
+    return JSON.parse(JSON.stringify(stylist));            
+    
+  }
   const stylistCursor = await db.db.collection("salons").aggregate([
     {
       $geoNear:{
@@ -872,8 +1314,33 @@ const getServicesByNameTypeSalonId = async (userlocation, radius, limit, service
 
 const getServicesByNameType = async (userlocation, radius, limit, serviceName, servicetype) =>{
   console.log("getServicesByNameType server ---- 350 "+userlocation)
+  
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  if(empty(userlocation)){
+    console.log("NO location, radius, limit null")
+    const stylistCursor = await db.db.collection("salons").aggregate([{
+         $unwind :'$services'
+      
+      },{
+        $unwind :'$services.'+serviceName
+     
+      }
+      ,{
+        $project: {services: 1, match: { $eq: [ '$services.'+serviceName+'.type', servicetype ] }}
+      }, 
+      {
+        "$match": { "match": true }
+      },
+      {
+        $project: {services: 1 }
+      },
+    
+    ]);
+    const stylist = await stylistCursor.toArray();
+    db.connection.close();
+    return JSON.parse(JSON.stringify(stylist));               
+  }
   const stylistCursor = await db.db.collection("salons").aggregate([
     {
       $geoNear:{
@@ -912,8 +1379,32 @@ const getServicesByNameType = async (userlocation, radius, limit, serviceName, s
 
 const getServicesByNameSalonId = async (userlocation, radius, limit,serviceName, salonId) =>{
   console.log("getServicesByNameSalonId server "+userlocation)
+  
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  if(empty(userlocation)){
+    console.log("NO location, radius, limit null")
+    const stylistCursor = await db.db.collection("salons").aggregate([
+      {
+        $match:{salonId: parseInt(salonId)}
+  
+      },{
+         $unwind :'$services'
+      
+      },{
+        $unwind :'$services.'+serviceName
+     
+     }
+      ,{
+        $project: {services: 1}
+      }
+    
+    ]);
+    const stylist = await stylistCursor.toArray();
+    db.connection.close();
+    return JSON.parse(JSON.stringify(stylist));               
+  
+  }
   const stylistCursor = await db.db.collection("salons").aggregate([
     {
       $geoNear:{
@@ -947,8 +1438,28 @@ const getServicesByNameSalonId = async (userlocation, radius, limit,serviceName,
 
 const getServicesByName = async (userlocation, radius, limit,serviceName) =>{
   console.log("getServicesByName server ---3453 "+userlocation)
+  
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  if(empty(userlocation)){
+    console.log("NO location, radius, limit null")
+    const stylistCursor = await db.db.collection("salons").aggregate([{
+         $unwind :'$services'
+      
+      },{
+        $unwind :'$services.'+serviceName
+     
+     }
+      ,{
+        $project: {services: 1}
+      }
+    
+    ]);
+    const stylist = await stylistCursor.toArray();
+    db.connection.close();
+    return JSON.parse(JSON.stringify(stylist));               
+  
+  }
   const stylistCursor = await db.db.collection("salons").aggregate([
     {
       $geoNear:{
@@ -980,9 +1491,31 @@ const getServicesByName = async (userlocation, radius, limit,serviceName) =>{
 
 
 const getServicesSalonId = async (userlocation, radius, limit, salonId) =>{
+
   console.log("getServicesSalonId server "+userlocation)
+  
   const db = await getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  if(empty(userlocation)){
+    console.log("NO location, radius, limit null")
+    
+    const stylistCursor = await db.db.collection("salons").aggregate([
+      {
+        $match:{salonId: parseInt(salonId)}
+  
+      },{
+         $unwind :'$services'
+      
+      }
+      ,{
+        $project: {services: 1}
+      }
+    
+    ]);
+    const stylist = await stylistCursor.toArray();
+    db.connection.close();
+    return JSON.parse(JSON.stringify(stylist)); 
+  }
   const stylistCursor = await db.db.collection("salons").aggregate([
     {
       $geoNear:{
@@ -1045,6 +1578,8 @@ module.exports = {
   getSalonByStylistRatingAndSalonId,
   getSalonAllStylist,
   getSalonByStylistNameRatingGenderAndSalonId,
+  getSalonByStylistGenderAndSalonId,
+  getSalonByStylistGenderAndSalonId2,
 
   //salons
   getSalonByRating,

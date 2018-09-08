@@ -12,8 +12,7 @@ const getSalonBySalonId = async ctx => {
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
     const salonId =  ctx.params.salonId;
-    if(location !== undefined && 
-        salonId !== undefined &&radius !== undefined){
+    if(salonId !== undefined ){
         const userLocation = await task.toLocationObject(location);
         ctx.body = await salonClient.getSalonBySalonId(salonId, userLocation, radius);
         
@@ -31,22 +30,21 @@ const getSalonByNameOrRating = async ctx => {
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
     const name =  ctx.query.name;
-    const limit =  ctx.query.limit;
+    let limit =  ctx.query.limit;
     const rating =  ctx.query.rating;
-    if(location !== undefined &&
-      name !== undefined &&
-      radius !== undefined 
-      && limit !== undefined ){
+    if(limit == undefined){
+        limit = 10000000000000000;
+    }
+    if(name !== undefined && rating === undefined ){
         const userLocation = await task.toLocationObject(location);
         ctx.body = await salonClient.getSalonByName(name, userLocation, radius,limit);
         return ctx.body;
-    }else if(location !== undefined &&
-        rating !== undefined &&
-        radius !== undefined 
-        && limit !== undefined ){
+    }else if(rating !== undefined && name === undefined){
           const userLocation = await task.toLocationObject(location);
           ctx.body = await salonClient.getSalonByRating(rating, userLocation, radius,limit);
           
+      }else{
+          return {res:401, message: "path not found include rating or name"}
       }
     
 
@@ -58,28 +56,29 @@ const getNearestSalons = async ctx =>{
 
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
-    const limit =  ctx.query.limit;
-
-    if(location !== undefined && radius !== undefined && limit !== undefined ){
-        const userLocation = await task.toLocationObject(location);
-        ctx.body = await salonClient.getNearestSalons(userLocation, radius,limit);
-        
+    let limit =  ctx.query.limit;
+    if(limit == undefined){
+        limit = 10000000000000000;
     }
+
+    const userLocation = await task.toLocationObject(location);
+    ctx.body = await salonClient.getNearestSalons(userLocation, radius,limit);
+        
+    
 };
 
 
 // shallow
 
 const getAllNearestSalonsShallow = async ctx => {
-
+    console.log("----getAllNearestSalonsShallow-----");
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
-    if(location !== undefined 
-        && radius !== undefined){
-        const userLocation = await task.toLocationObject(location);
-        ctx.body = await salonClient.getAllNearestSalonsShallow(userLocation, radius);
-        
-    }
+  
+    const userLocation = await task.toLocationObject(location);
+    console.log(userLocation)
+    ctx.body = await salonClient.getAllNearestSalonsShallow(userLocation, radius);
+    
 
 
 };
@@ -94,10 +93,7 @@ const getSalonByNameShallow = async ctx =>{
         limit = 10000000000000000;
     }
 
-    if(location !== undefined
-         && name !== undefined 
-         &&radius !== undefined && 
-         limit !== undefined ){
+    if( name !== undefined ){
         const userLocation = await task.toLocationObject(location);
         ctx.body = await
          salonClient.getSalonByNameShallow
@@ -109,10 +105,9 @@ const getSalonBySalonIdShallow = async ctx =>{
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
     const salonId =  ctx.params.salonId;
+    
 
-
-    if(location !== undefined && salonId !== undefined 
-        &&radius !== undefined){
+    if(salonId !== undefined){
         const userLocation = await task.toLocationObject(location);
         ctx.body = await 
         salonClient.getSalonBySalonIdShallow(salonId, userLocation, radius);
