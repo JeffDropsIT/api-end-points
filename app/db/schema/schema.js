@@ -793,18 +793,18 @@ const salonOrder = async (data, orderDoc) =>{
     const form = {
         orderId: "salon-"+await counters.getOrderNumber(orderDoc,"$salonOrders"),
         customerId: data.userId,
-        item: data.serviceName,
-        code: data.code,
+        item: data.serviceName.toLowerCase(),
+        code: data.code.toLowerCase(),
         created: new Date(),
         price: data.price,
         salonObjId:data.salonObjId,
-        description: data.description,
+        description: data.description.toLowerCase(),
         status: "pending",
         assigned: false,
         assignedTo: null,
         approved: false,
         available:false,
-        paymentStatus: data.paymentStatus,
+        paymentStatus: data.paymentStatus.toLowerCase(),
         cancelled: false,
         timeSlot: new Date(data.timeSlot)
     }
@@ -814,14 +814,14 @@ const booking = async data => {
     const form = {
         orderId: data.orderId,
         customerId: data.userId,
-        item: data.serviceName,
-        code: data.code,
+        item: data.serviceName.toLowerCase(),
+        code: data.code.toLowerCase(),
         created: new Date(),
         price: data.price,
         salonObjId:data.salonObjId,
-        description: data.description,
+        description: data.description.toLowerCase(),
         status: "pending",
-        paymentStatus: data.paymentStatus,
+        paymentStatus: data.paymentStatus.toLowerCase(),
         assigned: true,
         assignedTo: data.assignedTo,
         approved: false,
@@ -835,13 +835,13 @@ const stylistOrder = async (data, orderDoc) =>{
     const form = {
         orderId: "stylist-"+await counters.getOrderNumber(orderDoc,"$salonOrders"),
         customerId: data.userId,
-        item: data.serviceName,
+        item: data.serviceName.toLowerCase(),
         code: data.code,
         salonObjId:data.salonObjId,
         created: new Date(),
         price: data.price,
-        paymentStatus: data.paymentStatus,
-        description: data.description,
+        paymentStatus: data.paymentStatus.toLowerCase(),
+        description: data.description.toLowerCase(),
         status: "pending",
         assigned: true,
         assignedTo: data.assignedTo,
@@ -861,7 +861,7 @@ const gallaryEntry = (fileType, views, key, caption) => {
         "fileType": fileType,
         "view": views,
         "key": key,
-        "caption": caption,
+        "caption": caption.toLowerCase(),
         "created": new Date(),
         "comments": []
     }
@@ -897,7 +897,7 @@ const getApplicationJson =  (userId, salonObjId)=>{
 }
 const createNewSalonForm =  (genNextSalonId,name, address, street, coordinates, sName)=>{
     const form = {
-        "name": name,
+        "name": name.toLowerCase(),
         "salonId": genNextSalonId,
         "rating": 1,
         "roomDocId": "", //remove
@@ -905,7 +905,7 @@ const createNewSalonForm =  (genNextSalonId,name, address, street, coordinates, 
         "reviewsDocId": "",
         "accountStatus": "active",
         "created": new Date(),
-        "location": {"address": address, "street": street, "coordinates":coordinates},
+        "location": {"address": address.toLowerCase(), "street": street.toLowerCase(), "coordinates":coordinates},
         "services": [createNewServicesForm(sName)],
         "stylists": [],
         "avatar": [],
@@ -918,8 +918,8 @@ const createNewServicesForm =  (sName)=>{
 
     
     const form = {
-        "name": sName,
-        "_id": sName, 
+        "name": sName.toLowerCase(),
+        "_id": sName.toLowerCase(), 
         "created": new Date(),
         "subservices": []
     }
@@ -929,12 +929,12 @@ const createNewServicesForm =  (sName)=>{
 const createNewSubserviceForm =  (type, code, price, description, url)=>{
     
     const form = {
-        "type": type,
-        "code": code, //unique
+        "type": type.toLowerCase(),
+        "code": code.toLowerCase(), //unique
         "price": price,
         "created": new Date(),
         "url": url,
-        "description": description
+        "description": description.toLowerCase()
         
     }
     return form;
@@ -942,9 +942,9 @@ const createNewSubserviceForm =  (type, code, price, description, url)=>{
 const stylist =  (_id, username, fname, gender, stylistId)=>{
     const application = {
         "userId": _id,
-        "username": username,
-        "name": fname,
-        "gender": gender,
+        "username": username.toLowerCase(),
+        "name": fname.toLowerCase(),
+        "gender": gender.toLowerCase(),
         "stylistId": stylistId,
         "reviewsDocId":"",
         "created": new Date(),
@@ -957,7 +957,7 @@ const modifyRequestJson =  (userId, salonObjId, status, permissions)=>{
     const application = {
         "userId": userId,
         "salonObjId": salonObjId,
-        "status": status,
+        "status": status.toLowerCase(),
         "stylistAccess": permissions
     }
     return application;
@@ -966,9 +966,9 @@ const modifyRequestJson =  (userId, salonObjId, status, permissions)=>{
 const stylistJSON =  (data, stylistId, id)=>{
     const form = {
         "userId":id,
-        "username": data.username,
-        "name": data.fname,
-        "gender": data.gender,
+        "username": data.username.toLowerCase(),
+        "name": data.fname.toLowerCase(),
+        "gender": data.gender.toLowerCase(),
         "stylistId": stylistId,
         "reviewsDocId":data.reviewsDocId,
         "gallery":[],
@@ -985,10 +985,10 @@ const stylistJSON =  (data, stylistId, id)=>{
 const createNewRoomForm = async (roomName, roomStatus, roomType, members) =>{
     const form = {
         "details":{
-            "roomName": roomName,
-            "roomStatus": roomStatus, 
+            "roomName": roomName.toLowerCase(),
+            "roomStatus": roomStatus.toLowerCase(), 
         },
-        "roomType": roomType,
+        "roomType": roomType.toLowerCase(),
         "members": members,
         "messages": []
 
@@ -1001,7 +1001,7 @@ const createNewMemberForm = async (status, userId) =>{
         "permissions":[],
         "userId": userId,
         "members": [],
-        "status": status
+        "status": status.toLowerCase()
 
     }
     return form;

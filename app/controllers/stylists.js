@@ -1,6 +1,5 @@
-const salonClient = require('../db/databaseClient');
 const task = require('../controllers/task');
-
+const stylistOps= require('../../app/db/stylist-operations');
 
 // /afroturf/salons/stylist/:salonId/:stylistId/q?location=-21.32565,23.54454&
 //radius=10000
@@ -13,7 +12,7 @@ const getStylistById = async ctx =>{
     if(salonId !== undefined && stylistId !==undefined){
         const userLocation = await task.toLocationObject(location);
         ctx.body = await 
-        salonClient.getStylistById(salonId, stylistId, userLocation, radius);
+        stylistOps.getStylistById(salonId, stylistId, userLocation, radius);
         
     }
 };
@@ -35,11 +34,11 @@ const stylistQueries = async ctx =>{
         limit = 10000000;
     }
      if(name !== undefined
-        && gender !== undefined){
+        && gender !== undefined && rating !== undefined) {
             console.log("getSalonByStylistNameRatingGender - iin")
             const userLocation = await task.toLocationObject(location);
             ctx.body = await 
-            salonClient.getSalonByStylistNameRatingGender(userLocation, radius, name,limit, rating, gender);
+            stylistOps.getSalonByStylistNameRatingGender(userLocation, radius, name,limit, rating, gender);
             
     }else if(gender !== undefined
          && rating !== undefined){
@@ -47,24 +46,24 @@ const stylistQueries = async ctx =>{
             console.log("getSalonByStylistRatingGender - iiin")
             const userLocation = await task.toLocationObject(location);
             ctx.body = await 
-            salonClient.getSalonByStylistRatingGender(userLocation, radius, limit, rating, gender);
+            stylistOps.getSalonByStylistRatingGender(userLocation, radius, limit, rating, gender);
      
     }else if( rating !== undefined){
             console.log("getSalonByStylistRating - iiiin")
             const userLocation = await task.toLocationObject(location);
-            ctx.body = await salonClient.getSalonByStylistRating(userLocation, radius, limit, rating);
+            ctx.body = await stylistOps.getSalonByStylistRating(userLocation, radius, limit, rating);
         
     }else if(gender !== undefined){
             console.log("getSalonByStylistGenderAndSalonId2 stylist")
             
             userLocation = await task.toLocationObject(location);
             ctx.body =  await 
-            salonClient.getSalonByStylistGenderAndSalonId2(userLocation, radius, limit, gender);
+            stylistOps.getSalonByStylistGenderAndSalonId2(userLocation, radius, limit, gender);
     } 
     else{
             console.log("getSalonAllStylist - iiiin")
             const userLocation = await task.toLocationObject(location);
-            ctx.body = await salonClient.getSalonAllStylist(userLocation, radius);
+            ctx.body = await stylistOps.getSalonAllStylist(userLocation, radius);
         
     }
     
@@ -80,6 +79,8 @@ const stylistQueriesLocal = async ctx =>{
     const rating = await ctx.query.rating;
     const gender = await ctx.query.gender
     let limit = await ctx.query.limit; 
+
+
     let userLocation;
     if(limit == undefined){
         limit = 10000000000;
@@ -90,7 +91,7 @@ const stylistQueriesLocal = async ctx =>{
             
             userLocation = await task.toLocationObject(location);
             ctx.body = await 
-            salonClient
+            stylistOps
             .getSalonByStylistNameRatingGenderAndSalonId(userLocation, radius, name,limit, rating, gender, salonId);
     }else if(gender !== undefined
         && rating !== undefined && salonId !== undefined){
@@ -99,7 +100,7 @@ const stylistQueriesLocal = async ctx =>{
             
             userLocation = await task.toLocationObject(location);
             ctx.body =  await 
-            salonClient
+            stylistOps
             .getSalonByStylistRatingGenderAndSalonId(userLocation, radius,limit, rating, gender, salonId);
     }else if(rating !== undefined 
         &&salonId !== undefined){
@@ -107,20 +108,20 @@ const stylistQueriesLocal = async ctx =>{
             
             userLocation = await task.toLocationObject(location);
             ctx.body =  await 
-            salonClient.getSalonByStylistRatingAndSalonId(userLocation, radius, limit, rating, gender, salonId);
+            stylistOps.getSalonByStylistRatingAndSalonId(userLocation, radius, limit, rating, gender, salonId);
     }else if(gender !== undefined 
         &&salonId !== undefined){
             console.log("getSalonByStylistGenderAndSalonId stylist")
             
             userLocation = await task.toLocationObject(location);
             ctx.body =  await 
-            salonClient.getSalonByStylistGenderAndSalonId(userLocation, radius, limit, gender, salonId);
+            stylistOps.getSalonByStylistGenderAndSalonId(userLocation, radius, limit, gender, salonId);
     } else {
         
         console.log("get all SalonStylistBySalonId stylist")
             
             userLocation = await task.toLocationObject(location);
-            ctx.body =  await salonClient
+            ctx.body =  await stylistOps
             .getSalonStylistBySalonId(userLocation, radius ,salonId);
     }
     console.log("end of script")

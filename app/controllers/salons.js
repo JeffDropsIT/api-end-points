@@ -1,7 +1,5 @@
 const task = require('../controllers/task');
-const salonClient = require('../db/databaseClient');
-
-
+const salonOps= require('../../app/db/salon-operations');
 
 
 
@@ -14,7 +12,7 @@ const getSalonBySalonId = async ctx => {
     const salonId =  ctx.params.salonId;
     if(salonId !== undefined ){
         const userLocation = await task.toLocationObject(location);
-        ctx.body = await salonClient.getSalonBySalonId(salonId, userLocation, radius);
+        ctx.body = await salonOps.getSalonBySalonId(salonId, userLocation, radius);
         
     }
 
@@ -37,11 +35,11 @@ const getSalonByNameOrRating = async ctx => {
     }
     if(name !== undefined && rating === undefined ){
         const userLocation = await task.toLocationObject(location);
-        ctx.body = await salonClient.getSalonByName(name, userLocation, radius,limit);
+        ctx.body = await salonOps.getSalonByName(name, userLocation, radius,limit);
         return ctx.body;
     }else if(rating !== undefined && name === undefined){
           const userLocation = await task.toLocationObject(location);
-          ctx.body = await salonClient.getSalonByRating(rating, userLocation, radius,limit);
+          ctx.body = await salonOps.getSalonByRating(rating, userLocation, radius,limit);
           
       }else{
           return {res:401, message: "path not found include rating or name"}
@@ -62,7 +60,7 @@ const getNearestSalons = async ctx =>{
     }
 
     const userLocation = await task.toLocationObject(location);
-    ctx.body = await salonClient.getNearestSalons(userLocation, radius,limit);
+    ctx.body = await salonOps.getNearestSalons(userLocation, radius,limit);
         
     
 };
@@ -77,7 +75,7 @@ const getAllNearestSalonsShallow = async ctx => {
   
     const userLocation = await task.toLocationObject(location);
     console.log(userLocation)
-    ctx.body = await salonClient.getAllNearestSalonsShallow(userLocation, radius);
+    ctx.body = await salonOps.getAllNearestSalonsShallow(userLocation, radius);
     
 
 
@@ -96,7 +94,7 @@ const getSalonByNameShallow = async ctx =>{
     if( name !== undefined ){
         const userLocation = await task.toLocationObject(location);
         ctx.body = await
-         salonClient.getSalonByNameShallow
+        salonOps.getSalonByNameShallow
          (name, userLocation, radius,limit);
         
     }
@@ -110,7 +108,7 @@ const getSalonBySalonIdShallow = async ctx =>{
     if(salonId !== undefined){
         const userLocation = await task.toLocationObject(location);
         ctx.body = await 
-        salonClient.getSalonBySalonIdShallow(salonId, userLocation, radius);
+        salonOps.getSalonBySalonIdShallow(salonId, userLocation, radius);
         
     }
 }
@@ -118,7 +116,7 @@ const getSalonBySalonIdShallow = async ctx =>{
 
 const getAllSalons = async ctx =>{
 
-    ctx.body = await salonClient.getAllSalons();
+    ctx.body = await salonOps.getAllSalons();
     
 }
 

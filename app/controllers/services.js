@@ -1,220 +1,7 @@
 const task = require('../controllers/task');
-const salonClient = require('../db/databaseClient');
-
-// ///afroturf/salons/services/?location=23.123,21.3434
-// //&radius=10&service=hairstyles
-// const getServicesByName = async ctx => {
-//     const location =  ctx.query.location;
-//     const radius =  ctx.query.radius;
-//     const serviceName =  ctx.query.service;
-//     if(location !== undefined && serviceName !== undefined 
-//         && radius !== undefined){
-//             const userLocation = await task.toLocationObject(location);
-//             //get all nearest services by name 
-//     }
-// };
-// ///afroturf/salons/:salonId/services/?location=23.123,21.3434
-// //&radius=10&service=hairstyles
-
-// const getServicesByNameAndSalonId= async ctx =>{
-//     const salonId =  ctx.query.salonId;
-//     const location =  ctx.query.location;
-//     const radius =  ctx.query.radius;
-//     const serviceName =  ctx.query.service;
-//     if(location !== undefined && radius !== undefined 
-//         && serviceName !== undefined && salonId !== undefined){
-//             const userLocation = await task.toLocationObject(location);
-//             //get services by name and type for a salonId
-//     };
-// };
-
-// ///afroturf/salons/services/?location=23.123,21.3434
-// //&radius=10&type=locks
-// const getServicesByType = async ctx => {
-//     const location =  ctx.query.location;
-//     const radius =  ctx.query.radius;
-//     const servicetype =  ctx.query.type;
-//     if(location !== undefined && serviceName !== undefined 
-//         && radius !== undefined && servicetype !== undefined){
-//             const userLocation = await task.toLocationObject(location);
-//             //get all nearest services by name and type 
-//     }
-// };
-// ///afroturf/salons/:salonId/services/?location=23.123,21.3434
-// //&radius=10&type=Locks
-
-// const getServicesByTypeAndSalonId= async ctx =>{
-//     const salonId =  ctx.query.salonId;
-//     const location =  ctx.query.location;
-//     const radius =  ctx.query.radius;
-//     const servicetype =  ctx.query.type;
-//     if(location !== undefined && radius !== undefined 
-//         && servicetype !== undefined && salonId !== undefined){
-//             const userLocation = await task.toLocationObject(location);
-//             //get services by name and type for a salonId
-//     };
-// };
-
-// ///afroturf/salons/services/?location=23.123,21.3434
-// //&radius=10&service=hairstyles&type=locks
-// const getServicesByTypeAndName = async ctx => {
-//     const location =  ctx.query.location;
-//     const radius =  ctx.query.radius;
-//     const serviceName =  ctx.query.service;
-//     const servicetype =  ctx.query.type;
-//     if(location !== undefined && serviceName !== undefined 
-//         && radius !== undefined && servicetype !== undefined){
-//             const userLocation = await task.toLocationObject(location);
-//             //get all nearest services by name and type 
-//     }
-// };
-
-// ///afroturf/salons/:salonId/services/?location=23.123,21.3434
-// //&radius=10&service=hairstyles&type=locks
-// const getServicesByTypeAndNameAndSalonId = async ctx => {
-//     const salonId =  ctx.query.salonId;
-//     const location =  ctx.query.location;
-//     const radius =  ctx.query.radius;
-//     const serviceName =  ctx.query.service;
-//     const servicetype =  ctx.query.type;
-//     if(location !== undefined && serviceName !== undefined 
-//         && radius !== undefined && salonId !==undefined && servicetype !== undefined){
-//             const userLocation = await task.toLocationObject(location);
-//             //get all nearest services by name and type 
-//     }
-// };
+const servicesOps= require('../../app/db/services-operations');
 
 
-// ///afroturf/salons/services/?location=23.123,21.3434
-// //&radius=10&service=hairstyles&code=F567B
-// const getServicesByNameAndCode = async ctx => {
-
-//     const location =  ctx.query.location;
-//     const radius =  ctx.query.radius;
-//     const serviceName =  ctx.query.service;
-//     const code =  ctx.query.code;
-//     if(location !== undefined && radius !==undefined && serviceName !== undefined
-//          && undefined && code !== undefined){
-//             const userLocation = await task.toLocationObject(location);
-//             //get all nearest services by code
-//     }
-// };
-
-
-// ///afroturf/salons/:salonId/services/?location=23.123,21.3434
-// //&radius=10&service=hairstyles&code=F567B
-// const getServicesByNameAndCodeAndSalonId = async ctx => {
-//     const salonId =  ctx.query.salonId;
-//     const location =  ctx.query.location;
-//     const radius =  ctx.query.radius;
-//     const serviceName =  ctx.query.service;
-//     const code =  ctx.query.code;
-//     if(location !== undefined && radius !==undefined && salonId !==undefined && serviceName !== undefined
-//          && undefined && code !== undefined){
-//             const userLocation = await task.toLocationObject(location);
-//             //get all nearest services by code
-//     }
-// };
-
-// ///afroturf/salons/services/?location=23.123,21.3434
-// //&radius=10&service=hairstyles&price=50
-// const getServicesByPrice = async ctx => {
-
-//     const location =  ctx.query.location;
-//     const radius =  ctx.query.radius;
-//     const serviceName =  ctx.query.service;
-//     const price =  ctx.query.price;
-//     if(location !== undefined && radius !== undefined && serviceName !== undefined 
-//         && code !== undefined && price !==undefined){
-//             const userLocation = await task.toLocationObject(location);
-//             //get all nearest services by price
-//     }
-// };
-// ///afroturf/salons/:salonId/services/?location=23.123,21.3434
-// //&radius=10&service=hairstyles&price=50&
-// const getServicesByPriceAndSalonId = async ctx => {
-
-//     const salonId =  ctx.query.salonId;
-//     const location =  ctx.query.location;
-//     const radius =  ctx.query.radius;
-//     const serviceName =  ctx.query.service;
-//     const price =  ctx.query.price;
-//     if(location !== undefined && radius !== undefined && serviceName !== undefined 
-//         && code !== undefined && price !==undefined &&salonId !== undefined){
-//             const userLocation = await  task.toLocationObject(location);
-//             //get all nearest services by price
-//     }
-// };
-// ///afroturf/salons/services/?location=23.123,21.3434
-// //&radius=10&code=F567B
-
-// const getServicesByCode = async ctx => {
-//     const location =  ctx.query.location;
-//     const radius =  ctx.query.radius;
-//     const code =  ctx.query.code;
-//     if(location !== undefined && radius !== undefined && code !== undefined){
-//             const userLocation = await task.toLocationObject(location);
-//             //get all nearest services by code and salonId
-//     }
-// };
-
-// ///afroturf/salons/:salonId/services/?location=23.123,21.3434
-// //&radius=10&code=F567B
-
-// const getServicesByCodeAndSalonId = async ctx => {
-//     const salonId =  ctx.query.salonId;
-//     const location =  ctx.query.location;
-//     const radius =  ctx.query.radius;
-//     const code =  ctx.query.code;
-//     if(location !== undefined && salonId !== undefined 
-//         && radius !== undefined && code !== undefined){
-//             const userLocation = await task.toLocationObject(location);
-//             //get all nearest services by code and salonId
-//     }
-// };
-
-// ///afroturf/salons/:salonId/services/?location=23.123,21.3434
-// //&radius=10
-
-// const getAllServicesBysalonId = async ctx => {
-
-//     const location =  ctx.query.location;
-//     const radius =  ctx.query.radius;
-//     const salonId =  ctx.query.salonId;
-//     if(location !== undefined && salonId !== undefined 
-//         && radius !== undefined){
-//             const userLocation = await task.toLocationObject(location);
-//             //get all nearest services by name and code
-//     }
-// };
-// //(above + below -)
-
-// ///afroturf/salons/services/?location=23.123,21.3434
-// //&radius=10&price_=-50 || +50 
-// const getServicesByPriceRange = async ctx => {
-//     const location =  ctx.query.location;
-//     const radius =  ctx.query.radius;
-//     const serviceName =  ctx.query.service;
-//     const price =  ctx.query.price_;
-//     if(location !== undefined && serviceName !== undefined 
-//         && radius !== undefined && price !== undefined){
-//             const userLocation = await task.toLocationObject(location);
-//             //get all nearest services by name and price range (above + below -)
-//             //if contains - all below price else if + all above price
-//     }
-// };
-
-// ///afroturf/salons/:salonId/services/?location=23.123,21.3434
-// //&radius=10&price_=-50&service=hairstyles
-// const getServicesByPriceRangeAndSalonId = async ctx => {
-//     const salonId =  ctx.query.salonId;
-//     const location =  ctx.query.location;
-//     const radius =  ctx.query.radius;
-//     const serviceName =  ctx.query.service;
-//     const price =  ctx.query.price_;
-
-    
-// };
 
 //filter 
 ///afroturf/salons/:salonId/services/filter/?location=23.123,21.3434
@@ -226,9 +13,18 @@ const servicesFilterLocal = async ctx => {
     const radius =  ctx.query.radius;
     const price_lte =  ctx.query.price_lte;
     const price_gte =  ctx.query.price_gte; //handle gte and lte error
-    const serviceName =  ctx.query.service;
-    const servicetype =  ctx.query.type;
-    const code = ctx.query.code;
+    let serviceName =  ctx.query.service;
+    let servicetype =  ctx.query.type;
+    let code = ctx.query.code;
+    if(serviceName !== undefined){
+        serviceName = serviceName.toLowerCase();
+    }
+    if(servicetype !== undefined){
+        servicetype = servicetype.toLowerCase()
+    };
+    if(code !== undefined){
+        code = code //.toLowerCase();
+    }
     const salonId = ctx.params.salonId;
     
     let limit = ctx.query.limit;
@@ -241,7 +37,7 @@ const servicesFilterLocal = async ctx => {
      && servicetype !== undefined 
     &&price_gte !==undefined&&code !== undefined && salonId !==undefined){
         userLocation = await task.toLocationObject(location);
-        ctx.body = await salonClient.getServicesByNameTypePriceRangeCodeAndSalonId(userLocation, radius, limit, serviceName, servicetype, price_gte, price_lte, code,salonId);
+        ctx.body = await servicesOps.getServicesByNameTypePriceRangeCodeAndSalonId(userLocation, radius, limit, serviceName, servicetype, price_gte, price_lte, code,salonId);
 
         
     
@@ -250,14 +46,14 @@ const servicesFilterLocal = async ctx => {
         && price_gte !==undefined&& salonId !==undefined){
             console.log("getServicesByNameTypePriceRangeAndSalonId");
             userLocation = await task.toLocationObject(location);
-            ctx.body = await salonClient.getServicesByNameTypePriceRangeAndSalonId(userLocation, radius, limit, serviceName, servicetype, price_gte, price_lte,salonId);
+            ctx.body = await servicesOps.getServicesByNameTypePriceRangeAndSalonId(userLocation, radius, limit, serviceName, servicetype, price_gte, price_lte,salonId);
             
         
     }else if(serviceName !== undefined && price_lte !==undefined 
         && price_gte !==undefined&& salonId !==undefined){
             console.log("getServicesByNamePriceRangeAndSalonId");
             userLocation = await task.toLocationObject(location);
-            ctx.body = await salonClient.getServicesByNamePriceRangeAndSalonId(userLocation, radius, limit, serviceName, price_gte, price_lte,salonId);
+            ctx.body = await servicesOps.getServicesByNamePriceRangeAndSalonId(userLocation, radius, limit, serviceName, price_gte, price_lte,salonId);
             
         
     }else if(serviceName !== undefined 
@@ -267,21 +63,21 @@ const servicesFilterLocal = async ctx => {
             //if contains - all below price else if + all above price
             console.log(servicetype+" getServicesByNameTypeSalonId - "+serviceName)
             userLocation = await task.toLocationObject(location);
-            ctx.body = await salonClient.getServicesByNameTypeSalonId(userLocation, radius, limit, serviceName, servicetype, salonId);
+            ctx.body = await servicesOps.getServicesByNameTypeSalonId(userLocation, radius, limit, serviceName, servicetype, salonId);
 
     }else if(serviceName !== undefined 
         &&  salonId !== undefined){
             //get all nearest services by name and price range (above + below -) and salonId
             //if contains - all below price else if + all above price
-            console.log(servicetype+" getServicesByNameSalonId - "+serviceName)
+            console.log("-- getServicesByNameSalonId - "+serviceName)
             userLocation = await task.toLocationObject(location);
-            ctx.body = await salonClient.getServicesByNameSalonId(userLocation, radius, limit,serviceName, salonId);
+            ctx.body = await servicesOps.getServicesByNameSalonId(userLocation, radius, limit,serviceName, salonId);
             return ctx.body;
     }else if( salonId !== undefined
       ){
             userLocation = await task.toLocationObject(location);
             console.log(servicetype+" getServicesSalonId - "+serviceName)
-            ctx.body = await salonClient.getServicesSalonId(userLocation, radius, limit, salonId);
+            ctx.body = await servicesOps.getServicesSalonId(userLocation, radius, limit, salonId);
          
     }
 
@@ -307,55 +103,70 @@ const servicesFilterGlobal = async ctx => {
     const radius =  ctx.query.radius;
     const price_lte =  ctx.query.price_lte;
     const price_gte =  ctx.query.price_gte; //handle gte and lte error
-    const serviceName =  ctx.query.service;
-    const servicetype =  ctx.query.type;
-    const code = ctx.query.code;
+    
+    let serviceName =  ctx.query.service;
+    let servicetype =  ctx.query.type;
+    let code = ctx.query.code;
+    if(serviceName !== undefined){
+        serviceName = serviceName.toLowerCase();
+    }
+    if(servicetype !== undefined){
+        servicetype = servicetype.toLowerCase()
+    };
+    if(code !== undefined){
+        code = code //.toLowerCase();
+    }
     
     let limit = ctx.query.limit;
     let userLocation;
-    if(location !== undefined){
-        userLocation = await task.toLocationObject(location);
-    }
+  
     if(limit == undefined){
         limit = 1000000;
     }
-    if(location !== undefined && serviceName !== undefined && price_lte !==undefined
-    && radius !== undefined && servicetype !== undefined 
+    if(serviceName !== undefined && price_lte !==undefined
+    && servicetype !== undefined 
     &&price_gte !==undefined&&code !== undefined){
+        
         console.log("getServicesByNameTypePriceRangeCode ---345 ");
-        ctx.body = await salonClient.getServicesByNameTypePriceRangeCode(userLocation, radius, limit, serviceName, servicetype, price_gte, price_lte, code);
+        userLocation = await task.toLocationObject(location);
+        ctx.body = await servicesOps.getServicesByNameTypePriceRangeCode(userLocation, radius, limit, serviceName, servicetype, price_gte, price_lte, code);
 
     
-    }else if(location !== undefined && serviceName !== undefined && price_lte !==undefined
-        && radius !== undefined && servicetype !== undefined 
+    }else if(serviceName !== undefined && price_lte !==undefined
+        && servicetype !== undefined 
         && price_gte !==undefined){
             console.log("getServicesByNameTypePriceRange --- 347");
-            ctx.body = await salonClient.getServicesByNameTypePriceRange(userLocation, radius, limit, serviceName, servicetype, price_gte, price_lte);
-            return ctx.body;
-        
-    }else if(location !== undefined && serviceName !== undefined && price_lte !==undefined
-        && radius !== undefined 
-        && price_gte !==undefined){
-            console.log("getServicesByNamePriceRange -- 348");
-            ctx.body = await salonClient.getServicesByNamePriceRange(userLocation, radius, limit, serviceName, price_gte, price_lte);
+            userLocation = await task.toLocationObject(location);
+            ctx.body = await servicesOps.getServicesByNameTypePriceRange(userLocation, radius, limit, serviceName, servicetype, price_gte, price_lte);
             
         
-    }else if(location !== undefined && serviceName !== undefined 
-        && radius !== undefined
+    }else if(serviceName !== undefined && price_lte !==undefined
+        && price_gte !== undefined){
+            console.log("getServicesByNamePriceRange -- 348");
+            userLocation = await task.toLocationObject(location);
+            ctx.body = await servicesOps.getServicesByNamePriceRange(userLocation, radius, limit, serviceName, price_gte, price_lte);
+            
+        
+    }else if( serviceName !== undefined 
         && servicetype !== undefined && limit !== undefined){
            
 
             console.log(servicetype+" getServicesByNameType ----349 "+serviceName)
-            ctx.body = await salonClient.getServicesByNameType(userLocation, radius, limit, serviceName, servicetype);
+            userLocation = await task.toLocationObject(location);
+            ctx.body = await servicesOps.getServicesByNameType(userLocation, radius, limit, serviceName, servicetype);
 
-    }else if(location !== undefined && serviceName !== undefined 
-        && radius !== undefined
+    }else if(serviceName !== undefined
         && limit !== undefined){
             //get all nearest services by name and price range (above + below -) and salonId
             //if contains - all below price else if + all above price
             console.log(servicetype+" getServicesByName -360 "+serviceName)
-            ctx.body = await salonClient.getServicesByName(userLocation, radius, limit,serviceName);
+            userLocation = await task.toLocationObject(location);
+            ctx.body = await servicesOps.getServicesByName(userLocation, radius, limit,serviceName);
       
+    }else{
+            console.log(servicetype+" getServicesByName -360 "+serviceName)
+            userLocation = await task.toLocationObject(location);
+            ctx.body = await servicesOps.getAllServices([]);
     }
 
 

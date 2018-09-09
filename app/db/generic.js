@@ -5,6 +5,27 @@ const ObjectId = require('mongodb').ObjectID;
 const schema = require("./schema/schema");
 
 
+
+const createAnyCollection = async (dbName, collectionName, schema) =>{
+    
+    try{
+        const db = await getDatabaseByName(dbName);
+        const result = await db.db.createCollection(collectionName, {validator: {
+        
+            $jsonSchema: schema
+    
+        }
+      });
+      db.connection.close();
+      
+      return  result.result;
+    }catch(err){
+        throw new Error(err);
+    }
+    
+};
+
+
 //get database by Name
 const getDatabaseByName = async(name) =>{
     let url = 'mongodb://admin:password123@ds153841.mlab.com:53841/afroturf';

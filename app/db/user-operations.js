@@ -14,8 +14,9 @@ const createUser = async (ctx) =>{
     const username = ctx.request.body.username;
     const password = ctx.request.body.password;
     const fname = ctx.request.body.fname;
-    try {
+    //try {
         console.log("--createusers--");
+        console.log(ctx)
         const status = await generic.checkIfUserNameEmailPhoneExist(username) ;
         if(status === 1){ 
             console.log("username or phone number already exist, 409: "+ username);
@@ -23,6 +24,7 @@ const createUser = async (ctx) =>{
         }
         const hash = await auth.hashPassword(password);
         await console.log("HASH: ",hash)
+        let lname = "", phone = "";
         const user = await {fname: fname, lname: lname, password:hash, username: username, phone: phone, email:email, created: new Date(), avatar:[]};
     
         const result = await generic.insertIntoCollection("afroturf", "users",user)
@@ -39,9 +41,9 @@ const createUser = async (ctx) =>{
         }
         
         ctx.body =  result.ok === 1 ? {res: 200,  message: "successfully performed operation"} : {res:401,  message: "Ops something went wrong, username already exist"};
-    } catch (error) {
-        throw new Error(error);
-    }
+    // } catch (error) {
+    //     throw new Error(error);
+    // }
 };
 
 

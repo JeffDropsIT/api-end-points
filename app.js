@@ -10,14 +10,12 @@ const path = require('path');
 //const s3fs = require("s3fs");
 const Router = require("koa-router");
 //const s3 = require("./s3");
-const awsHandler = require('./aws/aws-handler');
-const uuid = require("uuid");
-const admin = require("./app/db/admin")
 const userOps = require("./app/db/user-operations");
 const salonOps = require("./app/db/salon-operations");
 const stylistOps = require("./app/db/stylist-operations");
 const auth = require("./app/db/authentication");
-
+const uploads = require("./app/controllers/uploads");
+const quickSearch = require("./app/db/quickSearch")
 //--start--controllers
 
 const salon = require('./app/controllers/salons');
@@ -87,7 +85,6 @@ router.get('/afroturf/user/profile/salon/bookings/duration/unavailable-b',salonO
 router.get('/afroturf/user/profile/salon/bookings/:orderNumber',salonOps.getOrderByOrderNumber);
 //get bookings doc /afroturf/user/profile/salon/bookings/available
 router.get('/afroturf/user/profile/salon/bookings',salonOps.getSalonOrdersDoc);
-
 //crud salon content
 //add subservice To Salon Services /afroturf/user/profile/edit/salon/dashboard
 router.put('/afroturf/user/profile/edit/salon/dashboard/subservices',salonOps.addsubserviceToSalonServices);
@@ -99,13 +96,6 @@ router.put('/afroturf/user/profile/edit/salon/dashboard/services/avatar',salonOp
 router.patch('/afroturf/user/profile/edit/salon/dashboard/services',salonOps.updateServiceName);
 //update service name for a salon /afroturf/user/profile/edit/salon/dashboard
 router.patch('/afroturf/user/profile/edit/salon/dashboard/subservices',salonOps.updateSubservice);
-
-
-
-
-
-
-
 //--controller routes start--
 // /afroturf/salons/?location=23.123,21.3434
 //&radius=1000&limit=10
@@ -149,166 +139,16 @@ router.get('/afroturf/salons/:salonId/services/local-q',service.servicesFilterLo
 //&radius=700000&price_lte=50&service=hairstyles&price_gte=10&code=F567B&type=Locks
 router.get('/afroturf/salons/services/global-q', service.servicesFilterGlobal);
 //--end--
+//upload salon avatar
+router.post("/avatar/salon",uploads.uploadSalonAvatar)
+// handle uploads
+router.post("/gallery/stylist",uploads.uploadToStylistGallary);
+router.post("/avatar/user",uploads.uploadToUserAvatar);
+router.post("/gallery",uploads.uploadToSalonGallary);
 
 
-
-
-
-// router.post("/avatar/salon", async function(ctx) {
-//   // ignore non-POSTs
-//   //   if ('POST' != ctx.method) return await next();
-  
-
-//   const file = ctx.request.files.file;
-//   console.log(" Tot: "+file.length)
-//   if(file.length !== undefined){
-//     for (let i = 0 ; i < file.length; i++){
-//       const pathF = file[i].path;
-//       const reader = await fs.createReadStream(pathF);
-//       console.log("file[i].path) "+file[i].path+ " ");
-//       const key = await uuid.v4()+"name="+file[i].name.replace(" ", "");
-//       //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
-//       admin.addToSalonAvatar("5b7d240bb22b4e2390677e3c", key, pathF);
-//       const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles", Math.random().toString() + "."+file[i].name.split(".")[1]));
-//       reader.pipe(stream);
-      
-//     }
-//   }else{
-//     const pathF = file.path;
-//     const reader = await fs.createReadStream(pathF);
-//     console.log("file[i].path) "+file.path+ " ");
-//     const key = await uuid.v4()+"name="+file.name.replace(" ", "");
-//     //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
-//     admin.addToSalonAvatar("5b7d240bb22b4e2390677e3c", key, pathF);
-//     const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles/", Math.random().toString() + "."+file.name.split(".")[1]));
-//     reader.pipe(stream);
-//     console.log("DONE")
-//   }
-  
-  
-
-//   ctx.redirect('/');
-// });
-
-
-
-
-
-
-
+router.get("/afroturf/search/shallow-q", quickSearch.generalQuickSearch);
 app.use(serve(path.join(__dirname, '/public')));
-
-// // handle uploads
-// router.post("/gallery/stylist", async function(ctx) {
-//   // ignore non-POSTs
-//   //   if ('POST' != ctx.method) return await next();
-  
-
-//   const file = ctx.request.files.file;
-//   console.log(" Tot: "+file.length)
-//   if(file.length !== undefined){
-//     for (let i = 0 ; i < file.length; i++){
-//       const pathF = file[i].path;
-//       const reader = await fs.createReadStream(pathF);
-//       console.log("file[i].path) "+file[i].path+ " ");
-//       const key = await uuid.v4()+"name="+file[i].name.replace(" ", "");
-//       //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
-//       admin.addToStylistGallery("5b7d187730d4801a6891ffde","5b7d240bb22b4e2390677e3c", key, pathF);
-//       const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles", Math.random().toString() + "."+file[i].name.split(".")[1]));
-//       reader.pipe(stream);
-      
-//     }
-//   }else{
-//     const pathF = file.path;
-//     const reader = await fs.createReadStream(pathF);
-//     console.log("file[i].path) "+file.path+ " ");
-//     const key = await uuid.v4()+"name="+file.name.replace(" ", "");
-//     //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
-//     admin.addToStylistGallery("5b7d187730d4801a6891ffde","5b7d240bb22b4e2390677e3c", key, pathF);
-//     const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles", Math.random().toString() + "."+file.name.split(".")[1]));
-//     reader.pipe(stream);
-//     console.log("DONE")
-//   }
-  
-  
-
-//   ctx.redirect('/');
-// });
-
-
-// router.post("/avatar/user", async function(ctx) {
-//   // ignore non-POSTs
-//   //   if ('POST' != ctx.method) return await next();
-  
-
-//   const file = ctx.request.files.file;
-//   console.log(" Tot: "+file.length)
-//   if(file.length !== undefined){
-//     for (let i = 0 ; i < file.length; i++){
-//       const pathF = file[i].path;
-//       const reader = await fs.createReadStream(pathF);
-//       console.log("file[i].path) "+file[i].path+ " ");
-//       const key = await uuid.v4()+"name="+file[i].name.replace(" ", "");
-//       //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
-//       admin.addToUserAvatar("5b7d187730d4801a6891ffde", key, pathF);
-//       const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles", Math.random().toString() + "."+file[i].name.split(".")[1]));
-//       reader.pipe(stream);
-      
-//     }
-//   }else{
-//     const pathF = file.path;
-//     const reader = await fs.createReadStream(pathF);
-//     console.log("file[i].path) "+file.path+ " ");
-//     const key = await uuid.v4()+"name="+file.name.replace(" ", "");
-//     //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
-//     admin.addToUserAvatar("5b7d187730d4801a6891ffde", key, pathF);
-//     const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/profiles/", Math.random().toString() + "."+file.name.split(".")[1]));
-//     reader.pipe(stream);
-//     console.log("DONE")
-//   }
-  
-  
-
-//   ctx.redirect('/');
-// });
-
-
-// router.post("/gallery", async function(ctx) {
-//   // ignore non-POSTs
-//   //   if ('POST' != ctx.method) return await next();
-  
-
-//   const file = ctx.request.files.file;
-//   console.log(" Tot: "+file.length)
-//   if(file.length !== undefined){
-//     for (let i = 0 ; i < file.length; i++){
-//       const pathF = file[i].path;
-//       const reader = await fs.createReadStream(pathF);
-//       console.log("file[i].path) "+file[i].path+ " ");
-//       const key = await uuid.v4()+"name="+file[i].name.replace(" ", "");
-//       //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
-//       admin.addToSalonGallery("5b7d240bb22b4e2390677e3c", key, pathF);
-//       const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/", Math.random().toString() + "."+file[i].name.split(".")[1]));
-//       reader.pipe(stream);
-      
-//     }
-//   }else{
-//     const pathF = file.path;
-//     const reader = await fs.createReadStream(pathF);
-//     console.log("file[i].path) "+file.path+ " ");
-//       const key = await uuid.v4()+"name="+file.name.replace(" ", "");
-//       //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
-//       admin.addToSalonGallery("5b7d240bb22b4e2390677e3c", key, pathF);
-//       const stream = await fs.createWriteStream(path.join(__dirname+"/uploads/", Math.random().toString() + "."+file.name.split(".")[1]));
-//       reader.pipe(stream);
-//       console.log("DONE")
-//   }
-  
-  
-
-//   ctx.redirect('/');
-// });
-
 app.use(router.routes());
 app.use(router.allowedMethods());
 app.listen(3000);
