@@ -4,9 +4,9 @@
   "engines": {
     "node": "8.9.1"
   },
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node index.js"
   },
   "dependencies": {
     "aws-sdk": "^2.299.0",
