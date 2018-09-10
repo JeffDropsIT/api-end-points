@@ -53,8 +53,8 @@ const updateUser = async (ctx) =>{
     delete userData._id;
     console.log("--updateUser--");
     const result = await generic.updateCollectionDocument("afroturf", "users",userData,userId);
-    console.log("ok: "+result.result.ok, "modified: "+ result.result.modified);
-    ctx.body =  result.result.nModified === 1 && result.result.ok === 1 ? {res: 200,  message: "successfully performed operation"} : {res:401,  message: "Ops something went wrong, failed to update user"};
+    console.log("ok: "+result.ok, "modified: "+ result.modified);
+    ctx.body =  result.modified === 1 && result.ok === 1 ? {res: 200,  message: "successfully performed operation"} : {res:401,  message: "Ops something went wrong, failed to update user"};
     
 };
 

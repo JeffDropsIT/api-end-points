@@ -145,9 +145,9 @@ router.post("/avatar/salon",uploads.uploadSalonAvatar)
 router.post("/gallery/stylist",uploads.uploadToStylistGallary);
 router.post("/avatar/user",uploads.uploadToUserAvatar);
 router.post("/gallery",uploads.uploadToSalonGallary);
+router.get('/afroturf/search/global-q', quickSearch.generalQuickSearch);
 
 
-router.get("/afroturf/search/shallow-q", quickSearch.generalQuickSearch);
 app.use(serve(path.join(__dirname, '/public')));
 app.use(router.routes());
 app.use(router.allowedMethods());

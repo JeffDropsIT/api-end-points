@@ -16,69 +16,6 @@ const empty = require("is-empty");
 
 
 
-const containsInServices = async (contains, userlocation, radius, limit, servicesObj) => {
-
-    console.log("containsInServices hhhhh "+contains.toLowerCase());
-        try{
-    
-        const db = await generic.getDatabaseByName("afroturf");
-        await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
-        if(empty(userlocation)){
-            if(!empty(servicesObj.rating) && !empty(servicesObj.price) && servicesObj.service !== undefined){
-                let rating = servicesObj.rating;
-                let price = servicesObj.price;
-                console.log(" getSalonByNameShallow NO location, radius, limit null: "+rating)
-                const salonCursor = await db.db.collection("salons").aggregate([ {
-                $match: { $eq: [{"$services._id.type":  { '$regex' : contains, '$options' : 'i' }}], 
-               $or: [{ $and: [{'$services.subservices.rating': { $gte: parseInt(rating[0]) } },{'$services.subservices.rating': { $lte: parseInt(rating[1]) } } ]},
-               { $and: [{'$services.subservices.price': { $gte: parseInt(price[0]) } },{'$services.subservices.price': { $lte: parseInt(price[1]) } }, {'$services._id':{ '$regex' : servicesObj.service, '$options' : 'i' }} ]}
-               
-            ] }
-                }, 
-                {
-                $project: {services: 1, salonId: 1}
-                }]);
-                const salon = await salonCursor.toArray();
-    
-                console.log("INSIDE connect", JSON.stringify(salon));
-                db.connection.close();
-                return JSON.parse(JSON.stringify(salon));
-            }
-        }
-        const salonCursor = await db.db.collection("salons").aggregate([ {
-            $geoNear: {
-            near: { coordinates :userlocation}, 
-            distanceField: "distance.calculated",
-            maxDistance: parseInt(radius)*METERS_TO_KM,
-            num: parseInt(limit),
-            query: {name:{ '$regex' : contains, '$options' : 'i' } },
-            spherical: true
-    
-            }
-        }, 
-        {
-            $project: {name: 1, location:1, rating: 1, salonId: 1}
-        }]);
-        const salon = await salonCursor.toArray();
-    
-        //console.log("INSIDE connect", JSON.stringify(salon));
-        db.connection.close();
-        return JSON.parse(JSON.stringify(salon));
-        
-    
-    
-        }catch(err){
-        throw new Error(err);
-        }   
-    };
-
-const servicesObj = {
-    rating:[0,5],
-    price:[10,700],
-    service:"haircuts"
-}
-
-    containsInServices("chan", [], 0,1,servicesObj);
 
 const getServicesByNameTypePriceRangeCodeAndSalonId = async (userlocation, radius, limit, serviceName, servicetype, price_gte, price_lte, code,salonId) =>{
     console.log("getServicesByNameTypePriceRangeCodeAndSalonId server "+userlocation)
@@ -833,7 +770,5 @@ module.exports = {
   getServicesByNamePriceRange,
   getServicesByNameType,
   getServicesByName,
-  getAllServices,
-
-  containsInServices
+  getAllServices
 }
