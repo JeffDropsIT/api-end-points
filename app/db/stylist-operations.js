@@ -47,7 +47,7 @@ const getSalonByStylistNameRatingGenderAndSalonId = async(userlocation, radius, 
               $filter: {
                 input: "$stylists", 
                 as: "this", 
-                cond: {$and: [{$gte : ["$$this.rating", parseInt(rating)]}, {$eq : ["$$this.gender", gender]}, {$eq : ["$$this.name", { $regex: new RegExp("/" + name.toLowerCase()+"/", "i") }]}] }
+                cond: {$or: [ {"$$this.rating":{"$gte":rating[0], "$lte":rating[1]}}, {"$$this.gender": gender},{"$$this.name":  { '$regex' : name, '$options' : 'i' }}] }
               }
             }
     
@@ -79,10 +79,9 @@ const getSalonByStylistNameRatingGenderAndSalonId = async(userlocation, radius, 
             $filter: {
               input: "$stylists", 
               as: "this", 
-              cond: {$and: [{$gte : ["$$this.rating", parseInt(rating)]}, {$eq : ["$$this.gender", gender]}, {$eq : ["$$this.name", { $regex: new RegExp("^" + name.toLowerCase()+"$", "i") }]}] }
+              cond: {$or: [ {"$$this.rating":{"$gte":rating[0], "$lte":rating[1]}}, {"$$this.gender": gender},{"$$this.name":  { '$regex' : name, '$options' : 'i' }}] }
             }
           }
-  
         }
       }
     ]);
@@ -92,6 +91,91 @@ const getSalonByStylistNameRatingGenderAndSalonId = async(userlocation, radius, 
   
   };
   
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const getSalonByStylistNameRatingGender = async(userlocation, radius, name,limit, rating, gender) => {
+    console.log("getSalonByStylistNameRatingGenderAndSalonId server "+salonId)
+    
+    const db = await getDatabaseByName("afroturf");
+    await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+    if(empty(userlocation)){
+      console.log("NO location, radius, limit null")
+      const stylistCursor = await db.db.collection("salons").aggregate([
+        {
+          $project: { stylists: 
+      
+        
+            {
+              $filter: {
+                input: "$stylists", 
+                as: "this", 
+                cond: {$or: [ {"$$this.rating":{"$gte":rating[0], "$lte":rating[1]}}, {"$$this.gender": gender},{"$$this.name":  { '$regex' : name, '$options' : 'i' }}] }
+              }
+            }
+    
+          }
+        }
+      ]);
+      const stylist = await stylistCursor.toArray();
+      db.connection.close();
+      return JSON.parse(JSON.stringify(stylist));
+    
+    }
+    const stylistCursor = await db.db.collection("salons").aggregate([
+      {
+        $geoNear:{
+          near: {coordinates: userlocation},
+          distanceField: "distance.calculated",
+          maxDistance: parseInt(radius)*METERS_TO_KM,
+          num: parseInt(limit),
+          spherical: true
+        }
+  
+      },
+      {
+        $project: { stylists: 
+    
+      
+          {
+            $filter: {
+              input: "$stylists", 
+              as: "this", 
+              cond: {$or: [ {"$$this.rating":{"$gte":rating[0], "$lte":rating[1]}}, {"$$this.gender": gender},{"$$this.name":  { '$regex' : name, '$options' : 'i' }}] }
+            }
+          }
+        }
+      }
+    ]);
+    const stylist = await stylistCursor.toArray();
+    db.connection.close();
+    return JSON.parse(JSON.stringify(stylist));
+  
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   
 //return salon_id and list of stylist with the input rating
 const getSalonStylistBySalonId = async(userlocation, radius,salonId) => {
@@ -225,7 +309,7 @@ const getSalonStylistBySalonId = async(userlocation, radius,salonId) => {
                   $filter: {
                     input: "$stylists", 
                     as: "this", 
-                    cond: {$gte : ["$$this.gender", gender]}
+                    cond: {"$$this.gender": gender}
                   }
                 }
         
@@ -256,7 +340,7 @@ const getSalonStylistBySalonId = async(userlocation, radius,salonId) => {
                 $filter: {
                   input: "$stylists", 
                   as: "this", 
-                  cond: {$gte : ["$$this.rating", parseInt(rating)]}
+                  cond: {"$$this.gender": gender}
                 }
               }
       
@@ -268,7 +352,7 @@ const getSalonStylistBySalonId = async(userlocation, radius,salonId) => {
         return JSON.parse(JSON.stringify(stylist));
       
       };
-      const getSalonByStylistGenderAndSalonId2 = async(userlocation, radius, limit, gender) => {
+      const getSalonByStylistGenderAndSalonId2 = async(userlocation, radius, limit, rating) => {
         console.log("getSalonByStylistGenderAndSalonId - server")
         
         
@@ -285,7 +369,7 @@ const getSalonStylistBySalonId = async(userlocation, radius,salonId) => {
                   $filter: {
                     input: "$stylists", 
                     as: "this", 
-                    cond: {$gte : ["$$this.gender", gender]}
+                    cond: {$gte : ["$$this.rating", parseInt(rating)]}
                   }
                 }
         
@@ -740,13 +824,42 @@ module.exports = {
     applyAsStylist,
     getStylistById,
     getSalonStylistBySalonId,
-    getSalonByStylistRatingGenderAndSalonId,
+    getSalonByStylistRatingGenderAndSalonId,//2
     getSalonByStylistRatingAndSalonId,
     getSalonAllStylist,
-    getSalonByStylistNameRatingGenderAndSalonId,
+    getSalonByStylistNameRatingGenderAndSalonId,//1
     getSalonByStylistGenderAndSalonId,
     getSalonByStylistGenderAndSalonId2,
     getSalonByStylistRating, 
     getSalonByStylistRatingGender, 
-    getSalonByStylistNameRatingGender,
+    getSalonByStylistNameRatingGender, //3,
 }
+
+let query = {
+  salonId,
+  name:name,
+  gender:gender,
+  rating:rating
+
+}
+
+let query2 = {
+  salonId,
+  gender:gender,
+  rating:rating
+
+}
+
+let query3 = {
+  salonId,
+  name:name,
+  gender:gender,
+
+}
+
+/*
+COPY STYLIST FILTER AND PASTE IT HERE EDIT TO INCLUDE SALONID 
+
+*/
+
+// /afroturf/filter/stylist?query={"rating":[0, 5]} //returns all services
