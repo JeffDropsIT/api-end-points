@@ -12,7 +12,7 @@ const empty = require("is-empty");
 const getSalonByStylistNameRatingGenderAndSalonId = async(userlocation, radius, name,limit, rating, gender, salonId) => {
   console.log("getSalonByStylistNameRatingGenderAndSalonId server "+salonId)
   
-  const db = await getDatabaseByName("afroturf");
+  const db = await generic.getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
   if(empty(userlocation)){
     console.log("NO location, radius, limit null")
@@ -29,7 +29,7 @@ const getSalonByStylistNameRatingGenderAndSalonId = async(userlocation, radius, 
             $filter: {
               input: "$stylists", 
               as: "this", 
-              cond: {$or: [ {"$$this.rating":{"$gte":rating[0], "$lte":rating[1]}}, {"$$this.gender": gender},{"$$this.name":  { '$regex' : name, '$options' : 'i' }}] }
+              cond: {$or: [ {"$$this.rating":{"$gte":rating[0], "$lte":rating[1]}}, {"$$this.gender":  { '$regex' : gender, '$options' : 'i' }},{"$$this.name":  { '$regex' : name, '$options' : 'i' }}] }
             }
           }
   
@@ -86,83 +86,10 @@ const getSalonByStylistNameRatingGenderAndSalonId = async(userlocation, radius, 
 
 
 
-const getSalonByStylistNameRatingGender = async(userlocation, radius, name,limit, rating, gender) => {
-  console.log("getSalonByStylistNameRatingGenderAndSalonId server "+salonId)
-  
-  const db = await getDatabaseByName("afroturf");
-  await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
-  if(empty(userlocation)){
-    console.log("NO location, radius, limit null")
-    const stylistCursor = await db.db.collection("salons").aggregate([
-      {
-        $project: { stylists: 
-    
-      
-          {
-            $filter: {
-              input: "$stylists", 
-              as: "this", 
-              cond: {$or: [ {"$$this.rating":{"$gte":rating[0], "$lte":rating[1]}}, {"$$this.gender": gender},{"$$this.name":  { '$regex' : name, '$options' : 'i' }}] }
-            }
-          }
-  
-        }
-      }
-    ]);
-    const stylist = await stylistCursor.toArray();
-    db.connection.close();
-    return JSON.parse(JSON.stringify(stylist));
-  
-  }
-  const stylistCursor = await db.db.collection("salons").aggregate([
-    {
-      $geoNear:{
-        near: {coordinates: userlocation},
-        distanceField: "distance.calculated",
-        maxDistance: parseInt(radius)*METERS_TO_KM,
-        num: parseInt(limit),
-        spherical: true
-      }
-
-    },
-    {
-      $project: { stylists: 
-  
-    
-        {
-          $filter: {
-            input: "$stylists", 
-            as: "this", 
-            cond: {$or: [ {"$$this.rating":{"$gte":rating[0], "$lte":rating[1]}}, {"$$this.gender": gender},{"$$this.name":  { '$regex' : name, '$options' : 'i' }}] }
-          }
-        }
-      }
-    }
-  ]);
-  const stylist = await stylistCursor.toArray();
-  db.connection.close();
-  return JSON.parse(JSON.stringify(stylist));
-
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //return salon_id and list of stylist with the input rating
 const getSalonStylistBySalonId = async(userlocation, radius,salonId) => {
 
-  const db = await getDatabaseByName("afroturf");
+  const db = await  generic.getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
   if(empty(userlocation)){
     console.log("userLocation is null,radius is null")
@@ -212,7 +139,7 @@ const getSalonStylistBySalonId = async(userlocation, radius,salonId) => {
 //return salon_id and list of stylist with the input rating
 const getAllStylist = async(userlocation, radius) => {
 
-const db = await getDatabaseByName("afroturf");
+const db = await  generic.getDatabaseByName("afroturf");
 await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
 if(empty(userlocation)){
   console.log("userLocation is null,radius is null")
@@ -289,7 +216,7 @@ const getStylistByIdSalonId = async(salonId, stylistId, userlocation, radius) =>
 
   console.log("getStylistById server: ")
   console.log(userlocation)
-    const db = await getDatabaseByName("afroturf");
+    const db = await  generic.getDatabaseByName("afroturf");
     await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
     if(empty(userlocation)){
       console.log("NO location, radius, limit null")
@@ -316,6 +243,7 @@ const getStylistByIdSalonId = async(salonId, stylistId, userlocation, radius) =>
       
       const stylist = await stylistCursor.toArray();
       db.connection.close();
+      //console.log(JSON.parse(JSON.stringify(stylist)))
       return JSON.parse(JSON.stringify(stylist));
     }
     const stylistCursor = await db.db.collection("salons").aggregate([
@@ -346,6 +274,7 @@ const getStylistByIdSalonId = async(salonId, stylistId, userlocation, radius) =>
     ]);
     
     const stylist = await stylistCursor.toArray();
+    console.log(stylist)
     db.connection.close();
     return JSON.parse(JSON.stringify(stylist));
   
@@ -354,40 +283,9 @@ const getStylistByIdSalonId = async(salonId, stylistId, userlocation, radius) =>
 
 //applyAsStylist("5b7e9b1495e2e31ef888b64d", "5b8f7f7b0e22dc20a4588e27");
 module.exports = {
-    applyAsStylist,
-    getStylistById,
-    getSalonStylistBySalonId,
-    getSalonByStylistRatingGenderAndSalonId,//2
-    getSalonByStylistRatingAndSalonId,
-    getSalonAllStylist,
-    getSalonByStylistNameRatingGenderAndSalonId,//1
-    getSalonByStylistGenderAndSalonId,
-    getSalonByStylistGenderAndSalonId2,
-    getSalonByStylistRating, 
-    getSalonByStylistRatingGender, 
-    getSalonByStylistNameRatingGender, //3,
-}
-
-let query = {
-  salonId,
-  name:name,
-  gender:gender,
-  rating:rating
-
-}
-
-let query2 = {
-  salonId,
-  gender:gender,
-  rating:rating
-
-}
-
-let query3 = {
-  salonId,
-  name:name,
-  gender:gender,
-
+  applyAsStylist,
+  getStylistByIdSalonId,
+  getSalonByStylistNameRatingGenderAndSalonId
 }
 
 /*
@@ -395,4 +293,7 @@ COPY STYLIST FILTER AND PASTE IT HERE EDIT TO INCLUDE SALONID
 
 */
 
-// /afroturf/filter/stylist?query={"rating":[0, 5]} //returns all services
+
+// /afroturf/filter/stylist?query={"rating":[0, 5], "gender":male, "name":"t"} //returns all services
+
+

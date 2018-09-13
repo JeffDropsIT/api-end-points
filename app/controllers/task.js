@@ -1,4 +1,5 @@
 const toLocationObject =  async (location) =>{
+
     if(location === undefined || null){
         console.log("Location isEmpty: "+location)
         return [];

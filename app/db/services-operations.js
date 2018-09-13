@@ -517,27 +517,27 @@ module.exports = {
 //4a.
 // /afroturf/filter/services?query={"code":"ASS1"} //returns all services
 //4b.
-// /afroturf/filter/services?query={"salonId":1, "code":"ASS1"} //returns all services in salon with salonId
+// /afroturf/filter/:salonId/services?query={ "code":"ASS1"} //returns all services in salon with salonId
 
 
 //5a.
 // /afroturf/filter/services?query={} //returns all services
 //5b.
-// /afroturf/filter/services?query={"salonId":1} //returns all services in salon with salonId
+// /afroturf/filter/:salonId/services?query={} //returns all services in salon with salonId
 
 //2a.
 // /afroturf/filter/services?query={"serviceType": "fade", "price":[0,100]} //returns services which match query
 //2b.
-// /afroturf/filter/services?query={"salonId":1, "serviceType": "fade", "price":[0,100]} //returns services which match query
+// /afroturf/filter/:salonId/services?query={"serviceType": "fade", "price":[0,100]} //returns services which match query
 
 //3a.
 // /afroturf/filter/services?query={"serviceName": "haircuts"} //returns services which match query
 //3b.
-// /afroturf/filter/services?query={"salonId":1, "serviceName": "haircuts"} //returns services which match query
+// /afroturf/filter/:salonId/services?query={"serviceName": "haircuts"} //returns services which match query
 
 
 
 //1a.
 // /afroturf/filter/services?query={"serviceName": "haircuts", "price":[0,100]} //returns all services
 //1b.
-// /afroturf/filter/services?query={"salonId":1, "serviceName": "haircuts", "price":[0,100]} //returns all services in salon with salonId
+// /afroturf/filter/:salonId/services?query={"serviceName": "haircuts", "price":[0,100]} //returns all services in salon with salonId
