@@ -1,20 +1,20 @@
 const task = require('../controllers/task');
 const stylistOps= require('../../app/db/stylist-operations');
-
+const empty = require("is-empty");
 
 // /afroturf/user/:salonId/:stylistId  //returns stylist {params id, id, location (optional), radius (optional)}
 const getStylistByIdSalonId = async(ctx) =>{
 
     let salonId = ctx.params.salonId, stylistId = ctx.params.stylistId;
 
-    const location =  ctx.query.location;
-    const radius =  ctx.query.radius;
+    let location =  ctx.query.location;
+    let radius =  ctx.query.radius;
     if((stylistId || salonId ) === undefined ){ return {res:422, message: "error salonId: int, stylistId:int (required)"}}
     try {
         const userLocation = await task.toLocationObject(location);
-        const stylistJson = await stylistOps.getStylistByIdSalonId(salonId,stylistId, userLocation, radius);
+        const stylistJson =  stylistOps.getStylistByIdSalonId(salonId,stylistId, userLocation, radius);
         const res = {res: 200, message: "successfully performed operation",
-        data: [stylistJson]}
+        data: [await stylistJson]}
         ctx.body = res;
         return ctx.body;
     } catch (error) {
@@ -27,11 +27,15 @@ const getStylistByIdSalonId = async(ctx) =>{
 
 const getSalonByStylistNameRatingGenderAndSalonId = async(ctx)=>{
 
-
     let salonId = ctx.params.salonId
-    console.log(salonId)
-    const location =  ctx.query.location, radius =  ctx.query.radius;
-    const name = ctx.query.query.name, limit = ctx.query.query.limit, gender = ctx.query.query.gender, rating = ctx.query.query.rating;
+    console.log(salonId);
+    let location =  ctx.query.location, radius =  ctx.query.radius;
+    let userLocation = await task.toLocationObject(location);
+    let name = ctx.query.query.name, limit = ctx.query.limit, gender = ctx.query.query.gender, rating = ctx.query.query.rating;
+
+    if(radius === undefined){ radius = 10}
+    if(salonId === undefined && empty(ctx.query.query)){return await getAllStylist(userLocation, radius)}
+    if(empty(ctx.query.query) && salonId !== undefined){ return await getSalonStylistBySalonId(ctx)}
     if(salonId  === undefined){ return {res:422, message: "error salonId: int (required)"}}
     if(rating === undefined){
         rating = [0,5];
@@ -39,16 +43,21 @@ const getSalonByStylistNameRatingGenderAndSalonId = async(ctx)=>{
     if(gender === undefined){
         gender = "male|female";
     }
+    if(name === undefined){
+        name = ".*";
+    }
     if(limit === undefined){
         limit = 1000000;
     }
     
     try {
-        const userLocation = await task.toLocationObject(location);
-        const stylistJson = await stylistOps.getSalonByStylistNameRatingGenderAndSalonId(userLocation, radius, name, limit, rating,gender, salonId)
+
+        const stylistJson =  stylistOps.getSalonByStylistNameRatingGenderAndSalonId(userLocation, radius, name, limit, rating,gender, salonId);
+        const stylistJson2 =  stylistOps.getSalonByStylistNameRatingGenderAndSalonIdAND(userLocation, radius, name, limit, rating,gender, salonId)
         const res = {res: 200, message: "successfully performed operation",
-        data: [stylistJson]}
+        data: [{or:[await stylistJson], and:[[await stylistJson2]]}]}
         ctx.body = res;
+        return ctx.body;
     } catch (error) {
         throw new Error(error);
     }
@@ -56,8 +65,47 @@ const getSalonByStylistNameRatingGenderAndSalonId = async(ctx)=>{
 }
 
 
+const getSalonStylistBySalonId = async(ctx) =>{
+    console.log("getSalonStylistBySalonId")
+    let salonId = ctx.params.salonId
+    let location =  ctx.query.location, radius =  ctx.query.radius, limit =  ctx.query.limit;
+    let userLocation = await task.toLocationObject(location);
+
+    if(salonId  === undefined){ return {res:422, message: "error salonId: int (required)"}}
+    console.log(salonId)
+
+    if(limit === undefined){
+        limit = 1000000;
+    }
+    
+    try {
+        
+        const stylistJson =  stylistOps.getSalonStylistBySalonId(userLocation, radius, salonId)
+        const res = {res: 200, message: "successfully performed operation",
+        data: [await stylistJson]}
+        ctx.body = res;
+        return ctx.body;
+    } catch (error) {
+        throw new Error(error);
+    }
+
+}
+
+const getAllStylist = async(userLocation, radius) =>{
+    try {
+        const stylistJson =  stylistOps.getAllStylist(userLocation, radius)
+        const res = {res: 200, message: "successfully performed operation",
+        data: [await stylistJson]}
+       
+        return res;
+    } catch (error) {
+        throw new Error(error);
+    }
+}
+
 
 module.exports = {
     getStylistByIdSalonId,
-    getSalonByStylistNameRatingGenderAndSalonId
+    getSalonByStylistNameRatingGenderAndSalonId,
+    getStylistByIdSalonId
 }

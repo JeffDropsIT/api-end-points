@@ -6,14 +6,12 @@ const empty = require("is-empty");
 
 
 
-
-
-
-const getSalonByStylistNameRatingGenderAndSalonId = async(userlocation, radius, name,limit, rating, gender, salonId) => {
+const getSalonByStylistNameRatingGenderAndSalonIdAND = async (userlocation, radius, name,limit, rating, gender, salonId) =>{
   console.log("getSalonByStylistNameRatingGenderAndSalonId server "+salonId)
   
   const db = await generic.getDatabaseByName("afroturf");
   await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  console.log([name,gender, rating])
   if(empty(userlocation)){
     console.log("NO location, radius, limit null")
     const stylistCursor = await db.db.collection("salons").aggregate([
@@ -21,22 +19,13 @@ const getSalonByStylistNameRatingGenderAndSalonId = async(userlocation, radius, 
         $match:{salonId: parseInt(salonId)}
   
       },
-      {
-        $project: { stylists: 
-    
-      
-          {
-            $filter: {
-              input: "$stylists", 
-              as: "this", 
-              cond: {$or: [ {"$$this.rating":{"$gte":rating[0], "$lte":rating[1]}}, {"$$this.gender":  { '$regex' : gender, '$options' : 'i' }},{"$$this.name":  { '$regex' : name, '$options' : 'i' }}] }
-            }
-          }
-  
-        }
-      }
+      {$match: {$and: [ {"stylists.rating":{"$gte":rating[0], "$lte":rating[1]}},
+      {"stylists.gender":  { '$regex' : gender, '$options' : 'i' }},{"stylists.name":  { '$regex' : name, '$options' : 'i' }}] }
+   }, 
+   {$project :{stylists:1, salonId:1, name:1}}
     ]);
     const stylist = await stylistCursor.toArray();
+    console.log(JSON.parse(JSON.stringify(stylist)))
     db.connection.close();
     return JSON.parse(JSON.stringify(stylist));
   
@@ -53,19 +42,58 @@ const getSalonByStylistNameRatingGenderAndSalonId = async(userlocation, radius, 
       }
 
     },
-    {
-      $project: { stylists: 
+    {$match: {$and: [ {"stylists.rating":{"$gte":rating[0], "$lte":rating[1]}},
+      {"stylists.gender":  { '$regex' : gender, '$options' : 'i' }},{"stylists.name":  { '$regex' : name, '$options' : 'i' }}] }
+   }, 
+   {$project :{stylist:1, salonId:1, name:1}}
+  ]);
+  const stylist = await stylistCursor.toArray();
+  db.connection.close();
+  return JSON.parse(JSON.stringify(stylist));
+
+};
+
+
+const getSalonByStylistNameRatingGenderAndSalonId = async(userlocation, radius, name,limit, rating, gender, salonId) => {
+  console.log("getSalonByStylistNameRatingGenderAndSalonId server "+salonId)
   
-    
-        {
-          $filter: {
-            input: "$stylists", 
-            as: "this", 
-            cond: {$or: [ {"$$this.rating":{"$gte":rating[0], "$lte":rating[1]}}, {"$$this.gender": gender},{"$$this.name":  { '$regex' : name, '$options' : 'i' }}] }
-          }
-        }
+  const db = await generic.getDatabaseByName("afroturf");
+  await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+  console.log([name,gender, rating])
+  if(empty(userlocation)){
+    console.log("NO location, radius, limit null")
+    const stylistCursor = await db.db.collection("salons").aggregate([
+      {
+        $match:{salonId: parseInt(salonId)}
+  
+      },
+      {$match: {$or: [ {"stylists.rating":{"$gte":rating[0], "$lte":rating[1]}},
+      {"stylists.gender":  { '$regex' : gender, '$options' : 'i' }},{"stylists.name":  { '$regex' : name, '$options' : 'i' }}] }
+   }, 
+   {$project :{stylists:1, salonId:1, name:1}}
+    ]);
+    const stylist = await stylistCursor.toArray();
+    console.log(JSON.parse(JSON.stringify(stylist)))
+    db.connection.close();
+    return JSON.parse(JSON.stringify(stylist));
+  
+  }
+  const stylistCursor = await db.db.collection("salons").aggregate([
+    {
+      $geoNear:{
+        near: {coordinates: userlocation},
+        distanceField: "distance.calculated",
+        maxDistance: parseInt(radius)*METERS_TO_KM,
+        num: parseInt(limit),
+        query: {salonId: parseInt(salonId)},
+        spherical: true
       }
-    }
+
+    },
+    {$match: {$or: [ {"stylists.rating":{"$gte":rating[0], "$lte":rating[1]}},
+      {"stylists.gender":  { '$regex' : gender, '$options' : 'i' }},{"stylists.name":  { '$regex' : name, '$options' : 'i' }}] }
+   }, 
+   {$project :{stylist:1, salonId:1, name:1}}
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
@@ -150,6 +178,7 @@ if(empty(userlocation)){
   ]);
   const stylist = await stylistCursor.toArray();
   db.connection.close();
+  console.log(stylist)
   return JSON.parse(JSON.stringify(stylist));
 }
 const stylistCursor = await db.db.collection("salons").aggregate([
@@ -285,7 +314,10 @@ const getStylistByIdSalonId = async(salonId, stylistId, userlocation, radius) =>
 module.exports = {
   applyAsStylist,
   getStylistByIdSalonId,
-  getSalonByStylistNameRatingGenderAndSalonId
+  getSalonByStylistNameRatingGenderAndSalonId,
+  getSalonByStylistNameRatingGenderAndSalonIdAND,
+  getSalonStylistBySalonId,
+  getAllStylist
 }
 
 /*

@@ -25,7 +25,7 @@ const getServicesByNameSalonId = async (userlocation, radius, limit, serviceName
       console.log("NO location, radius, limit null")
       const stylistCursor = await db.db.collection("salons").aggregate([
         {$unwind:"$services"},
-                  {$match: {"services._id":  { '$regex' : serviceName, '$options' : 'i' }}, salonId:parseInt(salonId)},
+                  {$match:{$and: [ {"services._id":  { '$regex' : serviceName, '$options' : 'i' }},{salonId:parseInt(salonId)}]}},
                   {$unwind:"$services.subservices"},
                   {$project: {salonId:1,"services.subservices":1,"services._id":1, name:1, location:1, rating:1}}
       
@@ -47,7 +47,7 @@ const getServicesByNameSalonId = async (userlocation, radius, limit, serviceName
         }
   
       } ,{$unwind:"$services"},
-      {$match: {"services._id":  { '$regex' : serviceName, '$options' : 'i' }}},
+      {$match:{$and: [ {"services._id":  { '$regex' : serviceName, '$options' : 'i' }},{salonId:parseInt(salonId)}]}},
       {$unwind:"$services.subservices"},
       {$project: {salonId:1,"services.subservices":1,"services._id":1, name:1, location:1, rating:1}}
     
@@ -514,30 +514,4 @@ module.exports = {
 // }
 
 
-//4a.
-// /afroturf/filter/services?query={"code":"ASS1"} //returns all services
-//4b.
-// /afroturf/filter/:salonId/services?query={ "code":"ASS1"} //returns all services in salon with salonId
 
-
-//5a.
-// /afroturf/filter/services?query={} //returns all services
-//5b.
-// /afroturf/filter/:salonId/services?query={} //returns all services in salon with salonId
-
-//2a.
-// /afroturf/filter/services?query={"serviceType": "fade", "price":[0,100]} //returns services which match query
-//2b.
-// /afroturf/filter/:salonId/services?query={"serviceType": "fade", "price":[0,100]} //returns services which match query
-
-//3a.
-// /afroturf/filter/services?query={"serviceName": "haircuts"} //returns services which match query
-//3b.
-// /afroturf/filter/:salonId/services?query={"serviceName": "haircuts"} //returns services which match query
-
-
-
-//1a.
-// /afroturf/filter/services?query={"serviceName": "haircuts", "price":[0,100]} //returns all services
-//1b.
-// /afroturf/filter/:salonId/services?query={"serviceName": "haircuts", "price":[0,100]} //returns all services in salon with salonId
