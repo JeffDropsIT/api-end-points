@@ -168,20 +168,20 @@ const getSalonStylistBySalonId = async(userlocation, radius,salonId) => {
 const getAllStylist = async(userlocation, radius) => {
 
 const db = await  generic.getDatabaseByName("afroturf");
-await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
 if(empty(userlocation)){
-  console.log("userLocation is null,radius is null")
-  const stylistCursor = await db.db.collection("salons").aggregate([
+  console.log("userLocation is null,radius is null "+userlocation)
+  const stylistCursor =  db.db.collection("salons").aggregate([
     {
       $project: { stylists: 1, salonId: 1}
     }
   ]);
-  const stylist = await stylistCursor.toArray();
+  const stylist =   stylistCursor.toArray();
   db.connection.close();
   console.log(stylist)
-  return JSON.parse(JSON.stringify(stylist));
+  return JSON.parse(JSON.stringify(await stylist));
 }
-const stylistCursor = await db.db.collection("salons").aggregate([
+const stylistCursor =  db.db.collection("salons").aggregate([
 
 
 
@@ -196,12 +196,13 @@ const stylistCursor = await db.db.collection("salons").aggregate([
   },
 
   {
-    $project: { stylists: 1, salonId: 1}
+    $project: { stylists: 1, salonId: 1, distance:1}
   }
 ]);
-const stylist = await stylistCursor.toArray();
+console.log(parseInt(radius)*METERS_TO_KM,)
+const stylist =  stylistCursor.toArray();
 db.connection.close();
-return JSON.parse(JSON.stringify(stylist));
+return JSON.parse(JSON.stringify(await stylist));
 
 };
 

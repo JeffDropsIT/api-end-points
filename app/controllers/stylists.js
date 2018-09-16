@@ -31,10 +31,31 @@ const getSalonByStylistNameRatingGenderAndSalonId = async(ctx)=>{
     console.log(salonId);
     let location =  ctx.query.location, radius =  ctx.query.radius;
     let userLocation = await task.toLocationObject(location);
-    let name = ctx.query.query.name, limit = ctx.query.limit, gender = ctx.query.query.gender, rating = ctx.query.query.rating;
+    //let name = ctx.query.query.name, limit = ctx.query.limit, gender = ctx.query.query.gender, rating = ctx.query.query.rating;
 
+
+
+    console.log(ctx.query.query)
+    let filterRe; 
+    try {
+        if(ctx.query.query !== undefined){
+            
+            filterRe = JSON.parse(ctx.query.query);
+            console.log(filterRe)
+        }
+    } catch (error) {
+        console.log("failed")
+        const res = {res: 422 , message: "Unprocessable Entity, "+error,
+        data: []}
+        ctx.body = res;
+        return;
+    }
+
+    let name = filterRe.name, limit = ctx.query.limit, gender = filterRe.gender, rating = filterRe.rating;
+
+    
     if(radius === undefined){ radius = 10}
-    if(salonId === undefined && empty(ctx.query.query)){return await getAllStylist(userLocation, radius)}
+    
     if(empty(ctx.query.query) && salonId !== undefined){ return await getSalonStylistBySalonId(ctx)}
     if(salonId  === undefined){ return {res:422, message: "error salonId: int (required)"}}
     if(rating === undefined){
@@ -91,13 +112,20 @@ const getSalonStylistBySalonId = async(ctx) =>{
 
 }
 
-const getAllStylist = async(userLocation, radius) =>{
-    try {
+
+
+const getAllStylist = async(ctx) =>{
+    try{
+        let location =  ctx.query.location, radius =  ctx.query.radius;
+        let userLocation = await task.toLocationObject(location);
+
+    
+        if(radius === undefined){ radius = 10}
         const stylistJson =  stylistOps.getAllStylist(userLocation, radius)
         const res = {res: 200, message: "successfully performed operation",
         data: [await stylistJson]}
        
-        return res;
+        ctx.body = res;
     } catch (error) {
         throw new Error(error);
     }
@@ -106,6 +134,6 @@ const getAllStylist = async(userLocation, radius) =>{
 
 module.exports = {
     getStylistByIdSalonId,
+    getAllStylist,
     getSalonByStylistNameRatingGenderAndSalonId,
-    getStylistByIdSalonId
 }

@@ -116,6 +116,23 @@ router.post("/gallery",uploads.uploadToSalonGallary);
 router.get('/afroturf/search/global-q', quickSearch.generalQuickSearch);
 
 
+
+
+
+
+
+
+//services and stylist
+
+router.get("/afroturf/stylist/-a",stylist.getAllStylist);
+
+// /afroturf/user/:salonId/:stylistId
+router.get("/afroturf/user/:salonId/:stylistId",stylist.getStylistByIdSalonId);
+// /afroturf/filter/:salonId/stylist?query={"rating":[0, 5], "gender":"male", "name":"t"} //returns all services
+
+router.get("/afroturf/filter/:salonId/stylist",stylist.getSalonByStylistNameRatingGenderAndSalonId);
+
+
 app.use(serve(path.join(__dirname, '/public')));
 app.use(router.routes());
 app.use(router.allowedMethods());
