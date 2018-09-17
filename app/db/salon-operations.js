@@ -165,7 +165,44 @@ const getAllNearestSalonsShallow = async (userlocation, radius) => {
        throw new Error(err);
       }   
      };
-  
+     const getSalonBySalonObj = async (salonObj, userlocation, radius) => {
+        console.log("getSalonBySalonIdShallow")
+          try{
+             const db = await generic.getDatabaseByName("afroturf");
+             await db.db.collection("salons").ensureIndex({"location.coordinates" : "2dsphere"});
+             if(empty(userlocation)){
+              console.log(" getSalonBySalonIdShallow NO location, radius, limit null")
+              const salonCursor = await db.db.collection("salons").aggregate([ {
+                $match:  {_id: ObjectId(salonObj)}
+              }]);
+              const salon = await salonCursor.toArray();
+        
+              //console.log("INSIDE connect", JSON.stringify(salon));
+              db.connection.close();
+              return JSON.parse(JSON.stringify(salon));
+            }
+             const salonCursor = await db.db.collection("salons").aggregate([ {
+               $geoNear: {
+                 near: { coordinates :userlocation}, 
+                 distanceField: "distance.calculated",
+                 maxDistance: parseInt(radius)*METERS_TO_KM,
+                 query: {_id: ObjectId(salonObj)},
+                 spherical: true
+       
+               }
+             }]);
+             const salon = await salonCursor.toArray();
+       
+             //console.log("INSIDE connect", JSON.stringify(salon));
+             db.connection.close();
+             return JSON.parse(JSON.stringify(salon));
+             
+       
+       
+          }catch(err){
+           throw new Error(err);
+          }   
+         };
     //get salon by Name shallow
   const getSalonByNameShallow = async (salonname, userlocation, radius, limit) => {
     
@@ -385,7 +422,9 @@ console.log("getSalonByNameShallow hhhhh "+contains.toLowerCase());
 
       const getNearestSalons = async (Userlocation, radius, limit) => {
   
-
+        if(empty(Userlocation)){
+            return {res: 422, message: "no location in endpoint"}
+        }
         try {
           
           const db = await generic.getDatabaseByName("afroturf");
@@ -411,7 +450,6 @@ console.log("getSalonByNameShallow hhhhh "+contains.toLowerCase());
           return JSON.parse(JSON.stringify(nearestSalons));
         } catch(err){
           throw new Error(err);
-          db.connection.close();
         } 
       
       }
@@ -1363,6 +1401,7 @@ module.exports ={
     getSalonBySalonIdShallow,
     //salons
     getSalonByRating,
+    getSalonBySalonObj,
 
     containsInSalons,
 

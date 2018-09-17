@@ -2,7 +2,21 @@ const task = require('../controllers/task');
 const salonOps= require('../../app/db/salon-operations');
 
 
+const getSalonBySalonObj = async(ctx) =>{
+    const location =  ctx.query.location;
+    const radius =  ctx.query.radius;
+    const salonObj =  ctx.query.salonObj;
+    
+    if(salonObj !== undefined ){
+        const userLocation = await task.toLocationObject(location);
+        ctx.body = await salonOps.getSalonBySalonObj(salonObj, userLocation, radius);
+        
+    }else{
+        ctx.body = {res: "404", message:"missing salon object id"}
+    }
 
+
+}
 // /afroturf/salons/:salonId/?location=23.123,21.3434
 //&radius=10
 const getSalonBySalonId = async ctx => {
@@ -133,6 +147,7 @@ module.exports = {
     getSalonBySalonIdShallow,
     getSalonBySalonId,
     getAllSalons,
+    getSalonBySalonObj,
 
 
 };

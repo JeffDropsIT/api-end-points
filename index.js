@@ -104,7 +104,10 @@ router.patch('/afroturf/user/profile/edit/salon/dashboard/subservices',salonOps.
 // /afroturf/salons/?location=23.123,21.3434
 //&radius=1000&limit=10
 router.get('/afroturf/salons/',salon.getNearestSalons);
-router.get('/afroturf/salons/-a',salon.getAllSalons)
+router.get('/afroturf/salons/-a',salon.getAllSalons);
+router.get("/afroturf/salons/:salonId", salon.getSalonBySalonId);
+router.get("/afroturf/user/salons/obj/", salon.getSalonBySalonObj)
+
 
 //--end--
 //upload salon avatar
@@ -122,8 +125,33 @@ router.get('/afroturf/search/global-q', quickSearch.generalQuickSearch);
 
 
 
-//services and stylist
+//services
+router.get("/afroturf/service/-a", service.getAllServices);
+///afroturf/filter/:salonId/services-a
+router.get("/afroturf/:salonId/service/-a", service.getAllServicesInSalonId);
+// /afroturf/filter/:salonId/services 
+router.get("/afroturf/filter/:salonId/services/name", service.getServicesByNameSalonId)
+//4a.
+// /afroturf/filter/services?query={"code":"ASS1"} //returns all services
+router.get("/afroturf/filter/services/code", service.getServicesCode);
+// /afroturf/filter/services? 
+router.get("/afroturf/filter/services/price", service.getServicesPriceRange);
+// /afroturf/filter/:salonId/services/price
+router.get("/afroturf/filter/:salonId/services/price", service.getServicesPriceRangeSalonId);
+//2a.
+// /afroturf/filter/services?query={"serviceType": "fade", "price":[0,100]} //returns services which match query
+router.get("/afroturf/filter/services/price-type", service.getServicesByTypePriceRange);
+//2b.
+// /afroturf/filter/:salonId/services?query={"serviceType": "fade", "price":[0,100]} //returns services which match query
+router.get("/afroturf/filter/:salonId/services/price-type", service.getServicesByTypePriceRangeSalonId); //failed
+// /afroturf/filter/services?query={serviceName:name}
+router.get("/afroturf/filter/services/name", service.getServicesByName);
 
+
+
+
+
+// stylists
 router.get("/afroturf/stylist/-a",stylist.getAllStylist);
 
 // /afroturf/user/:salonId/:stylistId

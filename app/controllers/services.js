@@ -15,9 +15,24 @@ const servicesOps= require('../../app/db/services-operations');
 const getServicesPriceRange = async (ctx) =>{
     let location =  ctx.query.location, radius =  ctx.query.radius, limit =  ctx.query.limit;
     let userLocation = await task.toLocationObject(location);
+
+    let filterRe; 
+    try {
+        if(ctx.query.query !== undefined){
+            
+            filterRe = JSON.parse(ctx.query.query);
+            console.log(filterRe)
+        }
+    } catch (error) {
+        console.log("failed")
+        const res = {res: 422 , message: "Unprocessable Entity, "+error,
+        data: []}
+        ctx.body = res;
+        return;
+    }
     let price;
     try {
-        price = ctx.query.query.price;
+        price = filterRe.price;
     } catch (error) {
         price = [0, 1000];
     }
@@ -50,9 +65,24 @@ const getServicesPriceRangeSalonId = async (ctx) =>{
     let salonId = ctx.params.salonId;
     let location =  ctx.query.location, radius =  ctx.query.radius, limit =  ctx.query.limit;
 
+   
+    let filterRe; 
+    try {
+        if(ctx.query.query !== undefined){
+            
+            filterRe = JSON.parse(ctx.query.query);
+            console.log(filterRe)
+        }
+    } catch (error) {
+        console.log("failed")
+        const res = {res: 422 , message: "Unprocessable Entity, "+error,
+        data: []}
+        ctx.body = res;
+        return;
+    }
     let price;
     try {
-        price = ctx.query.query.price;
+        price = filterRe.price;
     } catch (error) {
         price = [0, 1000];
     }
@@ -86,15 +116,27 @@ const getServicesPriceRangeSalonId = async (ctx) =>{
 //2a.
 // /afroturf/filter/services?query={"serviceType": "fade", "price":[0,100]} //returns services which match query
 
-
-
 const getServicesByTypePriceRange = async (ctx) =>{
     let location =  ctx.query.location, radius =  ctx.query.radius, limit =  ctx.query.limit;
-    let servicetype = ctx.query.query.serviceType;
 
+    let filterRe; 
+    try {
+        if(ctx.query.query !== undefined){
+            
+            filterRe = JSON.parse(ctx.query.query);
+            console.log(filterRe)
+        }
+    } catch (error) {
+        console.log("failed")
+        const res = {res: 422 , message: "Unprocessable Entity, "+error,
+        data: []}
+        ctx.body = res;
+        return;
+    }
+    let servicetype = filterRe.serviceType;
     let price;
     try {
-        price = ctx.query.query.price;
+        price = filterRe.price;
     } catch (error) {
         price = [0, 1000];
     }
@@ -133,11 +175,27 @@ const getServicesByTypePriceRange = async (ctx) =>{
 const getServicesByTypePriceRangeSalonId = async (ctx) =>{
     let salonId = ctx.params.salonId;
     let location =  ctx.query.location, radius =  ctx.query.radius, limit =  ctx.query.limit;
-    let servicetype = ctx.query.query.serviceType;
 
+
+
+    let filterRe; 
+    try {
+        if(ctx.query.query !== undefined){
+            
+            filterRe = JSON.parse(ctx.query.query);
+            console.log(filterRe)
+        }
+    } catch (error) {
+        console.log("failed")
+        const res = {res: 422 , message: "Unprocessable Entity, "+error,
+        data: []}
+        ctx.body = res;
+        return;
+    }
+    let servicetype = filterRe.serviceType;
     let price;
     try {
-        price = ctx.query.query.price;
+        price = filterRe.price;
     } catch (error) {
         price = [0, 1000];
     }
@@ -174,9 +232,23 @@ const getServicesByTypePriceRangeSalonId = async (ctx) =>{
 const getServicesByName = async(ctx) =>{
 
     let location =  ctx.query.location, radius =  ctx.query.radius, limit =  ctx.query.limit;
-    let serviceName = ctx.query.query.serviceName;
+
     let userLocation = await task.toLocationObject(location);
- 
+    let filterRe; 
+    try {
+        if(ctx.query.query !== undefined){
+            
+            filterRe = JSON.parse(ctx.query.query);
+            console.log(filterRe)
+        }
+    } catch (error) {
+        console.log("failed")
+        const res = {res: 422 , message: "Unprocessable Entity, "+error,
+        data: []}
+        ctx.body = res;
+        return;
+    }
+    let serviceName = filterRe.serviceName;
     
     
     if(limit === undefined){
@@ -204,9 +276,25 @@ const getServicesByName = async(ctx) =>{
 const getServicesByNameSalonId = async(ctx) =>{
     let salonId = ctx.params.salonId;
     let location =  ctx.query.location, radius =  ctx.query.radius, limit =  ctx.query.limit;
-    let serviceName = ctx.query.query.serviceName;
     let userLocation = await task.toLocationObject(location);
   
+    console.log(ctx.query.query)
+    let filterRe; 
+    try {
+        if(ctx.query.query !== undefined){
+            
+            filterRe = JSON.parse(ctx.query.query);
+            console.log(filterRe)
+        }
+    } catch (error) {
+        console.log("failed")
+        const res = {res: 422 , message: "Unprocessable Entity, "+error,
+        data: []}
+        ctx.body = res;
+        return;
+    }
+
+    let serviceName = filterRe.serviceName;
     if(limit === undefined){
         limit = 1000000;
     }
@@ -239,7 +327,26 @@ const getServicesCode = async(ctx) =>{
 
 
     let location =  ctx.query.location, radius =  ctx.query.radius, limit =  ctx.query.limit;
-    let code = ctx.query.query.code;
+
+
+
+    console.log(ctx.query.query)
+    let filterRe; 
+    try {
+        if(ctx.query.query !== undefined){
+            
+            filterRe = JSON.parse(ctx.query.query);
+            console.log(filterRe)
+        }
+    } catch (error) {
+        console.log("failed")
+        const res = {res: 422 , message: "Unprocessable Entity, "+error,
+        data: []}
+        ctx.body = res;
+        return;
+    }
+    let code = filterRe.code;
+
     let userLocation = await task.toLocationObject(location);
   
     if(limit === undefined){
@@ -266,9 +373,27 @@ const getServicesCode = async(ctx) =>{
 const getServicesCodeSalonId = async(ctx) =>{
     let salonId = ctx.params.salonId;
     let location =  ctx.query.location, radius =  ctx.query.radius, limit =  ctx.query.limit;
-    let code = ctx.query.query.code;
     let userLocation = await task.toLocationObject(location);
   
+
+
+
+    console.log(ctx.query.query)
+    let filterRe; 
+    try {
+        if(ctx.query.query !== undefined){
+            
+            filterRe = JSON.parse(ctx.query.query);
+            console.log(filterRe)
+        }
+    } catch (error) {
+        console.log("failed")
+        const res = {res: 422 , message: "Unprocessable Entity, "+error,
+        data: []}
+        ctx.body = res;
+        return;
+    }
+    let code = filterRe.code;
     if(limit === undefined){
         limit = 1000000;
     }
