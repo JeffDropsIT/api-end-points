@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Upload</title>
+  <style>
+    body {
+      padding: 50px;
+      font: 14px Helvetica, Arial;
+    }
+    .container {
+      border: 1px solid black;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      align-items: center;
+    }
+    .user-details {
+      border: 1px solid red;
+    }
+    .user-form-data{
+      margin: 25px;
+      
+    }
+    .user-form-data div{
+      margin: 15px;
+      
+    }
+    #form-inputs input{
+      margin-left: 55px;
+    }
+    #form-inputs {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <div class=container>
+    <div class="photo">
+    <h1>File Upload</h1>
+  <p>Try uploading multiple files at a time.</p>
+  <form action="/avatar/salon" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" multiple>
+    <input type="submit" value="Upload">
+  </form>
+  </div>
+    <div class=user-details>
+      <form class=user-form-data action="/afroturf/user/register" method="post">
+ 
+  <div id=form-inputs>
+    <div class=label>
+      <label for="fname">First name</label>
+    </div>
+    <input name="fname" id="fname" >
+  </div>
+        <div id=form-inputs><div class=label>
+      <label for="username">Username</label>
+    </div>
+    <input name="username" id="username" >
+  </div>
+        <div id=form-inputs>
+          <div class=label>
+           <label for="password">Password</label>
+         </div>
+        <input type="password" name="password" id="password" >
+  </div>
+  <div class=submit-container>
+    <div class=submit>
+    <button>submit</button></div>
+  </div>
+</form>
+    </div>
+    
+  </div>
+</body>
+</html>

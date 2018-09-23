@@ -6,17 +6,27 @@
   },
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "jest"
   },
   "dependencies": {
+    "aws-sdk": "^2.299.0",
+    "bcrypt": "^3.0.0",
+    "bcryptjs": "^2.4.3",
+    "is-empty": "^1.2.0",
     "koa": "^2.5.2",
     "koa-body": "^4.0.4",
     "koa-bodyparser": "^4.2.1",
     "koa-logger": "^2.0.1",
+    "koa-multer": "^1.0.2",
     "koa-router": "^7.4.0",
-    "mongodb": "^3.1.1"
+    "koa-static": "^5.0.0",
+    "mongodb": "^3.1.1",
+    "s3fs": "^2.5.0",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
+    "jest": "^23.6.0",
     "request": "^2.81.0",
     "tape": "^4.7.0"
   },
