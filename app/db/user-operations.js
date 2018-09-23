@@ -164,12 +164,13 @@ const sendMessage = async (ctx) =>{
 
 const sendReview = async (ctx) =>{
     console.log("sendReview")
-    const payload = ctx.request.body.payload, reviewer = ctx.request.body.reviewer,reviewerName = ctx.request.body.reviewerName, to = ctx.request.body.to, rating = ctx.request.body.rating;
+    const payload = ctx.request.body.payload, reviewer = ctx.request.body.reviewerId,reviewerName = ctx.request.body.reviewerName, to = ctx.request.body.to, rating = ctx.request.body.rating;
     let reviewIdIn = await counters.getNextReviewInCount(to);
     reviewIdIn = reviewIdIn.toString();
     let reviewIdOut = await counters.getNextReviewOutCount(reviewer);
     reviewIdOut = reviewIdOut.toString();
-    try {
+    console.log("sendReview: ",reviewer)
+    //try {
         const reviewIn = await schema.createNewReviewInForm(reviewer, payload, rating, reviewIdIn, reviewerName);
         const db = await generic.getDatabaseByName("afroturf");
         const resultOne = await db.db.collection("reviews").update(
@@ -184,7 +185,7 @@ const sendReview = async (ctx) =>{
         }
         const reviewOut = await schema.createNewReviewOutForm(to, payload, rating, reviewIdOut, reviewerName);
         const result = await db.db.collection("reviews").update(
-            {$and: [{"userId": from}, {"reviewsOut.reviewId" :{$ne: reviewIdOut}} ]},
+            {$and: [{"userId": reviewer}, {"reviewsOut.reviewId" :{$ne: reviewIdOut}} ]},
             {$addToSet: {reviewsOut:reviewOut}},
         );
         db.connection.close();
@@ -196,10 +197,10 @@ const sendReview = async (ctx) =>{
         const res =  { ok: result.result.ok, modified: result.result.nModified, ok2: resultOne.result.ok, modified2: resultOne.result.nModified}
         ctx.body = res.ok && res.ok2 && res.modified && res.modified2 === 1 ?  {res: 200,  message: "successfully performed operation"} : {res: 200,  message: "failed to perform operation"};
 
-    } catch (error) {
-        console.log("failed to sendReview. . .\n sendReview: "+reviewOut.toString())
-        throw new Error(error);
-    }
+    // } catch (error) {
+    //     console.log("failed to sendReview. . .\n sendReview: "+reviewOut.toString())
+    //     throw new Error(error);
+    // }
    
 
 }
