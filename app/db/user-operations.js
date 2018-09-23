@@ -164,13 +164,13 @@ const sendMessage = async (ctx) =>{
 
 const sendReview = async (ctx) =>{
     console.log("sendReview")
-    const payload = ctx.request.body.payload, from = ctx.request.body.from, to = ctx.request.body.to, rating = ctx.request.body.rating;
+    const payload = ctx.request.body.payload, reviewer = ctx.request.body.reviewer,reviewerName = ctx.request.body.reviewerName, to = ctx.request.body.to, rating = ctx.request.body.rating;
     let reviewIdIn = await counters.getNextReviewInCount(to);
     reviewIdIn = reviewIdIn.toString();
-    let reviewIdOut = await counters.getNextReviewOutCount(from);
+    let reviewIdOut = await counters.getNextReviewOutCount(reviewer);
     reviewIdOut = reviewIdOut.toString();
     try {
-        const reviewIn = await schema.createNewReviewInForm(from, payload, rating, reviewIdIn);
+        const reviewIn = await schema.createNewReviewInForm(reviewer, payload, rating, reviewIdIn, reviewerName);
         const db = await generic.getDatabaseByName("afroturf");
         const resultOne = await db.db.collection("reviews").update(
             {$and: [{"userId": to}, {"reviewsIn.reviewId" :{$ne: reviewIdIn}} ]},
@@ -182,7 +182,7 @@ const sendReview = async (ctx) =>{
             console.log("duplicate id present");
             //handle error accordingly
         }
-        const reviewOut = await schema.createNewReviewOutForm(to, payload, rating, reviewIdOut);
+        const reviewOut = await schema.createNewReviewOutForm(to, payload, rating, reviewIdOut, reviewerName);
         const result = await db.db.collection("reviews").update(
             {$and: [{"userId": from}, {"reviewsOut.reviewId" :{$ne: reviewIdOut}} ]},
             {$addToSet: {reviewsOut:reviewOut}},

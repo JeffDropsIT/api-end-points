@@ -1030,26 +1030,28 @@ const createNewReviewDocForm = async (userId) =>{
     return form;
 }
 
-const createNewReviewInForm =  (from, payload, rating, reviewId)=>{
+const createNewReviewInForm =  (from, payload, rating, reviewId,reviewerName)=>{
     
     const form = {
-        "from": from,
+        "reviewerId": from,
         "created": new Date(), //unique
         "payload": payload,
         "rating": rating,
+        "reviewerName":reviewerName,
         "reviewId": reviewId 
         
     }
     return form;
 }
 
-const createNewReviewOutForm =  (to, payload, rating, reviewId)=>{
+const createNewReviewOutForm =  (to, payload, rating, reviewId,reviewerName)=>{
     
     const form = {
         "to": to,
         "created": new Date(), //unique
         "payload": payload,
         "rating": rating,
+        "reviewerName":reviewerName,
         "reviewId": reviewId 
         
     }
