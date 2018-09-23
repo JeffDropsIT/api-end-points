@@ -11,10 +11,10 @@
   },
   "dependencies": {
     "aws-sdk": "^2.299.0",
-    "bcrypt": "^3.0.0",
+    "bcrypt": "^3.0.1",
     "bcryptjs": "^2.4.3",
     "is-empty": "^1.2.0",
-    "koa": "^2.5.2",
+    "koa": "^2.5.3",
     "koa-body": "^4.0.4",
     "koa-bodyparser": "^4.2.1",
     "koa-logger": "^2.0.1",
