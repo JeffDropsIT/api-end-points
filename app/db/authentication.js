@@ -151,9 +151,9 @@ const getReview = async (userId, reviewsDocId) => {
     try{
         console.log("getReview")
         const db = await generic.getDatabaseByName("afroturf");
-        const result = await db.db.collection("reviews").aggregate([{$match: {$or:[{"userId":userId}, {"_id":reviewsDocId}]}}]) //user reviews doc
-        const arrResults = await result.toArray();
-        const review  = await JSON.parse(JSON.stringify(arrResults));
+        const result =  db.db.collection("reviews").aggregate([{$match: {$or:[{"userId":userId}, {"_id":reviewsDocId}]}}]) //user reviews doc
+        const arrResults =  result.toArray();
+        const review  =  JSON.parse(JSON.stringify(await arrResults));
         console.log(review)
         db.connection.close();
         return review;
@@ -162,20 +162,20 @@ const getReview = async (userId, reviewsDocId) => {
     }
 }
 //test
-//getReview("5b8fb94ad012570a1c7f0848", "5b8fb94bd012570a1c7f084a");
+//getReview("5b95231903d3825174322a50", "5b95231c03d3825174322a53");
 
 const getRoom = async (userId, roomDocId) => {
     try{
         
         console.log("getRoom")
         const db = await generic.getDatabaseByName("afroturf");
-        const result = await db.db.collection("rooms").aggregate([{$match:{$and : [{"_id":ObjectId(roomDocId)}, {"members": { $in: [userId, "members"]}}]}}]) //user reviews doc
-        const arrResults = await result.toArray();
+        const result =  db.db.collection("rooms").aggregate([{$match:{$and : [{"_id":ObjectId(roomDocId)}, {"members": { $in: [userId, "members"]}}]}}]) //user reviews doc
+        const arrResults = result.toArray();
         db.connection.close();
         if(!empty(arrResults)){
                 
-            await console.log(JSON.parse(JSON.stringify(arrResults[0])))
-            return  await JSON.parse(JSON.stringify(arrResults[0]));
+            //console.log(JSON.parse(JSON.stringify( await arrResults)))
+            return  JSON.parse(JSON.stringify(await arrResults));
         }else{
             
             console.log("No document found getRoom")
@@ -187,7 +187,7 @@ const getRoom = async (userId, roomDocId) => {
 }
 
 //test 
-//getRoom("5b8f75f4de5f7e1964ca5137","5b8fa0604d811e307ce3f646");
+//getRoom("5b95231903d3825174322a50","5b95231b03d3825174322a51");
 
 const getUsersRooms = async (userId, roomDocIdList) => {
 
@@ -258,5 +258,7 @@ const getAllUserData = async (ctx) =>{
 module.exports = {
     hashPassword, 
     authenticateUser,
-    getAllUserData
+    getAllUserData,
+    getReview,
+    getRoom
 }

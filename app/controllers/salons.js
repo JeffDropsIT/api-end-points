@@ -1,7 +1,27 @@
 const task = require('../controllers/task');
-const salonOps= require('../../app/db/salon-operations');
+const salonOps = require('../../app/db/salon-operations');
+const auth = require('../db/authentication');
 
-
+const getReviews = async(ctx) => {
+    try {
+        let userId = ctx.query.userId;
+        let reviewId = ctx.query.reviewId;
+        ctx.body = {res:200, message:"successfully performed operation", data:await auth.getReview(userId, reviewId)};
+        return ctx.body;
+    } catch (error) {
+        throw new Error(error);
+    }
+}
+const getRoom = async(ctx) => {
+    try {
+        let userId = ctx.query.userId;
+        let roomId = ctx.query.roomId;
+        ctx.body = {res:200, message:"successfully performed operation", data:await auth.getRoom(userId, roomId)};
+        return ctx.body;
+    } catch (error) {
+        throw new Error(error);
+    }
+}
 const getSalonBySalonObj = async(ctx) =>{
     const location =  ctx.query.location;
     const radius =  ctx.query.radius;
@@ -148,6 +168,8 @@ module.exports = {
     getSalonBySalonId,
     getAllSalons,
     getSalonBySalonObj,
+    getReviews,
+    getRoom,
 
 
 };

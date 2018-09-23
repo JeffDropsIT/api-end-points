@@ -123,7 +123,11 @@ router.get('/afroturf/search/global-q', quickSearch.generalQuickSearch);
 
 
 
+//reviews
+router.get("/afroturf/reviews", salon.getReviews);
 
+//room
+router.get("/afroturf/rooms", salon.getRoom);
 
 //services
 router.get("/afroturf/service/-a", service.getAllServices);
@@ -164,5 +168,5 @@ router.get("/afroturf/filter/:salonId/stylist",stylist.getSalonByStylistNameRati
 app.use(serve(path.join(__dirname, '/public')));
 app.use(router.routes());
 app.use(router.allowedMethods());
-app.listen(3000);
+app.listen(9000);
 console.log('listening on port 3000');
