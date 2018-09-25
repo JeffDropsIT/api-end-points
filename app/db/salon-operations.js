@@ -5,6 +5,7 @@ const counters = require("./counters");
 const schema = require("./schema/schema");
 const ObjectId = require('mongodb').ObjectID;
 const empty = require("is-empty");
+const notify = require("..//push-notification/notification");
 const METERS_TO_KM = 1000;
 
 
@@ -553,7 +554,7 @@ const addtosalonOrders = async(ctx) => {
     const res = await addBookingUserAccount(userId, salonOrder);
     if(res.ok!==1 && res.nModified!==1){
         console.log(401 + "Failed to add booking to user account");
-        return 401 + "Failed to add booking to user account"
+        return {res:401 , message: "Failed to add booking to user account"}; 
     }else{
         console.log(salonOrder);
         try{
@@ -564,7 +565,16 @@ const addtosalonOrders = async(ctx) => {
             );
             db.connection.close();
             console.log(result.result.ok, result.result.nModified);
-        ctx.body =  result.result.ok && result.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
+            let res = result.result.ok && result.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
+
+            if(res.res == 200){
+                const clientId = await generic.getClientId(salonObjId);
+                notify.notifyUser("booked", clientId, {userId:userId, message:"booking from user: "+userId});
+                //notify all stylist that the is a booking
+            }else{
+                //notify user unsuccessful
+            }
+            ctx.body =  res;
         }catch(err){
             throw new Error(err);
         }
@@ -673,11 +683,11 @@ const getSalonOrdersByDateBetween = async(ctx) => {
 
 const addBookingUserAccount = async(userId, data) =>{
     try{
-        const booking = await schema.booking(data);
+        //const booking = await schema.booking(data);
         const db = await generic.getDatabaseByName("afroturf");
         const result = await db.db.collection("users").update(
             {"_id": ObjectId(userId)},
-            {$addToSet: {booking:booking}}, 
+            {$addToSet: {booking:data}}, 
         );
         db.connection.close();
         console.log(result.result.ok, result.result.nModified);
@@ -687,6 +697,7 @@ const addBookingUserAccount = async(userId, data) =>{
     }
 
 }
+
 const addtostylistOrders = async(ctx) => {
     //look up salon owner
     const userId = ctx.request.body.userId, salonObjId = ctx.request.body.salonObjId;
@@ -697,25 +708,37 @@ const addtostylistOrders = async(ctx) => {
     const res = await addBookingUserAccount(userId, salonOrder);
     if(res.ok!==1 && res.nModified!==1){
         console.log(401 + "Failed to add booking to user account");
-        return 401 + "Failed to add booking to user account"
+        ctx.body = {res: 401 , message: "Failed to add booking to user account"}
     }else{
         
         console.log(salonOrder);
         try{
             const db = await generic.getDatabaseByName("afroturf");
-            const result = await db.db.collection("orders").update(
+            const result =   db.db.collection("orders").update(
                 {"_id": ObjectId(orderDocObj.orderDoc)},
                 {$addToSet: {stylistOrders:salonOrder}}, 
             );
-            const result3 = await db.db.collection("users").update({
+            const result3 =  db.db.collection("users").update({
                 $and:[{"_id": ObjectId(ctx.request.body.assignedTo)}]},
                 {$addToSet: {stylistBookings:salonOrder}}
             );
+
+
+            let results = await result;
+            let results3 = await result3;
+
+            console.log(results3.result.ok, results3.result.nModified);
             db.connection.close();
-            console.log(result3.result.ok, result3.result.nModified);
-            db.connection.close();
-            console.log(result.result.ok, result.result.nModified);
-            ctx.body =  result.result.ok && result.result.nModified === 1 ?  {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
+            console.log(results.result.ok, results.result.nModified);
+            let res = await results.result.ok && await results.result.nModified === 1 ?  {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
+            if(res.res == 200){
+                const clientId = await generic.getClientId(salonObjId);
+                notify.notifyUser("booked", clientId, {userId:userId, message:"booking from user: "+userId});
+                //notify all stylist that the is a booking
+            }else{
+                //notify user unsuccessful
+            }
+            ctx.body = res 
         }catch(err){
             throw new Error(err);
         }
@@ -1245,7 +1268,8 @@ const addServicesToSalon = async (ctx) => {
         );
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
-        ctx.body =   result.result.ok &&result.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
+        let res = result.result.ok &&result.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
+        ctx.body =  res;
     }catch(err){
         throw new Error(err);
     }

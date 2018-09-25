@@ -4,7 +4,23 @@ let mongodbClient = mongodb.MongoClient;
 const ObjectId = require('mongodb').ObjectID;
 const schema = require("./schema/schema");
 
-
+//get database by Name
+const getDatabaseByName = async(name) =>{
+    let url = 'mongodb://admin:password123@ds153841.mlab.com:53841/afroturf';
+  try{
+    
+    const db = await mongodbClient.connect(url,{useNewUrlParser : true});
+    
+    if(db.isConnected){
+      console.log("connected");
+      
+    return { db: db.db("afroturf"), connection: db};
+    }
+    
+  }catch (err) {
+    throw new Error(err);
+  }
+};
 
 const createAnyCollection = async (dbName, collectionName, schema) =>{
     
@@ -26,23 +42,30 @@ const createAnyCollection = async (dbName, collectionName, schema) =>{
 };
 
 
-//get database by Name
-const getDatabaseByName = async(name) =>{
-    let url = 'mongodb://admin:password123@ds153841.mlab.com:53841/afroturf';
-  try{
-    
-    const db = await mongodbClient.connect(url,{useNewUrlParser : true});
-    
-    if(db.isConnected){
-      console.log("connected");
-      
-    return { db: db.db("afroturf"), connection: db};
+const getClientId = async(userId) =>{
+
+    try {
+        const db = await getDatabaseByName("afroturf");
+        const result =  db.db.collection("clients").find({userId:userId}).project({clientId:1});
+        const arrResult= await result.toArray();
+        const json = JSON.parse(JSON.stringify(arrResult));
+        db.connection.close();
+        
+        if(!empty(json)){
+            console.log(json[0].clientId);
+            return json[0].clientId;
+        }else{
+            return null;
+        }
+    } catch (error) {
+        throw new Error(error);
     }
-    
-  }catch (err) {
-    throw new Error(err);
-  }
-};
+
+}
+
+//getClientId("5b9644aa6fb76e2ed83a25f6");
+
+
 
 const checkIfUserNameEmailPhoneExist = async (username) =>{
     try {
@@ -201,5 +224,6 @@ module.exports = {
     createReviewsDoc,
     updateCollectionDocument,
     getDatabaseByName,
-    checkIfUserNameEmailPhoneExist
+    checkIfUserNameEmailPhoneExist,
+    getClientId
 }

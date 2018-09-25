@@ -225,7 +225,7 @@ const applyAsStylist = async (ctx) => {
       );
       console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
       const res = result.result.ok && result.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
-      if(res === 200){
+      if(res.res === 200){
   
           console.log("--applyAsStylist updating my profile--");
           const result2 = await db.db.collection("users").update({
@@ -233,8 +233,18 @@ const applyAsStylist = async (ctx) => {
               {$addToSet: {EmploymentStatus:data}}, 
           );
           console.log("ok: "+result2.result.ok, "modified: "+ result2.result.nModified);
+          let res3 = result2.result.ok && result2.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
+          if(res3.res == 200){
+            const clientId = await generic.getClientId(salonObjId);
+            notify.notifyUser("applied", clientId, {userId:userId, message:"booking from user: "+userId});
+            //notify all stylist that the is a booking
+          }else{
+              //notify user unsuccessful
+          }
       }
       
+      
+
       db.connection.close();
       ctx.body =  res;
   }catch(err){

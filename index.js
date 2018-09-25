@@ -42,15 +42,15 @@ router.get("/", async function(ctx, next) {
 
 
 //register
-router.post('/afroturf/user/register', userOps.createUser);
+router.post('/afroturf/user/register',userOps.createUser);
 //login
-router.post('/afroturf/user/login', auth.authenticateUser);
+router.post('/afroturf/user/login',auth.authenticateUser);
 //getsalon data
-router.post('/afroturf/user/', auth.getAllUserData);
+router.post('/afroturf/user/',auth.getAllUserData);
 //edit a user
 router.post('/afroturf/user/edit/profile',userOps.updateUser);
 //create salon /afroturf/user/profile/create/salon
-router.post('/afroturf/user/profile/create/salon', salonOps.createSalon);
+router.post('/afroturf/user/profile/create/salon',salonOps.createSalon);
 //edit salon details /afroturf/user/profile/edit/salon/dashboard
 router.post('/afroturf/user/profile/edit/salon/dashboard',salonOps.updateSalonContent);
 //favourite salon /afroturf/user/profile/salon/id/favorite
@@ -78,7 +78,7 @@ router.get('/afroturf/user/profile/salon/bookings/stylist/duration/unavailable-b
 //get available orders after /afroturf/user/profile/salon/bookings/available
 router.get('/afroturf/user/profile/salon/bookings/duration/unavailable-btwn',salonOps.getSalonOrdersByDateBetween);
 //get available orders after /afroturf/user/profile/salon/bookings/available
-router.get('/afroturf/user/profile/salon/bookings/stylist/duration/unavailable-b', salonOps.getStylistOrdersByDateBefore);
+router.get('/afroturf/user/profile/salon/bookings/stylist/duration/unavailable-b',salonOps.getStylistOrdersByDateBefore);
 //get available orders after /afroturf/user/profile/salon/bookings/available
 router.get('/afroturf/user/profile/salon/bookings/duration/unavailable-b',salonOps.getSalonOrdersByDateBefore);
 //get available orders after /afroturf/user/profile/salon/bookings/available
@@ -105,8 +105,8 @@ router.patch('/afroturf/user/profile/edit/salon/dashboard/subservices',salonOps.
 //&radius=1000&limit=10
 router.get('/afroturf/salons/',salon.getNearestSalons);
 router.get('/afroturf/salons/-a',salon.getAllSalons);
-router.get("/afroturf/salons/:salonId", salon.getSalonBySalonId);
-router.get("/afroturf/user/salons/obj/", salon.getSalonBySalonObj)
+router.get("/afroturf/salons/:salonId",salon.getSalonBySalonId);
+router.get("/afroturf/user/salons/obj/",salon.getSalonBySalonObj)
 
 
 //--end--
@@ -116,7 +116,7 @@ router.post("/avatar/salon",uploads.uploadSalonAvatar)
 router.post("/gallery/stylist",uploads.uploadToStylistGallary);
 router.post("/avatar/user",uploads.uploadToUserAvatar);
 router.post("/gallery",uploads.uploadToSalonGallary);
-router.get('/afroturf/search/global-q', quickSearch.generalQuickSearch);
+router.get('/afroturf/search/global-q',quickSearch.generalQuickSearch);
 
 
 

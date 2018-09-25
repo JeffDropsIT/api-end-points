@@ -4,6 +4,7 @@ const generic = require("./generic");
 const counters = require("./counters");
 const schema = require("./schema/schema");
 const ObjectId = require('mongodb').ObjectID;
+const notify = require("..//push-notification/notification");
 const empty = require("is-empty");
 
 
@@ -85,7 +86,17 @@ const followSalon = async (ctx) =>{
             //handle error accordingly
         }
         
-        ctx.body =  result.result.ok && result.result.nModified === 1 ?  {res: 200,  message: "successfully performed operation"} : {res: 200,  message: "failed to perform operation"};
+        const res =  result.result.ok && result.result.nModified === 1 ?  {res: 200,  message: "successfully performed operation"} : {res: 401,  message: "failed to perform operation"};
+
+        if(res.res == 200){
+            const clientId = await generic.getClientId(salonObjId);
+            notify.notifyUser("followed", clientId, {userId:userId, message:"booking from user: "+userId});
+            //notify all stylist that the is a booking
+        }else{
+            //notify user unsuccessful
+        }
+
+        ctx.body = res;
     
 
     } catch (error) {
@@ -151,8 +162,17 @@ const sendMessage = async (ctx) =>{
             console.log("duplicate id present");
             //handle error accordingly
         }
-        
-        ctx.body =  result.result.ok && result.result.nModified === 1 ?  {res: 200,  message: "successfully performed operation"} : {res: 200,  message: "failed to perform operation"};
+        let res2 = result.result.ok && result.result.nModified === 1 ?  {res: 200,  message: "successfully performed operation"} : {res: 401,  message: "failed to perform operation"};
+
+        if(res2.res == 200){
+            const clientId = await generic.getClientId(to);
+            notify.notifyUser("messaged", clientId, {userId:from, message:"review from user: "+from});
+            //notify all stylist that the is a booking
+        }else{
+            //notify user unsuccessful
+        }
+        ctx.body = res2; // 
+
 
     } catch (error) {
         console.log("failed to sendMessge. . .\n messageId: "+messageId.toString()+" payload: "+payload)
@@ -194,8 +214,17 @@ const sendReview = async (ctx) =>{
             console.log("duplicate id present");
             //handle error accordingly
         }
-        const res =  { ok: result.result.ok, modified: result.result.nModified, ok2: resultOne.result.ok, modified2: resultOne.result.nModified}
-        ctx.body = res.ok && res.ok2 && res.modified && res.modified2 === 1 ?  {res: 200,  message: "successfully performed operation"} : {res: 200,  message: "failed to perform operation"};
+        const res =  { ok: result.result.ok, modified: result.result.nModified, ok2: resultOne.result.ok, modified2: resultOne.result.nModified};
+
+        const res2 =  res.ok && res.ok2 && res.modified && res.modified2 === 1 ?  {res: 200,  message: "successfully performed operation"} : {res: 401,  message: "failed to perform operation"};
+        if(res2.res == 200){
+            const clientId = await generic.getClientId(salonObjId);
+            notify.notifyUser("reviewed", clientId, {userId:userId, message:"review from user: "+userId});
+            //notify all stylist that the is a booking
+        }else{
+            //notify user unsuccessful
+        }
+        ctx.body = res2; // 
 
     // } catch (error) {
     //     console.log("failed to sendReview. . .\n sendReview: "+reviewOut.toString())
