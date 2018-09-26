@@ -12,8 +12,46 @@ const postEvent = (event, to, extra) =>{
     "to" : to }
   return post_data;
 }
+const postChangeEvent = (document, to, collection) =>{
+    const post_data = { 
+        "data": {
+      "document": document,
+      "collection":collection
 
+    },
+    "to": "/topics/"+to }
+  return post_data;
+}
+const onDocumentDataChangedListner = async (document, to, collection) => {
+    
+    var options = {
+        host: "gcm-http.googleapis.com",
+        path: "/gcm/send",
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization":    "key="+server_key,
+        }
+    };
+    
+    
+    var req = await http.request(options, function (res) {
+        var responseString = "";
+    
+        res.on("data", function (data) {
+            responseString += data;
+            // save all the data from response
+        });
+        res.on("end", function () {
+            console.log(responseString); 
+            // print to console when response ends
+        });
+    });
 
+    
+    req.write(JSON.stringify(postChangeEvent(document, to, collection)));
+    req.end()
+}
 
 const notifyUser = async (event, to, extra) =>{
 
@@ -49,4 +87,5 @@ const notifyUser = async (event, to, extra) =>{
 
 module.exports = {
     notifyUser,
+    onDocumentDataChangedListner,
 }

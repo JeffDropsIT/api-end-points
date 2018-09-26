@@ -52,23 +52,23 @@ router.post('/afroturf/user/edit/profile',userOps.updateUser);
 //create salon /afroturf/user/profile/create/salon
 router.post('/afroturf/user/profile/create/salon',salonOps.createSalon);
 //edit salon details /afroturf/user/profile/edit/salon/dashboard
-router.post('/afroturf/user/profile/edit/salon/dashboard',salonOps.updateSalonContent);
+router.post('/afroturf/user/profile/edit/salon/dashboard',salonOps.updateSalonContent); //notity all devices
 //favourite salon /afroturf/user/profile/salon/id/favorite
-router.post('/afroturf/user/profile/salon/:id/follow', userOps.followSalon);
+router.post('/afroturf/user/profile/salon/:id/follow', userOps.followSalon); //tell owner 
 //write review /afroturf/user/profile/salon/id/favorite
-router.post('/afroturf/user/profile/salon/:id/review',userOps.sendReview);
+router.post('/afroturf/user/profile/salon/:id/review',userOps.sendReview); //tell all followers and update all devices
 //write message /afroturf/user/profile/messages/room'
-router.post('/afroturf/user/profile/messages/room',userOps.sendMessage);
+router.post('/afroturf/user/profile/messages/room',userOps.sendMessage); //tell owner
 //apply to a salon as stylist api/afroturf/user/apply/salon
-router.post('/afroturf/user/profile/salon/apply',stylistOps.applyAsStylist);
+router.post('/afroturf/user/profile/salon/apply',stylistOps.applyAsStylist);  //tell owner
 //respond to application api/afroturf/user/profile/applications/status
-router.post('/afroturf/user/profile/salon/dashboard/applications/status',salonOps.acceptStylistRequest);
+router.post('/afroturf/user/profile/salon/dashboard/applications/status',salonOps.acceptStylistRequest); //tell stylist
 //book a salon /afroturf/user/profile/bookings/salon/id (geneic booking)
-router.post('/afroturf/user/profile/salon/service/bookings',salonOps.addtosalonOrders);
+router.post('/afroturf/user/profile/salon/service/bookings',salonOps.addtosalonOrders); //tell stylist and salon
 //book a stylist api/afroturf/user/book/service/salon/stylist  (specific booking)
-router.post('/afroturf/user/profile/salon/service/stylist/bookings',salonOps.addtostylistOrders);
+router.post('/afroturf/user/profile/salon/service/stylist/bookings',salonOps.addtostylistOrders);  //tell stylist
 //respond to booking api/afroturf/salon/salon/dashboard/bookings/status
-router.post('/afroturf/user/profile/salon/dashboard/bookings/status',salonOps.acceptOrder);
+router.post('/afroturf/user/profile/salon/dashboard/bookings/status',salonOps.acceptOrder); //tell booker
 //get available time slots /afroturf/user/profile/salon/bookings/available
 router.get('/afroturf/user/profile/salon/bookings/unavailable',salonOps.getBookedTimeSlotForSalon);
 //get available orders after /afroturf/user/profile/salon/bookings/available
@@ -87,15 +87,15 @@ router.get('/afroturf/user/profile/salon/bookings/:orderNumber',salonOps.getOrde
 router.get('/afroturf/user/profile/salon/bookings',salonOps.getSalonOrdersDoc);
 //crud salon content
 //add subservice To Salon Services /afroturf/user/profile/edit/salon/dashboard
-router.put('/afroturf/user/profile/edit/salon/dashboard/subservices',salonOps.addsubserviceToSalonServices);
+router.put('/afroturf/user/profile/edit/salon/dashboard/subservices',salonOps.addsubserviceToSalonServices); //tell all devices that data changed and follwers
 //add service To Salon Services /afroturf/user/profile/edit/salon/dashboard
-router.put('/afroturf/user/profile/edit/salon/dashboard/services',salonOps.addServicesToSalon);
+router.put('/afroturf/user/profile/edit/salon/dashboard/services',salonOps.addServicesToSalon); //tell all devices that data changed and follwers
 //add service avatar To a Salon service  /afroturf/user/profile/edit/salon/dashboard
-router.put('/afroturf/user/profile/edit/salon/dashboard/services/avatar',salonOps.addServiceAvatar);
+router.put('/afroturf/user/profile/edit/salon/dashboard/services/avatar',salonOps.addServiceAvatar); //tell followers and return data
 //update service name for a salon /afroturf/user/profile/edit/salon/dashboard
-router.patch('/afroturf/user/profile/edit/salon/dashboard/services',salonOps.updateServiceName);
+router.patch('/afroturf/user/profile/edit/salon/dashboard/services',salonOps.updateServiceName); //tell all devices that data changed
 //update service name for a salon /afroturf/user/profile/edit/salon/dashboard
-router.patch('/afroturf/user/profile/edit/salon/dashboard/subservices',salonOps.updateSubservice);
+router.patch('/afroturf/user/profile/edit/salon/dashboard/subservices',salonOps.updateSubservice); //tell all devices that data changed
 
 
 
@@ -111,11 +111,11 @@ router.get("/afroturf/user/salons/obj/",salon.getSalonBySalonObj)
 
 //--end--
 //upload salon avatar
-router.post("/afroturf/avatar/salon",uploads.uploadSalonAvatar); //tested
+router.post("/afroturf/avatar/salon",uploads.uploadSalonAvatar); //tested || tell owner
 // handle uploads
-router.post("/afroturf/gallery/stylist",uploads.uploadToStylistGallary); //tested
+router.post("/afroturf/gallery/stylist",uploads.uploadToStylistGallary); //tested || tell followers && stylist
 router.post("/afroturf/avatar/user",uploads.uploadToUserAvatar); // tested
-router.post("/afroturf/gallery/salon",uploads.uploadToSalonGallary); //tested
+router.post("/afroturf/gallery/salon",uploads.uploadToSalonGallary); //tested || tell followers
 router.get('/afroturf/search/global-q',quickSearch.generalQuickSearch);
 
 
