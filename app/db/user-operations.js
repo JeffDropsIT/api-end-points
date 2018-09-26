@@ -64,7 +64,7 @@ const updateUser = async (ctx) =>{
 const followSalon = async (ctx) =>{
     try {
         console.log(ctx.request.body);
-        const userId = ctx.request.body._id.$oid, salonObjId = ctx.request.body.salonObjId;
+        const userId = ctx.request.body._id, salonObjId = ctx.request.body.salonObjId;
         const id = ctx.params.id;
         console.log("ID: ", id);
         const db = await generic.getDatabaseByName("afroturf");
@@ -233,6 +233,8 @@ const sendReview = async (ctx) =>{
    
 
 }
+
+
 
 
 module.exports = {

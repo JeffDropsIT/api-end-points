@@ -111,11 +111,11 @@ router.get("/afroturf/user/salons/obj/",salon.getSalonBySalonObj)
 
 //--end--
 //upload salon avatar
-router.post("/avatar/salon",uploads.uploadSalonAvatar)
+router.post("/afroturf/avatar/salon",uploads.uploadSalonAvatar); //tested
 // handle uploads
-router.post("/gallery/stylist",uploads.uploadToStylistGallary);
-router.post("/avatar/user",uploads.uploadToUserAvatar);
-router.post("/gallery",uploads.uploadToSalonGallary);
+router.post("/afroturf/gallery/stylist",uploads.uploadToStylistGallary); //tested
+router.post("/afroturf/avatar/user",uploads.uploadToUserAvatar); // tested
+router.post("/afroturf/gallery/salon",uploads.uploadToSalonGallary); //tested
 router.get('/afroturf/search/global-q',quickSearch.generalQuickSearch);
 
 

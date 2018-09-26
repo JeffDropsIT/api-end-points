@@ -1,11 +1,11 @@
 const AWS = require("aws-sdk");
 
 //AWS.config.loadFromPath('C:\\Users\\jeffdropsit\\development\\afroturf\\api-end-points\\aws\\AwsConfig.json'); 
-//AWS.config.loadFromPath('C:\\Users\\Developer\\Desktop\\outkast\\api-end-points\\aws\\AwsConfig.json'); 
+AWS.config.loadFromPath('C:\\Users\\Developer\\Desktop\\outkast\\api-end-points\\aws\\AwsConfig.json'); 
 const s3 = new AWS.S3({apiVersion: '2006-03-01'});
 const uuid = require("uuid");
 const fs = require('fs');
-
+let URL = "https://s3-sa-east-1.amazonaws.com/"
 const deleteObject = async(key, name) =>{
     try {
         const params = {
@@ -56,6 +56,9 @@ const createUserDefaultBucket = async (username) => {
         throw new Error(error)
     }
 }
+
+
+
 const createBucket = async (username) => {
     const genUsername = username.toLowerCase().replace("@","_")+"-id-"+uuid.v4();
     console.log("user/salon bucketName : "+genUsername)
@@ -140,13 +143,15 @@ const uploadFile = async (key, name, path) => {
     }
 }
 
-const uploadFileWithCallBack = async (key, name, path, func, salonObjId, userId) => {
+const uploadFileWithCallBack = async (key, name, Binary, func, salonObjId, userId) => {
     try {
-        const stream = await fs.createReadStream(path);
-        const params =  {Bucket: name, Key: key, Body: stream};
+        //const stream = await fs.createReadStream(path);
+        let stre = new Buffer(Binary, 'base64');
+        const params =  {Bucket: name, Key: key,  ContentEncoding: 'base64', ACL:"public-read", ContentType: 'image/jpeg', Body: stre};
     
         //await console.log(stream)
-        await s3.upload(params, async (err, data) =>{ data["comments"] = []; delete data["key"] ; data["created"] = new Date(); func(err, data, salonObjId, userId)});
+        
+        await s3.putObject(params, async (err, data) =>{if(data == null){return; } data["url"] = URL+"/"+name+"/"+key ;data["comments"] = []; delete data["key"] ; data["ETag"] = data["ETag"].replace(/['"]+/g, "");data["created"] = new Date(); func(err, data, salonObjId, userId)});
     } catch (error) {
         throw new Error(error)
     }
@@ -169,22 +174,6 @@ const callBack = async(err, data) => {
     else await console.log(data); return await data; // successful response
 }
 
-//getObject("testDir/download.jpg", "123bucket-err-2");
-//deleteObject("testDir/download (1).jpg", "123bucket-err-2");
-
-
-//deleteObject("rose_red_flower_bud_119651_1920x1080.jpg", "123bucket-err-2" );
-//getObjectTagging("img.jpg", "123bucket-err-2");
-//createBucket("JEFF");
-//getAllObjects("testDir/", "123bucket-err-2");
-//checkIfBucketExist("123bucket-erfr-2");
-//getObjectHead("testDir/24779362-ac97-464b-8796-66406a701eb6name=39099533_220411258637412_6843874040776491008_n.jpg", "123bucket-err-2")
-// createBucket("allen")
-// const createUserDir = async (username)=> {
-//     const genUsername = await createBucket(username)
-    
-// }
-//createUserDefaultBucket("I HATE LASE AND I LOVE SUXIE SESY LUMP BACK").then(p =>{ name = p; console.log(name)});
 
 module.exports = {
     uploadFile,
