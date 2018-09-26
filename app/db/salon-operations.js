@@ -458,7 +458,7 @@ console.log("getSalonByNameShallow hhhhh "+contains.toLowerCase());
 //at least one services is required to create a salon
 const createSalon = async (ctx) =>{
     try {
-            //add this to users db
+        //add this to users db
         const body = ctx.request.body ;
         const name = body.name, address = body.address, street = address.split(",")[1], coordinates = [parseFloat(body.latitude), parseFloat(body.longitude)], sName = "haircuts", hiring = 1;
         const userId = body.userId; //"5b7e8e21d59eae1de05d6984";
@@ -481,7 +481,16 @@ const createSalon = async (ctx) =>{
             awsHandler.createUserDefaultBucket(name).then(p => updateSalon({bucketName: p}, _id));
             generic.createReviewsDoc(_id, "salons");
             console.log("--added to owner account-- "+_id);
-            ctx.body =  {res:200, message: "successfully performed operation"}
+            let res =  {res:200, message: "successfully performed operation"}
+
+            if(res.res === 200){
+                //notify all devices that salon collection updated
+
+                notify.onDocumentDataChangedListner(_id, "salonListner", "salon")
+                //notify owner of salon created
+
+            }
+            ctx.body = res;
         }else{
             console.log("--failed to add owner account--");
             ctx.body = {res:401, message: "failed to perform operation"};
@@ -584,38 +593,6 @@ const addtosalonOrders = async(ctx) => {
 //test
 //addtosalonOrders("5b7e8d6291de652110e648ca","5b8902930548d434f87ad900");
 
-const getSalonOrdersByDateAfter = async(ctx) => {
-    const salonObjId = ctx.query.salonObjId, date = ctx.query.date;
-    const db = await generic.getDatabaseByName("afroturf");
-    const salonCursor = await db.db.collection("orders").aggregate([
-        {$match : {"salonObjId": salonObjId}},
-        {
-            $project: {
-                salonOrders:{
-                    $filter: {
-                        input: "$salonOrders",
-                        as: "this",
-                        cond:{$and : [{$gte : ["$$this.created", new Date(date)] }]}
-                     }
-                }
-             }
-        }
-    ])
-    const salon = await salonCursor.toArray();
-    
-    if(!empty(salon)){
-        console.log("DATA IS THERE. . . ")
-        console.log(salon)
-        let count = JSON.parse(JSON.stringify(salon));
-        db.connection.close();        
-        return count;
-    }
-    db.connection.close();
-}
-//test
-//getSalonOrdersByDateAfter("5b8902930548d434f87ad900", "August 29, 2018 19:15:30")
-
-
 const getSalonOrdersByDateBefore = async(ctx) => {
     const salonObjId = ctx.query.salonObjId, date = ctx.query.before;
     const db = await generic.getDatabaseByName("afroturf");
@@ -691,7 +668,16 @@ const addBookingUserAccount = async(userId, data) =>{
         );
         db.connection.close();
         console.log(result.result.ok, result.result.nModified);
-    return  {ok: result.result.ok, nModified: result.result.nModified};
+        let resultJson = {ok: result.result.ok, nModified: result.result.nModified};
+        let res = resultJson.ok && resultJson.nModified === 1 ? {res:200, message: "sucessfully performed operation"} : {res:401, message: "failed performed operation"}
+        if(res.res === 200){
+            //notify user tha booking successfull
+            //notify user that user data changed
+            const clientId = await generic.getClientId(userId);
+            notify.notifyUser("userDataChanged", clientId, {userId:userId, message:"changed from user: "+userId});
+            //notify all stylist that the is a booking
+        }
+        return  res;
     }catch(err){
         throw new Error(err);
     }
@@ -892,9 +878,16 @@ const acceptOrder = async (ctx) =>{
                 db.connection.close();
                 console.log(result2.result.ok, result2.result.nModified);
                 const res = { ok: result2.result.ok, nModified:result2.result.nModified};
-                
-                ctx.body = res.ok && res.nModified === 1 ?  {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
+                let resTo = res.ok && res.nModified === 1 ?  {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
 
+                ctx.body = resTo;
+                if(resTo.res === 200){
+                    //notify user tha booking successfull
+                    //notify user that user data changed
+                    const clientId = await generic.getClientId(data.customerId);
+                    notify.notifyUser("bookingAccepted", clientId, {userId:userId, message:"changed from user: "+userId});
+                    //notify all stylist that the is a booking
+                }
             }
             db.connection.close();
         }else{
@@ -934,8 +927,15 @@ const acceptOrder = async (ctx) =>{
                 console.log(result3.result.ok, result3.result.nModified);
                 
                 const res2 = { ok: result3.result.ok, nModified:result3.result.nModified};
-                ctx.body =  res2.ok && res2.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
-                
+                let resToNew = resToNew =  res2.ok && res2.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
+                ctx.body = resToNew;
+                if(resToNew.res === 200){
+                    //notify user tha booking successfull
+                    //notify user that user data changed
+                    const clientId = await generic.getClientId(data.customerId);
+                    notify.notifyUser("bookingAccepted", clientId, {userId:userId, message:"changed from user: "+userId});
+                    //notify all stylist that the is a booking
+                }
                 
 
             }
@@ -1296,22 +1296,7 @@ const addsubserviceToSalonServices = async (ctx) => {
         throw new Error(err);
     }
 }
-const  addServiceAvatar = async (ctx) => {
-    const salonObjId = ctx.request.body.salonObjId, serviceName = ctx.request.body.serviceName, url = ctx.request.body.url;
-    console.log("--addServicesToSalon--");
-    try{
-        const db = await generic.getDatabaseByName("afroturf");
-        const result = await db.db.collection("salons").update(
-            {$and: [{"_id": ObjectId(salonObjId)}, {"services.name": serviceName}]},
-            {$set: {"services.$.url":url}}, 
-        );
-        db.connection.close();
-        console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
-        ctx.body =   result.result.ok &&result.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
-    }catch(err){
-        throw new Error(err);
-    }
-}
+
 const acceptStylistRequest = async (ctx) => {
     try{
         const userId = ctx.request.body.userId, 
@@ -1414,7 +1399,6 @@ module.exports ={
     addServicesToSalon,
     updateServiceName,
     updateSubservice,
-    addServiceAvatar,
     getSalonByName, 
     getSalonByNameShallow, 
    

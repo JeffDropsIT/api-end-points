@@ -24,6 +24,25 @@ const uploadSalonAvatar = async (ctx) =>{
     }
 }
 
+
+
+const  addSubserviceAvatar = async (ctx) => {
+   //console.log(ctx)
+   const binary = ctx.request.body.binary;
+   const salonObjId = ctx.request.body.salonObjId;
+   const name = ctx.request.body.name;
+   const code = ctx.request.body.code;
+   const serviceName = ctx.request.body.serviceName;
+   console.log(" Tot: "+binary)
+   
+   const key = await uuid.v4()+"-"+name.replace(" ", "")+".jpeg";
+   //awsHandler.uploadFile(key, "123bucket-err-2/testDir", pathF);
+   admin.addSubserviceAvatar(salonObjId, code, serviceName, binary, key);
+   
+   ctx.body = {res: 200, message: "uploaded"}
+   console.log("DONE")
+
+}
 const uploadToUserAvatar = async (ctx) =>{
   //console.log(ctx)
   const binary = ctx.request.body.binary;
@@ -80,5 +99,6 @@ module.exports = {
     uploadToStylistGallary,
     uploadToUserAvatar,
     uploadSalonAvatar,
+    addSubserviceAvatar,
 
 }

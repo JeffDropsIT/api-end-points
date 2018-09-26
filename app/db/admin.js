@@ -9,6 +9,42 @@ CONTENT RELATED QUERIES FOR SALON AND STYLISTS
 
 
 */
+
+
+
+const addSubserviceAvatar = async (salonObjId, code, serviceName, binary, key) => {
+ 
+    console.log("--addServicesToSalon--");
+   // try{
+        const db = await generic.getDatabaseByName("afroturf");
+        let  result = await db.db.collection("salons").aggregate([{ $match: { _id: ObjectId(salonObjId) } }, {$project: {bucketName: 1}}])
+        let resultArr = await result.toArray();
+        let bucketName, count;
+        if(!empty(result)){
+            console.log("--not empty--");
+            count = JSON.parse(JSON.stringify(resultArr[0]));
+            bucketName = await count.bucketName;
+        }else{
+            bucketName = undefined;
+        }
+        if(bucketName === undefined) {
+            console.log("failed to find bucketName: ") ;
+                bucketName = await awsHandler.createUserDefaultBucket('salon');
+                db.db.collection("salons").update({$and : [{"_id": ObjectId(salonObjId)}]}, {$set: {bucketName: bucketName}});
+        }
+        console.log(count);
+
+    
+        bucketName = bucketName + "/accounts/user/data/public/photos/profiles/subservices"
+        //upload to public
+        awsHandler.uploadFileWithCallBackSubservices(key, bucketName, binary, addSubserviceAvatarOnSuccessListner,salonObjId,serviceName, code)
+        db.connection.close();
+
+    
+    // }catch(err){
+    //     throw new Error(err);
+    // }
+  }
 const addToSalonGalleryOnSuccessListner = async (err, data, salonObjId, userId) =>{
     if (err){ console.log(err, err.stack); return -1;}
     try{
@@ -152,6 +188,27 @@ const addToUserAvatar = async (userId,key, binary) => {
         throw new Error(error)
     }
 }
+
+
+const addSubserviceAvatarOnSuccessListner = async (err, data, salonObjId, serviceName, code) =>{
+    console.log("--addSubserviceAvatarOnSuccessListner--");
+    if (err){ console.log(err, err.stack); return console.log(err);}
+
+    try{
+        const db = await generic.getDatabaseByName("afroturf");
+        const result = await db.db.collection("salons").update(
+        {$and : [{"_id": ObjectId(salonObjId)}]},
+        {$set: {"services.$[subservice].subservices.$[service].url":data.url}},
+        {arrayFilters: [{$and: [{"subservice._id":serviceName},{"subservice.subservices.code": {$eq:code}}]},{"service.code": code}]}
+        );
+        console.log({res:result.result.ok, modified: result.result.nModified });
+    return  ;
+    }catch(err){
+
+        throw new Error(err);
+    }
+
+}
 const addToUserAvatarOnSuccessListner = async (err, data, salonObjId, userId) =>{
     if (err){ console.log(err, err.stack); return -1;}
     console.log("--addToUserAvatarOnSuccessListner--");
@@ -277,5 +334,6 @@ module.exports = {
     addToSalonAvatar,
     commentOnSalonGalleryObject,
     commentOnStylistGalleryObject,
+    addSubserviceAvatar,
 }
 

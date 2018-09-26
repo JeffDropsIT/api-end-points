@@ -1,7 +1,7 @@
 const AWS = require("aws-sdk");
 
 //AWS.config.loadFromPath('C:\\Users\\jeffdropsit\\development\\afroturf\\api-end-points\\aws\\AwsConfig.json'); 
-//AWS.config.loadFromPath('C:\\Users\\Developer\\Desktop\\outkast\\api-end-points\\aws\\AwsConfig.json'); 
+AWS.config.loadFromPath('C:\\Users\\Developer\\Desktop\\outkast\\api-end-points\\aws\\AwsConfig.json'); 
 const s3 = new AWS.S3({apiVersion: '2006-03-01'});
 const uuid = require("uuid");
 const fs = require('fs');
@@ -146,17 +146,29 @@ const uploadFile = async (key, name, path) => {
 const uploadFileWithCallBack = async (key, name, Binary, func, salonObjId, userId) => {
     try {
         //const stream = await fs.createReadStream(path);
-        let stre = new Buffer(Binary, 'base64');
+        let stre = await new Buffer(Binary, 'base64');
         const params =  {Bucket: name, Key: key,  ContentEncoding: 'base64', ACL:"public-read", ContentType: 'image/jpeg', Body: stre};
     
         //await console.log(stream)
         
-        await s3.putObject(params, async (err, data) =>{if(data == null){return; } data["url"] = URL+"/"+name+"/"+key ;data["comments"] = []; delete data["key"] ; data["ETag"] = data["ETag"].replace(/['"]+/g, "");data["created"] = new Date(); func(err, data, salonObjId, userId)});
+        await s3.putObject(params, async (err, data) =>{if(data == null){console.log(data);return; } data["url"] = URL+"/"+name+"/"+key ;data["comments"] = []; delete data["key"] ; data["ETag"] = data["ETag"].replace(/['"]+/g, "");data["created"] = new Date(); func(err, data, salonObjId, userId)});
     } catch (error) {
         throw new Error(error)
     }
 }
+const uploadFileWithCallBackSubservices = async (key, name, Binary, func, salonObjId, serviceName, code) => {
+    try {
 
+        let stre = await new Buffer(Binary, 'base64');
+        const params =  {Bucket: name, Key: key,  ContentEncoding: 'base64', ACL:"public-read", ContentType: 'image/jpeg', Body: stre};
+    
+        //await console.log(stream)
+        
+        await s3.putObject(params, async (err, data) =>{if(data == null){console.log(data);return; } data["url"] = URL+"/"+name+"/"+key ;data["comments"] = []; delete data["key"] ; data["ETag"] = data["ETag"].replace(/['"]+/g, "");data["created"] = new Date(); func(err, data, salonObjId, serviceName, code)});
+    } catch (error) {
+        throw new Error(error)
+    }
+}
 const createDir = async (path, name) => {
     try {
         const params = {
@@ -178,5 +190,6 @@ const callBack = async(err, data) => {
 module.exports = {
     uploadFile,
     createUserDefaultBucket,
-    uploadFileWithCallBack
+    uploadFileWithCallBack,
+    uploadFileWithCallBackSubservices
 }

@@ -91,7 +91,6 @@ router.put('/afroturf/user/profile/edit/salon/dashboard/subservices',salonOps.ad
 //add service To Salon Services /afroturf/user/profile/edit/salon/dashboard
 router.put('/afroturf/user/profile/edit/salon/dashboard/services',salonOps.addServicesToSalon); //tell all devices that data changed and follwers
 //add service avatar To a Salon service  /afroturf/user/profile/edit/salon/dashboard
-router.put('/afroturf/user/profile/edit/salon/dashboard/services/avatar',salonOps.addServiceAvatar); //tell followers and return data
 //update service name for a salon /afroturf/user/profile/edit/salon/dashboard
 router.patch('/afroturf/user/profile/edit/salon/dashboard/services',salonOps.updateServiceName); //tell all devices that data changed
 //update service name for a salon /afroturf/user/profile/edit/salon/dashboard
@@ -114,10 +113,10 @@ router.get("/afroturf/user/salons/obj/",salon.getSalonBySalonObj)
 router.post("/afroturf/avatar/salon",uploads.uploadSalonAvatar); //tested || tell owner
 // handle uploads
 router.post("/afroturf/gallery/stylist",uploads.uploadToStylistGallary); //tested || tell followers && stylist
+router.put('/afroturf/avatar/subservice',uploads.addSubserviceAvatar); //tell followers and return data
 router.post("/afroturf/avatar/user",uploads.uploadToUserAvatar); // tested
 router.post("/afroturf/gallery/salon",uploads.uploadToSalonGallary); //tested || tell followers
 router.get('/afroturf/search/global-q',quickSearch.generalQuickSearch);
-
 
 
 
