@@ -922,14 +922,14 @@ const createNewServicesForm =  (sName)=>{
     return form;
 }
 
-const createNewSubserviceForm =  (type, code, price, description, url)=>{
+const createNewSubserviceForm =  (type, code, price, description, estimatedDuration)=>{
     
     const form = {
         "type": type.toLowerCase(),
         "code": code.toLowerCase(), //unique
         "price": price,
         "created": new Date(),
-        "url": url,
+        "estimatedDuration": estimatedDuration,
         "description": description.toLowerCase()
         
     }

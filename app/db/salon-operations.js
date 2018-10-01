@@ -1279,9 +1279,9 @@ const addsubserviceToSalonServices = async (ctx) => {
     //get currect user
     const salonObjId = ctx.request.body.salonObjId, 
     serviceName = ctx.request.body.serviceName, type = ctx.request.body.type, code = ctx.request.body.code,
-    price = ctx.request.body.price, description = ctx.request.body.description, url = ctx.request.body.url;
+    price = ctx.request.body.price, description = ctx.request.body.description, estimatedDuration = ctx.request.body.estimatedDuration;
     console.log("--addsubserviceToSalonServices--");
-    const data = schema.createNewSubserviceForm(type, code, price, description, url);
+    const data = schema.createNewSubserviceForm(type, code, price, description, estimatedDuration);
     try{
         const db = await generic.getDatabaseByName("afroturf");
         const result = await db.db.collection("salons").update(
