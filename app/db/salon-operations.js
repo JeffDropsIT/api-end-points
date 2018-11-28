@@ -121,6 +121,27 @@ const getAllNearestSalonsShallow = async (userlocation, radius) => {
      throw new Error(err);
     }   
    };
+
+   //get salon by salonId
+  const getUserBookmarksByUserId = async (userId) => {
+  
+    try{
+       const db = await generic.getDatabaseByName("afroturf");
+       
+        const bookmarkCursor = await db.db.collection("bookmarks").aggregate([ {
+          $match:{userId: parseInt(userId)}
+        }]);
+        const bookmark = await bookmarkCursor.toArray();
+   
+        //console.log("INSIDE connect", JSON.parse(JSON.stringify(salon));
+        db.connection.close();
+        return JSON.parse(JSON.stringify(bookmark));
+       
+  
+    }catch(err){
+     throw new Error(err);
+    }   
+   };
     // get salon by salonId shallow getSalonBySalonIdShallow
   const getSalonBySalonIdShallow = async (salonId, userlocation, radius) => {
     console.log("getSalonBySalonIdShallow")

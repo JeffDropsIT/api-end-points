@@ -157,7 +157,7 @@ const getNextSequenceValue = async (sequenceName, collectionIndex) => {
     } catch (error) {
         throw new Error(error);
     }
-    };
+};
 
 const getOrderNumber = async(orderId, orderFor)=>{
     console.log("OrderId: ", orderId)
