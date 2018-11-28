@@ -13,6 +13,7 @@ const Router = require("koa-router");
 const userOps = require("./app/db/user-operations");
 const salonOps = require("./app/db/salon-operations");
 const stylistOps = require("./app/db/stylist-operations");
+const bookmarksOps = require("./app/controllers/bookmarks")
 const auth = require("./app/db/authentication");
 const uploads = require("./app/controllers/uploads");
 const quickSearch = require("./app/db/quickSearch")
@@ -49,6 +50,7 @@ router.post('/afroturf/user/login',auth.authenticateUser);
 router.post('/afroturf/user/',auth.getAllUserData);
 //edit a user
 router.post('/afroturf/user/edit/profile',userOps.updateUser);
+
 //create salon /afroturf/user/profile/create/salon
 router.post('/afroturf/user/profile/create/salon',salonOps.createSalon);
 //edit salon details /afroturf/user/profile/edit/salon/dashboard
@@ -57,6 +59,8 @@ router.post('/afroturf/user/profile/edit/salon/dashboard',salonOps.updateSalonCo
 router.post('/afroturf/user/profile/salon/:id/follow', userOps.followSalon); //tell owner 
 //write review /afroturf/user/profile/salon/id/favorite
 router.post('/afroturf/user/profile/salon/:id/review',userOps.sendReview); //tell all followers and update all devices
+//post bookmar
+router.post('/afroturf/user/profile/salon/bookmarks',bookmarksOps.createBookmark);
 //write message /afroturf/user/profile/messages/room'
 router.post('/afroturf/user/profile/messages/room',userOps.sendMessage); //tell owner
 //apply to a salon as stylist api/afroturf/user/apply/salon
@@ -85,6 +89,15 @@ router.get('/afroturf/user/profile/salon/bookings/duration/unavailable-b',salonO
 router.get('/afroturf/user/profile/salon/bookings/:orderNumber',salonOps.getOrderByOrderNumber);
 //get bookings doc /afroturf/user/profile/salon/bookings/available
 router.get('/afroturf/user/profile/salon/bookings',salonOps.getSalonOrdersDoc);
+//get bookmarks
+router.get('/afroturf/user/profile/salon/bookmarks',bookmarksOps.getBookmarks);
+//delete bookmarks
+router.delete('/afroturf/user/profile/salon/bookmarks/:bookmarkId',bookmarksOps.deleteBookmark);
+//clear bookmarks
+router.delete('/afroturf/user/profile/salon/bookmarks/:userId/clear',bookmarksOps.clearAllBookmarks);
+
+
+
 //crud salon content
 //add subservice To Salon Services /afroturf/user/profile/edit/salon/dashboard
 router.put('/afroturf/user/profile/edit/salon/dashboard/subservices',salonOps.addsubserviceToSalonServices); //tell all devices that data changed and follwers
