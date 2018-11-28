@@ -22,6 +22,17 @@ const getDatabaseByName = async(name) =>{
   }
 };
 
+
+const deleteDocument = async(collectionName, condition) => {
+    const db = await getDatabaseByName();
+    const result = await db.db.collection(collectionName).deleteOne(
+        condition
+    );
+    db.connection.close();
+    console.log(result.result.ok, result.result.nModified)
+    return result.result.ok;
+}
+
 const createAnyCollection = async (dbName, collectionName, schema) =>{
     
     try{
@@ -225,5 +236,6 @@ module.exports = {
     updateCollectionDocument,
     getDatabaseByName,
     checkIfUserNameEmailPhoneExist,
-    getClientId
+    getClientId,
+    deleteDocument
 }

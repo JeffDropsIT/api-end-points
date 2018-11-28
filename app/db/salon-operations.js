@@ -121,7 +121,38 @@ const getAllNearestSalonsShallow = async (userlocation, radius) => {
      throw new Error(err);
     }   
    };
+const createUserBookmark = async (userId, salonId) => {
+    const bookmark = {
+        userId: userId,
+        salonId: salonId,
+        bookmarkId: await counters.getNextSequenceValue("bookmarkId","bookmarksIndex" )
+    }
+    const result = await generic.insertIntoCollection("afroturf", "bookmarks",bookmark)
+    console.log("ok: "+result.ok, "_id "+ result._id +" type: "+typeof(result._id));
+    let _id;
+    _id = result.ok == 1 ?  result._id: null;
+    if(_id !==null){
+        console.log("Creating bookmark ....id "+_id)
+        return  {res:200, message: "sucessful"};
+    }else{
+        return  {res:401, message: "Ops something went wrong"};
+    }
+    
+}
+const deleteUserBookmark = async (bookmarkId) => {
+    const bookmark = {
+        bookmarkId: bookmarkId
+    }
+    const result = await generic.deleteDocument("bookmarks",bookmark)
 
+    if(result !==null){
+        console.log("deleting bookmark ....id "+result)
+        return  {res:200, message: "sucessful"};
+    }else{
+        return  {res:401, message: "Ops something went wrong"};
+    }
+    
+}
    //get salon by salonId
   const getUserBookmarksByUserId = async (userId) => {
   
@@ -133,23 +164,63 @@ const getAllNearestSalonsShallow = async (userlocation, radius) => {
         }]);
         const bookmark = await bookmarkCursor.toArray();
         const bookmarkObj = JSON.parse(JSON.stringify(bookmark))
-        let salonsBookmarked = [];
-        for(let item of bookmarkObj){
-            console.log("Item: "+item.salonId);
-            salonsBookmarked.push(await getSalonBySalonIdShallow(item.salonId));
-        }
-        bookmarkObj["salons"] = salonsBookmarked;
-        console.log("Bookmarks", bookmarkObj);
+
+        bn = await getSalonBookmarked(bookmarkObj);
+        console.log("Bookmarks - ", bn);
         db.connection.close();
-        return JSON.parse(JSON.stringify(bookmark));
+        return bn;
        
   
     }catch(err){
      throw new Error(err);
     }   
    };
+   const deleteAllUserBookmarksByUserId = async (userId) => {
+  
+    try{
+       const db = await generic.getDatabaseByName("afroturf");
+       
+        const bookmarkCursor = await db.db.collection("bookmarks").aggregate([ {
+          $match:{userId: userId}
+        }]);
+        const bookmark = await bookmarkCursor.toArray();
+        const bookmarkObj = JSON.parse(JSON.stringify(bookmark))
 
-   getUserBookmarksByUserId("5b9644aa6fb76e2ed83a25f6");
+        await clearSalonBookmarked(bookmarkObj);
+        db.connection.close();
+        return  {res:200, message: "sucessful"};
+       
+  
+    }catch(err){
+     throw new Error(err);
+    }   
+   };
+   const clearSalonBookmarked = async (obj) =>{
+
+
+
+    for(let item of obj){
+        await deleteUserBookmark(item.bookmarkId);
+    }
+    
+
+}
+   const getSalonBookmarked = async (obj) =>{
+
+
+        let salonsBookmarked = [];
+
+        for(let item of obj){
+            salonsBookmarked.push(await getSalonBySalonIdShallow(item.salonId));
+        }
+        salonsBookmarked.push(obj);
+        let results =  JSON.parse(JSON.stringify(await salonsBookmarked));
+
+        return results
+
+   }
+
+   //getUserBookmarksByUserId("5b9644aa6fb76e2ed83a25f6");
     // get salon by salonId shallow getSalonBySalonIdShallow
   const getSalonBySalonIdShallow = async (salonId, userlocation, radius) => {
     console.log("getSalonBySalonIdShallow")
@@ -1433,17 +1504,19 @@ module.exports ={
     updateServiceName,
     updateSubservice,
     getSalonByName, 
+    createUserBookmark,
     getSalonByNameShallow, 
-   
+    getUserBookmarksByUserId,
     getAllNearestSalonsShallow, 
     getAllSalons, 
     getNearestSalons,
     getSalonBySalonId,
     getSalonBySalonIdShallow,
+    deleteAllUserBookmarksByUserId,
     //salons
     getSalonByRating,
     getSalonBySalonObj,
-
+    deleteUserBookmark,
     containsInSalons,
 
 }
