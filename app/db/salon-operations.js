@@ -129,11 +129,17 @@ const getAllNearestSalonsShallow = async (userlocation, radius) => {
        const db = await generic.getDatabaseByName("afroturf");
        
         const bookmarkCursor = await db.db.collection("bookmarks").aggregate([ {
-          $match:{userId: parseInt(userId)}
+          $match:{userId: userId}
         }]);
         const bookmark = await bookmarkCursor.toArray();
-   
-        //console.log("INSIDE connect", JSON.parse(JSON.stringify(salon));
+        const bookmarkObj = JSON.parse(JSON.stringify(bookmark))
+        let salonsBookmarked = [];
+        for(let item of bookmarkObj){
+            console.log("Item: "+item.salonId);
+            salonsBookmarked.push(await getSalonBySalonIdShallow(item.salonId));
+        }
+        bookmarkObj["salons"] = salonsBookmarked;
+        console.log("Bookmarks", bookmarkObj);
         db.connection.close();
         return JSON.parse(JSON.stringify(bookmark));
        
@@ -142,6 +148,8 @@ const getAllNearestSalonsShallow = async (userlocation, radius) => {
      throw new Error(err);
     }   
    };
+
+   getUserBookmarksByUserId("5b9644aa6fb76e2ed83a25f6");
     // get salon by salonId shallow getSalonBySalonIdShallow
   const getSalonBySalonIdShallow = async (salonId, userlocation, radius) => {
     console.log("getSalonBySalonIdShallow")
@@ -156,11 +164,15 @@ const getAllNearestSalonsShallow = async (userlocation, radius) => {
           {
             $project: {name: 1, location:1, rating: 1, salonId: 1}
           }]);
-          const salon = await salonCursor.toArray();
-    
+          let salon = await salonCursor.toArray();
+
+          if(empty(salon)){
+            return JSON.parse(JSON.stringify(""));
+          }
           //console.log("INSIDE connect", JSON.stringify(salon));
           db.connection.close();
-          return JSON.parse(JSON.stringify(salon));
+          
+          return JSON.parse(JSON.stringify(salon[0]));
         }
          const salonCursor = await db.db.collection("salons").aggregate([ {
            $geoNear: {
