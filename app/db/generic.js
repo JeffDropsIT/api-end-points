@@ -109,10 +109,63 @@ const insertIntoCollection = async (dbName, collectionName, data) =>{
     }
     
 };
+const findSalon = async (salonId) =>{
+    console.log("begin lookup");
+    try{
+        const db = await getDatabaseByName("afroturf");
+        const result = await db.db.collection("salons").find({salonId:parseInt(salonId)})
+        const arrResult = await result.toArray();
+        const json = JSON.parse(JSON.stringify(arrResult));
+        db.connection.close();
+        console.log("Done lookup");
+        console.log("results: ", json);
+        let res;
+        if(empty(json)){
+            
+            res = false;
+        }else{
+            res = true;
+        }
+        console.log("res: "+res);
+        return res;
+    }catch(err){
+        console.log("findSalon failed");
+        throw new Error(err);
+    }
+    
+};
+//findSalon(2)
 
-
-
-
+const findBookmark = async (userId, salonId) =>{
+    console.log("begin findBookmark lookup");
+    try{
+        const db = await getDatabaseByName("afroturf");
+        const result = await db.db.collection("bookmarks").aggregate([
+            {
+                $match:{ $and:[{salonId:parseInt(salonId)},{userId:userId} ]}
+            }
+        ])
+        const arrResult = await result.toArray();
+        const json = JSON.parse(JSON.stringify(arrResult));
+        db.connection.close();
+        console.log("Done findBookmark lookup");
+        console.log("results: ", json);
+        let res;
+        if(empty(json)){
+            
+            res = false;
+        }else{
+            res = true;
+        }
+        console.log("res: "+res);
+        return res;
+    }catch(err){
+        console.log("findBookmark failed");
+        throw new Error(err);
+    }
+    
+};
+//findBookmark("5b9644aa6fb76e2ed83a25f6", 5)
 const createNewUsersPrivateChatRoom = async (collectionName, members) => {
 
         
@@ -237,5 +290,7 @@ module.exports = {
     getDatabaseByName,
     checkIfUserNameEmailPhoneExist,
     getClientId,
-    deleteDocument
+    deleteDocument,
+    findSalon,
+    findBookmark
 }

@@ -124,16 +124,25 @@ const getAllNearestSalonsShallow = async (userlocation, radius) => {
 const createUserBookmark = async (userId, salonId) => {
     const bookmark = {
         userId: userId,
-        salonId: salonId,
+        salonId: parseInt(salonId),
         bookmarkId: await counters.getNextSequenceValue("bookmarkId","bookmarksIndex" )
     }
+    let bool = await generic.findSalon(salonId);
+    if(!bool){
+        return   {res:404, message: "salon not found"};
+    }
+    let bool2 = await generic.findBookmark(bookmark.userId, bookmark.salonId);
+    if(bool2){
+        return   {res:409, message: "already bookmarked"};
+    }
+
     const result = await generic.insertIntoCollection("afroturf", "bookmarks",bookmark)
     console.log("ok: "+result.ok, "_id "+ result._id +" type: "+typeof(result._id));
     let _id;
     _id = result.ok == 1 ?  result._id: null;
     if(_id !==null){
         console.log("Creating bookmark ....id "+_id)
-        return  {res:200, message: "sucessful"};
+        return  {res:200, message: "sucessful", data: bookmark};
     }else{
         return  {res:401, message: "Ops something went wrong"};
     }
