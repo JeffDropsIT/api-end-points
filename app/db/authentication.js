@@ -3,24 +3,36 @@ const generic = require("./generic");
 const salt = bcrypt.genSaltSync(10);
 const ObjectId = require('mongodb').ObjectID;
 const empty = require("is-empty");
+const TokenGenerator = require('uuid-token-generator');
 
 const getUserAuth = async (username)=>{
     try{
         const status = await generic.checkIfUserNameEmailPhoneExist(username);
         if( status === 0){ 
             console.log("username or phone number does not exit"+ username);
-            return 404; //user not found
+            return {res:401}; //user not found
         }
         const db = await generic.getDatabaseByName("afroturf");
         const result = await db.db.collection("users").aggregate([{$match: {$or:[{username:username}, {email:username}, {phone:username}]}}])
         const arrResults = await result.toArray();
         db.connection.close();
         //console.log(JSON.parse(JSON.stringify(arrResults[0])))
-        return  JSON.parse(JSON.stringify(arrResults[0]));
+        return  {res:200, data:JSON.parse(JSON.stringify(arrResults[0]))};
     }catch(err){
         throw new Error(err);
     }
 }
+
+const generateToken = async () => {
+    const tokgen2 = new TokenGenerator(256, TokenGenerator.BASE62);
+    let token = await tokgen2.generate();
+    console.log(token);
+    let date = new Date();
+    date.setMonth(date.getMonth+1)
+    return token+":"+date;
+}
+
+
 
 const hashPassword = async (password) =>{
     console.log("hashPassword. . .begin")
@@ -135,14 +147,14 @@ const getUserProfile = async (user) => {
         const status = await generic.checkIfUserNameEmailPhoneExist(user.username);
         if( status === 0){ 
             console.log("username or phone number does not exit"+ user.username);
-            return 404; //user not found
+            return {res:404}; //user not found
         }
         const review = await getReview(user._id, user.reviewsDocId);
         const rooms  = await getUsersRooms(user._id, user.roomDocIdList);
         profile.push(review);
         profile.push(rooms);
         console.log(profile)
-        return  profile;
+        return  {res:200, data:profile};
     }catch(err){
         throw new Error(err);
     }
@@ -216,14 +228,21 @@ const authenticateUser = async (ctx) =>{
     const username = ctx.request.body.username;
     const password = ctx.request.body.password;
     const user = await getUserAuth(username);
+    if(user.res === 401){
+        ctx.status = 401;
+        ctx.body = {};
+        return;
+    }
     const isPassword = await bcrypt.compareSync(password, user.password);
     if(isPassword){
         console.log("password correct"); //ok
         delete user.password
-        ctx.body =  JSON.parse(JSON.stringify({res: 200, message:"successfully performed operation ", data:[user]}));
+        ctx.status = 200;
+        ctx.body =  user;
     }else{
         console.log("password incorrect "+password);
-        ctx.body = JSON.parse(JSON.stringify({res: 401, message:"successfully performed operation ", data:[] })) //unauthorized 
+        ctx.status = 401
+        ctx.body = {} //unauthorized 
     }
 
 
@@ -237,13 +256,20 @@ const getAllUserData = async (ctx) =>{
     const isPassword = await bcrypt.compareSync(password, user.password);
     if(isPassword){
         console.log("password correct"); //ok
-        delete user.password
-        const userData = await getUserProfile(user);
+        const res = await getUserProfile(user);
+        if(res.res === 401 ){
+            ctx.status = 401
+            ctx.body =  {} //unauthorized 
+            return;
+        }
         const salonData = await getSalonProfile(user._id)
-        ctx.body =  JSON.parse(JSON.stringify({res: 200, message:"successfully performed operation ", data:[userData, salonData]}));
+        ctx.status = 200;
+        let token = {token: await generateToken()}
+        ctx.body =  {userData:res.data, salonData:salonData, token};
     }else{
         console.log("password incorrect "+password);
-        ctx.body =  JSON.parse(JSON.stringify({res: 401, user:[]})) //unauthorized 
+        ctx.status = 401
+        ctx.body =  {} //unauthorized 
     }
 
 
@@ -260,5 +286,7 @@ module.exports = {
     authenticateUser,
     getAllUserData,
     getReview,
-    getRoom
+    getRoom,
+    getUserAuth,
+    generateToken
 }

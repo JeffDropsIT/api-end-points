@@ -21,6 +21,8 @@ const createUser = async (ctx) =>{
         const status = await generic.checkIfUserNameEmailPhoneExist(username) ;
         if(status === 1){ 
             console.log("username or phone number already exist, 409: "+ username);
+            ctx.status = 409
+            ctx.body = {}
             return 409 //conflict;
         }
         const hash = await auth.hashPassword(password);
@@ -38,10 +40,18 @@ const createUser = async (ctx) =>{
             awsHandler.createUserDefaultBucket(fname).then(p => updateUser({bucketName: p}, _id));
             generic.createReviewsDoc(_id, "users");
         }else{
-            ctx.body =  {res:401, message: "Ops something went wrong"};
+            ctx.status = 401
+            ctx.body =  {};
         }
-        
-        ctx.body =  result.ok === 1 ? {res: 200,  message: "successfully performed operation"} : {res:401,  message: "Ops something went wrong, username already exist"};
+        let data = result.ok === 1 ? {res: 200,  message: "successfully performed operation"} : {res:401,  message: "Ops something went wrong, username already exist"};
+        ctx.status = data.res
+        delete user["password"];
+        user["_id"] = _id;
+        ctx.status = 200;
+        let userData = await auth.getUserAuth(username);
+        delete userData.data["password"];
+        let token = {token: await auth.generateToken()}
+        ctx.body =  {userData:userData.data, token};
     // } catch (error) {
     //     throw new Error(error);
     // }
@@ -55,7 +65,9 @@ const updateUser = async (ctx) =>{
     console.log("--updateUser--");
     const result = await generic.updateCollectionDocument("afroturf", "users",userData,userId);
     console.log("ok: "+result.ok, "modified: "+ result.modified);
-    ctx.body =  result.modified === 1 && result.ok === 1 ? {res: 200,  message: "successfully performed operation"} : {res:401,  message: "Ops something went wrong, failed to update user"};
+    let data =  result.modified === 1 && result.ok === 1 ? {res: 200,  message: "successfully performed operation"} : {res:401,  message: "Ops something went wrong, failed to update user"};
+    ctx.status = data.res;
+    ctx.body = {}
     
 };
 
@@ -95,8 +107,8 @@ const followSalon = async (ctx) =>{
         }else{
             //notify user unsuccessful
         }
-
-        ctx.body = res;
+        ctx.status = res.res
+        ctx.body = {};
     
 
     } catch (error) {
@@ -171,7 +183,8 @@ const sendMessage = async (ctx) =>{
         }else{
             //notify user unsuccessful
         }
-        ctx.body = res2; // 
+        ctx.status = res2.res;
+        ctx.body = {}; // 
 
 
     } catch (error) {
@@ -224,7 +237,8 @@ const sendReview = async (ctx) =>{
         }else{
             //notify user unsuccessful
         }
-        ctx.body = res2; // 
+        ctx.status = res2.res;
+        ctx.body = {}; // 
 
     // } catch (error) {
     //     console.log("failed to sendReview. . .\n sendReview: "+reviewOut.toString())
