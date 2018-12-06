@@ -280,7 +280,7 @@ const getServicesPriceRange = async (userlocation, radius, limit,price_gte, pric
   
 // local
 
-
+//error on this endpoint
 const getServicesByTypePriceRangeSalonId = async (userlocation, radius, limit, servicetype, price_gte, price_lte, salonId) =>{
 console.log("getServicesByNameTypePriceRange server "+userlocation)
 let price = [price_gte, price_lte];
