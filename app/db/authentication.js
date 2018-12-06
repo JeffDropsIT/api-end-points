@@ -241,7 +241,8 @@ const authenticateUser = async (ctx) =>{
         ctx.body =  user;
     }else{
         console.log("password incorrect "+password);
-        ctx.status = 401
+        ctx.status = 401;
+        ctx.message = "unauthorized/creds incorrect"
         ctx.body = {} //unauthorized 
     }
 
@@ -259,6 +260,7 @@ const getAllUserData = async (ctx) =>{
         const res = await getUserProfile(user);
         if(res.res === 401 ){
             ctx.status = 401
+            ctx.message = "unauthorized/creds incorrect"
             ctx.body =  {} //unauthorized 
             return;
         }
@@ -269,6 +271,7 @@ const getAllUserData = async (ctx) =>{
     }else{
         console.log("password incorrect "+password);
         ctx.status = 401
+        ctx.message = "unauthorized/creds incorrect"
         ctx.body =  {} //unauthorized 
     }
 

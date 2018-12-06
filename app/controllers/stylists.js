@@ -15,7 +15,9 @@ const getStylistByIdSalonId = async(ctx) =>{
         const stylistJson =  stylistOps.getStylistByIdSalonId(salonId,stylistId, userLocation, radius);
         const res = {res: 200, message: "successfully performed operation",
         data: [await stylistJson]}
-        ctx.body = res;
+        ctx.status = 200;
+        ctx.message = res.message;
+        ctx.body = res.data;
         return ctx.body;
     } catch (error) {
         throw new Error(error);
@@ -47,7 +49,9 @@ const getSalonByStylistNameRatingGenderAndSalonId = async(ctx)=>{
         console.log("failed")
         const res = {res: 422 , message: "Unprocessable Entity, "+error,
         data: []}
-        ctx.body = res;
+        ctx.status = res.res;
+        ctx.message = res.message
+        ctx.body = {};
         return;
     }
 
@@ -77,7 +81,9 @@ const getSalonByStylistNameRatingGenderAndSalonId = async(ctx)=>{
         const stylistJson2 =  stylistOps.getSalonByStylistNameRatingGenderAndSalonIdAND(userLocation, radius, name, limit, rating,gender, salonId)
         const res = {res: 200, message: "successfully performed operation",
         data: [{or:[await stylistJson], and:[[await stylistJson2]]}]}
-        ctx.body = res;
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = res.data;
         return ctx.body;
     } catch (error) {
         throw new Error(error);
@@ -103,8 +109,10 @@ const getSalonStylistBySalonId = async(ctx) =>{
         
         const stylistJson =  stylistOps.getSalonStylistBySalonId(userLocation, radius, salonId)
         const res = {res: 200, message: "successfully performed operation",
-        data: [await stylistJson]}
-        ctx.body = res;
+        data: []}
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = await stylistJson;
         return ctx.body;
     } catch (error) {
         throw new Error(error);
@@ -124,8 +132,9 @@ const getAllStylist = async(ctx) =>{
         const stylistJson =  stylistOps.getAllStylist(userLocation, radius)
         const res = {res: 200, message: "successfully performed operation",
         data: [await stylistJson]}
-       
-        ctx.body = res;
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = await stylistJson;
     } catch (error) {
         throw new Error(error);
     }

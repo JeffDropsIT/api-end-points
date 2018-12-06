@@ -817,7 +817,10 @@ const addtostylistOrders = async(ctx) => {
     const res = await addBookingUserAccount(userId, salonOrder);
     if(res.ok!==1 && res.nModified!==1){
         console.log(401 + "Failed to add booking to user account");
-        ctx.body = {res: 401 , message: "Failed to add booking to user account"}
+        let response =  {res: 401 , message: "Failed to add booking to user account"};
+        ctx.status = response.res;
+        ctx.message = response.message
+        ctx.body = {}
     }else{
         
         console.log(salonOrder);

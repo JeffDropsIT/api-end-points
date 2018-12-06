@@ -27,7 +27,9 @@ const getServicesPriceRange = async (ctx) =>{
         console.log("failed")
         const res = {res: 422 , message: "Unprocessable Entity, "+error,
         data: []}
-        ctx.body = res;
+        ctx.status = res.res;
+        ctx.message = res.message
+        ctx.body = {};
         return;
     }
     let price;
@@ -48,9 +50,10 @@ const getServicesPriceRange = async (ctx) =>{
     try {
         
         const stylistJson =  servicesOps.getServicesPriceRange(userLocation, radius, limit, price[0], price[1])
-        const res = {res: 200, message: "successfully performed operation",
-        data: [await stylistJson]}
-        ctx.body = res;
+        const res = {res: 200, message: "successfully performed operation"}
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = await stylistJson
         return ctx.body;
     } catch (error) {
         throw new Error(error);
@@ -77,7 +80,9 @@ const getServicesPriceRangeSalonId = async (ctx) =>{
         console.log("failed")
         const res = {res: 422 , message: "Unprocessable Entity, "+error,
         data: []}
-        ctx.body = res;
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = {};
         return;
     }
     let price;
@@ -100,9 +105,10 @@ const getServicesPriceRangeSalonId = async (ctx) =>{
     try {
         
         const stylistJson =  servicesOps.getServicesPriceRangeSalonId(userLocation, radius, limit, price[0], price[1], salonId)
-        const res = {res: 200, message: "successfully performed operation",
-        data: [await stylistJson]}
-        ctx.body = res;
+        const res = {res: 200, message: "successfully performed operation"}
+        ctx.status = 200;
+        ctx.message = res.message;
+        ctx.body = await stylistJson;
         return ctx.body;
     } catch (error) {
         throw new Error(error);
@@ -128,9 +134,10 @@ const getServicesByTypePriceRange = async (ctx) =>{
         }
     } catch (error) {
         console.log("failed")
-        const res = {res: 422 , message: "Unprocessable Entity, "+error,
-        data: []}
-        ctx.body = res;
+        const res = {res: 422 , message: "Unprocessable Entity, "+error}
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = {};
         return;
     }
     let servicetype = filterRe.serviceType;
@@ -154,9 +161,10 @@ const getServicesByTypePriceRange = async (ctx) =>{
     try {
         
         const stylistJson =  servicesOps.getServicesByTypePriceRange(userLocation, radius, limit, servicetype, price[0], price[0])
-        const res = {res: 200, message: "successfully performed operation",
-        data: [await stylistJson]}
-        ctx.body = res;
+        const res = {res: 200, message: "successfully performed operation"}
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = await stylistJson;
         return ctx.body;
     } catch (error) {
         throw new Error(error);
@@ -189,7 +197,9 @@ const getServicesByTypePriceRangeSalonId = async (ctx) =>{
         console.log("failed")
         const res = {res: 422 , message: "Unprocessable Entity, "+error,
         data: []}
-        ctx.body = res;
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = {};
         return;
     }
     let servicetype = filterRe.serviceType;
@@ -213,9 +223,10 @@ const getServicesByTypePriceRangeSalonId = async (ctx) =>{
     try {
         
         const stylistJson =  servicesOps.getServicesByTypePriceRangeSalonId(userLocation, radius, limit, servicetype, price[0], price[0], salonId)
-        const res = {res: 200, message: "successfully performed operation",
-        data: [await stylistJson]}
-        ctx.body = res;
+        const res = {res: 200, message: "successfully performed operation"}
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = await stylistJson;
         return ctx.body;
     } catch (error) {
         throw new Error(error);
@@ -245,7 +256,9 @@ const getServicesByName = async(ctx) =>{
         console.log("failed")
         const res = {res: 422 , message: "Unprocessable Entity, "+error,
         data: []}
-        ctx.body = res;
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = {};
         return;
     }
     let serviceName = filterRe.serviceName;
@@ -258,9 +271,10 @@ const getServicesByName = async(ctx) =>{
     try {
         
         const stylistJson =  servicesOps.getServicesByName(userLocation, radius, limit, serviceName)
-        const res = {res: 200, message: "successfully performed operation",
-        data: [await stylistJson]}
-        ctx.body = res;
+        const res = {res: 200, message: "successfully performed operation"}
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = await stylistJson;
         return ctx.body;
     } catch (error) {
         throw new Error(error);
@@ -290,7 +304,9 @@ const getServicesByNameSalonId = async(ctx) =>{
         console.log("failed")
         const res = {res: 422 , message: "Unprocessable Entity, "+error,
         data: []}
-        ctx.body = res;
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = {};
         return;
     }
 
@@ -302,9 +318,10 @@ const getServicesByNameSalonId = async(ctx) =>{
     try {
         
         const stylistJson =  servicesOps.getServicesByNameSalonId(userLocation, radius, limit, serviceName, salonId)
-        const res = {res: 200, message: "successfully performed operation",
-        data: [await stylistJson]}
-        ctx.body = res;
+        const res = {res: 200, message: "successfully performed operation"}
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = await stylistJson;
         return ctx.body;
     } catch (error) {
         throw new Error(error);
@@ -340,9 +357,10 @@ const getServicesCode = async(ctx) =>{
         }
     } catch (error) {
         console.log("failed")
-        const res = {res: 422 , message: "Unprocessable Entity, "+error,
-        data: []}
-        ctx.body = res;
+        const res = {res: 422 , message: "Unprocessable Entity, "+error}
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = {};
         return;
     }
     let code = filterRe.code;
@@ -356,9 +374,10 @@ const getServicesCode = async(ctx) =>{
     try {
         
         const stylistJson =  servicesOps.getServicesCode(userLocation, radius, limit, code)
-        const res = {res: 200, message: "successfully performed operation",
-        data: [await stylistJson]}
-        ctx.body = res;
+        const res = {res: 200, message: "successfully performed operation"}
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = await stylistJson;
         return ctx.body;
     } catch (error) {
         throw new Error(error);
@@ -388,9 +407,10 @@ const getServicesCodeSalonId = async(ctx) =>{
         }
     } catch (error) {
         console.log("failed")
-        const res = {res: 422 , message: "Unprocessable Entity, "+error,
-        data: []}
-        ctx.body = res;
+        const res = {res: 422 , message: "Unprocessable Entity, "+error}
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = {};
         return;
     }
     let code = filterRe.code;
@@ -401,9 +421,10 @@ const getServicesCodeSalonId = async(ctx) =>{
     try {
         
         const stylistJson =  servicesOps.getServicesCodeSalonId(userLocation, radius, limit, code, salonId)
-        const res = {res: 200, message: "successfully performed operation",
-        data: [await stylistJson]}
-        ctx.body = res;
+        const res = {res: 200, message: "successfully performed operation"}
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = await stylistJson;
         return ctx.body;
     } catch (error) {
         throw new Error(error);
@@ -430,9 +451,10 @@ const getAllServices = async(ctx) => {
     try {
         
         const stylistJson =  servicesOps.getAllServices(userLocation, radius, limit)
-        const res = {res: 200, message: "successfully performed operation",
-        data: [await stylistJson]}
-        ctx.body = res;
+        const res = {res: 200, message: "successfully performed operation"}
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = await stylistJson;
         return ctx.body;
     } catch (error) {
         throw new Error(error);
@@ -457,9 +479,10 @@ const getAllServicesInSalonId = async(ctx) => {
     try {
         
         const stylistJson =  servicesOps.getAllServicesInSalonId(userLocation, radius, limit, salonId)
-        const res = {res: 200, message: "successfully performed operation",
-        data: [await stylistJson]}
-        ctx.body = res;
+        const res = {res: 200, message: "successfully performed operation"}
+        ctx.status = res.res;
+        ctx.message = res.message;
+        ctx.body = await stylistJson;
         return ctx.body;
     } catch (error) {
         throw new Error(error);

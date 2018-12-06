@@ -246,7 +246,8 @@ const applyAsStylist = async (ctx) => {
       
 
       db.connection.close();
-      ctx.body =  res;
+      ctx.status = res.res;
+      ctx.body = {};
   }catch(err){
       throw new Error(err);
   }

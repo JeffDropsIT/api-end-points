@@ -6,7 +6,9 @@ const getReviews = async(ctx) => {
     try {
         let userId = ctx.query.userId;
         let reviewId = ctx.query.reviewId;
-        ctx.body = {res:200, message:"successfully performed operation", data:await auth.getReview(userId, reviewId)};
+        let response = {res:200, message:"successfully performed operation", data:await auth.getReview(userId, reviewId)};
+        ctx.status =  response.res;
+        ctx.body = response.data;
         return ctx.body;
     } catch (error) {
         throw new Error(error);
@@ -16,7 +18,10 @@ const getRoom = async(ctx) => {
     try {
         let userId = ctx.query.userId;
         let roomId = ctx.query.roomId;
-        ctx.body = {res:200, message:"successfully performed operation", data:await auth.getRoom(userId, roomId)};
+        let response = {res:200, message:"successfully performed operation", data:await auth.getRoom(userId, roomId)};
+        ctx.status =  response.res;
+        ctx.message = response.message;
+        ctx.body = response.data;
         return ctx.body;
     } catch (error) {
         throw new Error(error);
@@ -32,7 +37,8 @@ const getSalonBySalonObj = async(ctx) =>{
         ctx.body = await salonOps.getSalonBySalonObj(salonObj, userLocation, radius);
         
     }else{
-        ctx.body = {res: "404", message:"missing salon object id"}
+        ctx.status = 404;
+        ctx.message = "missing salon object id";
     }
 
 
@@ -46,6 +52,7 @@ const getSalonBySalonId = async ctx => {
     const salonId =  ctx.params.salonId;
     if(salonId !== undefined ){
         const userLocation = await task.toLocationObject(location);
+        ctx.status = 200;
         ctx.body = await salonOps.getSalonBySalonId(salonId, userLocation, radius);
         
     }
@@ -73,6 +80,7 @@ const getSalonByNameOrRating = async ctx => {
         return ctx.body;
     }else if(rating !== undefined && name === undefined){
           const userLocation = await task.toLocationObject(location);
+          ctx.status = 200;
           ctx.body = await salonOps.getSalonByRating(rating, userLocation, radius,limit);
           
       }else{
@@ -94,6 +102,7 @@ const getNearestSalons = async ctx =>{
     }
 
     const userLocation = await task.toLocationObject(location);
+    ctx.status = 200;
     ctx.body = await salonOps.getNearestSalons(userLocation, radius,limit);
         
     
@@ -109,6 +118,7 @@ const getAllNearestSalonsShallow = async ctx => {
   
     const userLocation = await task.toLocationObject(location);
     console.log(userLocation)
+    ctx.status = 200;
     ctx.body = await salonOps.getAllNearestSalonsShallow(userLocation, radius);
     
 
@@ -141,15 +151,21 @@ const getSalonBySalonIdShallow = async ctx =>{
 
     if(salonId !== undefined){
         const userLocation = await task.toLocationObject(location);
+        ctx.status = 200;
         ctx.body = await 
         salonOps.getSalonBySalonIdShallow(salonId, userLocation, radius);
         
+    }else{
+        ctx.status = 422;
+        ctx.message = "missing parameter (salonId)"
+        ctx.body = {}
     }
 }
 
 
 const getAllSalons = async ctx =>{
 
+    ctx.status = 200;
     ctx.body = await salonOps.getAllSalons();
     
 }
