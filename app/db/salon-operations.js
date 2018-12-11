@@ -121,10 +121,12 @@ const getAllNearestSalonsShallow = async (userlocation, radius) => {
      throw new Error(err);
     }   
    };
-const createUserBookmark = async (userId, salonId) => {
+const createUserBookmark = async (userId, salonId, info, title) => {
     const bookmark = {
         userId: userId,
         salonId: parseInt(salonId),
+        info:info,
+        title:title,
         bookmarkId: await counters.getNextSequenceValue("bookmarkId","bookmarksIndex" )
     }
     let bool = await generic.findSalon(salonId);

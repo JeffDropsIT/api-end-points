@@ -5,6 +5,28 @@ const ObjectId = require('mongodb').ObjectID;
 const empty = require("is-empty");
 const TokenGenerator = require('uuid-token-generator');
 
+
+
+
+const isUser = async (ctx) => {
+    const username = ctx.query.username;
+    if(!username){
+        ctx.status = 422;
+        ctx.message = "missing parameter"
+        ctx.body = {};
+        return;
+    }
+    const status = await generic.checkIfUserNameEmailPhoneExist(ctx.query.username);
+    if( status === 0){ 
+        console.log("username or phone number does not exit"+ username);
+        ctx.message = "username or phone number does not exit"+ username;
+        ctx.status = 401
+        ctx.body = {status:0};
+    }else{
+        ctx.status = 200;
+        ctx.body = {status:1}
+    }
+}
 const getUserAuth = async (username)=>{
     try{
         const status = await generic.checkIfUserNameEmailPhoneExist(username);
@@ -291,5 +313,6 @@ module.exports = {
     getReview,
     getRoom,
     getUserAuth,
-    generateToken
+    generateToken,
+    isUser
 }

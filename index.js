@@ -48,6 +48,8 @@ router.post('/afroturf/user/register',userOps.createUser);
 router.post('/afroturf/user/login',auth.authenticateUser);
 //getsalon data
 router.post('/afroturf/user/',auth.getAllUserData);
+//is user
+router.get('/afroturf/user/',auth.isUser);
 //edit a user
 router.post('/afroturf/user/edit/profile',userOps.updateUser);
 
