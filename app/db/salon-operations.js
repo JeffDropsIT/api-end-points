@@ -176,10 +176,10 @@ const deleteUserBookmark = async (bookmarkId) => {
         const bookmark = await bookmarkCursor.toArray();
         const bookmarkObj = JSON.parse(JSON.stringify(bookmark))
 
-        bn = await getSalonBookmarked(bookmarkObj);
+        //bn = await getSalonBookmarked(bookmarkObj);
         console.log("Bookmarks - ", bn);
         db.connection.close();
-        return bn;
+        return bookmarkObj;
        
   
     }catch(err){
