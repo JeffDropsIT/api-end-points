@@ -67,8 +67,8 @@ const deleteBookmark = async(ctx) => {
 
     const bookmarks = await deleteUserBookmark(parseInt(bookmarkId));
     console.log("deleteBookmark")
-    ctx.status = 200;
-    ctx.body = bookmarks
+    ctx.status = bookmarks.res;
+    ctx.body = {}
 
 }
 const clearAllBookmarks = async (ctx) => {
@@ -84,8 +84,8 @@ const clearAllBookmarks = async (ctx) => {
 
     const bookmarks = await deleteAllUserBookmarksByUserId(userId);
     console.log("clearBookmark")
-    ctx.status = 200;
-    ctx.body = bookmarks
+    ctx.status = bookmarks.res;
+    ctx.body = {};
 }
 module.exports = {
     getBookmarks,
