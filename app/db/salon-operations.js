@@ -177,7 +177,7 @@ const deleteUserBookmark = async (bookmarkId) => {
         const bookmarkObj = JSON.parse(JSON.stringify(bookmark))
 
         //bn = await getSalonBookmarked(bookmarkObj);
-        console.log("Bookmarks - ", bn);
+        //console.log("Bookmarks - ", bn);
         db.connection.close();
         return bookmarkObj;
        
