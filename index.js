@@ -34,7 +34,7 @@ app.use(koaBody({ multipart: true, formLimit: 2000 * 1024}));
 // custom 404
 
 router.get("/", async ctx => {
-  ctx.body = {"welcome to Afroturf"}
+  ctx.body = "welcome to Afroturf"
 });
 
 // serve files from ./public
