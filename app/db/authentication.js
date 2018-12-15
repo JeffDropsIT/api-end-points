@@ -267,7 +267,9 @@ const authenticateUser = async (ctx) =>{
         console.log("password correct"); //ok
         delete user.password
         ctx.status = 200;
-        ctx.body =  user.data;
+        delete user.data.password
+        user.data["token"] = await generateToken()
+        ctx.body = user.data;
     }else{
         console.log("password incorrect "+password);
         ctx.status = 401;
@@ -288,6 +290,7 @@ const getAllUserData = async (ctx) =>{
         return;
     }
     const isPassword = await bcrypt.compareSync(password, user.data.password);
+    delete user.data.password
     if(isPassword){
         console.log("password correct"); //ok
         const res = await getUserProfile(user.data);
@@ -301,13 +304,11 @@ const getAllUserData = async (ctx) =>{
         const salonData = await getSalonProfile(user.data._id);
         if(salonData === 404){
             ctx.status = 200;
-            let token = {token: await generateToken()}
-            ctx.body =  {userData:res.data, salonData:[], token};
+            ctx.body =  {userData:res.data, salonData:[], token: await generateToken()};
             return;
         }
         ctx.status = 200;
-        let token = {token: await generateToken()}
-        ctx.body =  {userData:res.data, salonData:salonData, token};
+        ctx.body =  {userData:res.data, salonData:[], token: await generateToken()};
     }else{
         console.log("password incorrect "+password);
         ctx.status = 401
