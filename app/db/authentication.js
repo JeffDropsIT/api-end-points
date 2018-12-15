@@ -50,7 +50,8 @@ const generateToken = async () => {
     let token = await tokgen2.generate();
     console.log(token);
     let date = new Date();
-    date.setMonth(date.getMonth+1)
+    let month = date.getMonth();
+    date.setMonth(month + 1 )
     return token+":"+date;
 }
 
@@ -142,11 +143,10 @@ const getSalons = async (salonList) =>{
 //test
 //getSalon("5b8f7f7b0e22dc20a4588e27").roomDocIdList
 const getSalonProfile = async(userId) =>{
-    try{
+    //try{
         let salonProfile = [];
         let res = await isUserSalonOwner(userId);
         if(!res.bool){ 
-            console.log("Not salon owner"+ user.username);
             return 404; //user not found
         }
         const salonList = await res.result.salons;
@@ -155,31 +155,35 @@ const getSalonProfile = async(userId) =>{
         await console.log("----- getSalonProfile data ----")
         await console.log(salonProfile)
         return  await salonProfile;
-    }catch(err){
-        throw new Error(err);
-    }
+    // }catch(err){
+    //     throw new Error(err);
+    // }
 }
 //test
 //getSalonProfile("5b8f75f4de5f7e1964ca5137");
 
 const getUserProfile = async (user) => {
-    try{
+    //try{
+        console.log("getUserProfile ")
         let profile = [];
-        
+        profile.push(user)
         const status = await generic.checkIfUserNameEmailPhoneExist(user.username);
         if( status === 0){ 
             console.log("username or phone number does not exit"+ user.username);
             return {res:404}; //user not found
         }
         const review = await getReview(user._id, user.reviewsDocId);
-        const rooms  = await getUsersRooms(user._id, user.roomDocIdList);
         profile.push(review);
+        if(!user.roomDocIdList){
+            return  {res:200, data:profile};
+        }
+        const rooms  = await getUsersRooms(user._id, user.roomDocIdList);
         profile.push(rooms);
-        console.log(profile)
+        console.log("profile ", profile)
         return  {res:200, data:profile};
-    }catch(err){
-        throw new Error(err);
-    }
+    // }catch(err){
+    //     throw new Error(err);
+    // }
 }
 const getReview = async (userId, reviewsDocId) => {
     try{
@@ -224,7 +228,7 @@ const getRoom = async (userId, roomDocId) => {
 //getRoom("5b95231903d3825174322a50","5b95231b03d3825174322a51");
 
 const getUsersRooms = async (userId, roomDocIdList) => {
-
+    console.log("roomDocIdList ", roomDocIdList)
     try{
         let roomsCollection = [];
     
@@ -249,23 +253,25 @@ const authenticateUser = async (ctx) =>{
     
     const username = ctx.request.body.username;
     const password = ctx.request.body.password;
+    console.log("password", password)
     const user = await getUserAuth(username);
+    console.log(user)
     if(user.res === 401){
         ctx.status = 401;
         ctx.body = {};
         return;
     }
-    const isPassword = await bcrypt.compareSync(password, user.password);
+    console.log("user info",user.data["password"])
+    const isPassword = await bcrypt.compareSync(password, user.data.password);
     if(isPassword){
         console.log("password correct"); //ok
         delete user.password
         ctx.status = 200;
-        ctx.body =  user;
+        ctx.body =  user.data;
     }else{
         console.log("password incorrect "+password);
         ctx.status = 401;
         ctx.message = "unauthorized/creds incorrect"
-        ctx.body = {} //unauthorized 
     }
 
 
@@ -276,17 +282,29 @@ const getAllUserData = async (ctx) =>{
     const username = ctx.request.body.username;
     const password = ctx.request.body.password;
     const user = await getUserAuth(username);
-    const isPassword = await bcrypt.compareSync(password, user.password);
+    if(user.res === 401){
+        ctx.status = 401;
+        ctx.body = {};
+        return;
+    }
+    const isPassword = await bcrypt.compareSync(password, user.data.password);
     if(isPassword){
         console.log("password correct"); //ok
-        const res = await getUserProfile(user);
+        const res = await getUserProfile(user.data);
+      
         if(res.res === 401 ){
             ctx.status = 401
             ctx.message = "unauthorized/creds incorrect"
             ctx.body =  {} //unauthorized 
             return;
         }
-        const salonData = await getSalonProfile(user._id)
+        const salonData = await getSalonProfile(user.data._id);
+        if(salonData === 404){
+            ctx.status = 200;
+            let token = {token: await generateToken()}
+            ctx.body =  {userData:res.data, salonData:[], token};
+            return;
+        }
         ctx.status = 200;
         let token = {token: await generateToken()}
         ctx.body =  {userData:res.data, salonData:salonData, token};

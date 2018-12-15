@@ -220,7 +220,7 @@ const applyAsStylist = async (ctx) => {
   try{
       const db = await generic.getDatabaseByName("afroturf");
       const result = await db.db.collection("users").update({
-          $and:[{"salons.salonObjId": salonObjId}, {"salons.role": "salonOwner"}, { "salons.hiring": 1 }, {"stylistRequests.salonObjId": {$ne: salonObjId}}]},
+          $and:[{"salons.salonObjId": salonObjId}, {"salons.role": "salonOwner"}, { "salons.hiring": 1 }, {"stylistRequests.userId": {$ne: userId}}]},
           {$addToSet: {stylistRequests:data}}, 
       );
       console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
@@ -236,7 +236,7 @@ const applyAsStylist = async (ctx) => {
           let res3 = result2.result.ok && result2.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
           if(res3.res == 200){
             const clientId = await generic.getClientId(salonObjId);
-            notify.notifyUser("applied", clientId, {userId:userId, message:"booking from user: "+userId});
+            //notify.notifyUser("applied", clientId, {userId:userId, message:"booking from user: "+userId});
             //notify all stylist that the is a booking
           }else{
               //notify user unsuccessful
@@ -247,6 +247,7 @@ const applyAsStylist = async (ctx) => {
 
       db.connection.close();
       ctx.status = res.res;
+      ctx.message = res.message
       ctx.body = {};
   }catch(err){
       throw new Error(err);

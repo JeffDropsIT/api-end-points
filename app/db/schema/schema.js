@@ -891,6 +891,17 @@ const getApplicationJson =  (userId, salonObjId)=>{
     }
     return application;
 }
+const getApplicationJsonRes =  (userId, salonObjId, status, permissions)=>{
+    const application = {
+        "userId": userId,
+        "salonObjId": salonObjId,
+        "status": status,
+        "stylistAccess": [
+            permissions
+        ]
+    }
+    return application;
+}
 const createNewSalonForm =  (genNextSalonId,name, address, street, coordinates, sName)=>{
     const form = {
         "name": name.toLowerCase(),
@@ -962,9 +973,9 @@ const modifyRequestJson =  (userId, salonObjId, status, permissions)=>{
 const stylistJSON =  (data, stylistId, id)=>{
     const form = {
         "userId":id,
-        "username": data.username.toLowerCase(),
-        "name": data.fname.toLowerCase(),
-        "gender": data.gender.toLowerCase(),
+        "username": data.username,
+        "name": data.fname,
+        "gender": data.gender,
         "stylistId": stylistId,
         "reviewsDocId":data.reviewsDocId,
         "gallery":[],
@@ -1069,6 +1080,7 @@ module.exports = {
     getApplicationJson,
     getActiveSalonsJsonForm,
     createNewReviewDocForm,
+    getApplicationJsonRes,
     rooms, 
     reviews,
     createNewRoomForm,

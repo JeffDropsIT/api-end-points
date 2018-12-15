@@ -1446,34 +1446,38 @@ const addsubserviceToSalonServices = async (ctx) => {
 }
 
 const acceptStylistRequest = async (ctx) => {
-    try{
+   // try{
         const userId = ctx.request.body.userId, 
         salonObjId = ctx.request.body.salonObjId,
         status = ctx.request.body.status,
         permissions = ctx.request.body.permissions;
-        if(status == undefined || permissions === undefined){return 401 + "status: null or permission: null"}
-        const data = await schema.getApplicationJson(userId,salonObjId);
-        data.status = status; data.stylistAccess = permissions
+        if(status == undefined || permissions === undefined){
+            ctx.status = 422;
+            ctx.message = "status: null or permission: null";
+            return 401 + "status: null or permission: null"}
+        const data = await schema.getApplicationJsonRes(userId,salonObjId, status, permissions);
         const db = await generic.getDatabaseByName("afroturf");
         const result = await db.db.collection("users").update({
             $and:[{"salons.salonObjId": salonObjId}, {"salons.role": "salonOwner"}]},
-            {$set: {"stylistRequests.$[stylist].status":status, "stylistRequests.$[stylist].stylistAccess":permissions}},
+            {$set: {"stylistRequests.$[stylist].status":status, "stylistRequests.$[stylist].stylistAccess":[permissions]}},
             {arrayFilters: [{$and: [{"stylist.salonObjId": salonObjId}, {"stylist.userId": userId}]}], multi : true } 
         );
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
         if(result.result.ok === 1 && result.result.nModified === 1){
             const res = await addStylistToSalon(userId, salonObjId, data);
-            let data = res.ok && res.nModified === 1? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
-            ctx.status = data.res;
+            let data2 = res.ok && res.nModified === 1? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
+            ctx.status = data2.res;
             ctx.body =   {};
         }else{
+            ctx.status = 401
+            ctx.message = "conflict" 
             return  401 + " error accepting";
         }
         
-    }catch(err){
-        throw new Error(err);
-    }
+    // }catch(err){
+    //     throw new Error(err);
+    // }
 }
 
 
@@ -1501,7 +1505,7 @@ const addStylistToSalon = async (userId, salonObjId, data) => {
         return -1;
     }
     console.log(" SUCH USER "+stylist[0]._id)
-    try{
+   // try{
         const db = await generic.getDatabaseByName("afroturf");
         const result = await db.db.collection("salons").update({
             $and:[{_id: ObjectId(salonObjId)}, {"stylists.userId": {$ne: stylist[0]._id}}]},
@@ -1519,9 +1523,9 @@ const addStylistToSalon = async (userId, salonObjId, data) => {
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
         return  {ok : result.result.ok, nModified:  result.result.nModified}
-    }catch(err){
-        throw new Error(err);
-    }
+    // }catch(err){
+    //     throw new Error(err);
+    // }
 }
 
 //test
