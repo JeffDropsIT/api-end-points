@@ -577,12 +577,14 @@ const createSalon = async (ctx) =>{
         const body = ctx.request.body ;
         const name = body.name, address = body.address, street = address.split(",")[1], coordinates = [parseFloat(body.latitude), parseFloat(body.longitude)], sName = "haircuts", hiring = 1;
         const userId = body.userId; //"5b7e8e21d59eae1de05d6984";
+        const openingTime = body.openingTime;
+        const closingTime = body.closingTime;
+        const operatingDay = body.operatingDay;
         console.log(name)
         console.log("--createSalon--");
         const salonId = await counters.getNextSequenceValue("salonId", "salonIndex")
-        const salon = await schema.createNewSalonForm(salonId,name, address, street, coordinates, sName);
+        const salon = await schema.createNewSalonForm(salonId,name, address, street, coordinates, sName, openingTime, closingTime, operatingDay);
         let _id;
-        
         const addedSalon = await generic.insertIntoCollection("afroturf", "salons",salon);
         _id = addedSalon.ok == 1 ?  addedSalon._id: null;
 
@@ -1413,8 +1415,8 @@ const addServicesToSalon = async (ctx) => {
         );
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
-        let data = result.result.ok &&result.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
-        ctx.status = data.res;
+        let data2 = result.result.ok &&result.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
+        ctx.status = data2.res;
         ctx.body =  {};
     }catch(err){
         throw new Error(err);
@@ -1437,8 +1439,8 @@ const addsubserviceToSalonServices = async (ctx) => {
         );
         db.connection.close();
         console.log("ok: "+result.result.ok, "modified: "+ result.result.nModified);
-        let data = result.result.ok &&result.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
-        ctx.status = data.res;
+        let data2 = result.result.ok &&result.result.nModified === 1 ? {res:200, message: "successfully performed operation"} : {res:401, message: "failed to perform operation"};
+        ctx.status = data2.res;
         ctx.body =  {};
 }catch(err){
         throw new Error(err);

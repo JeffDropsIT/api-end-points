@@ -902,7 +902,7 @@ const getApplicationJsonRes =  (userId, salonObjId, status, permissions)=>{
     }
     return application;
 }
-const createNewSalonForm =  (genNextSalonId,name, address, street, coordinates, sName)=>{
+const createNewSalonForm =  (genNextSalonId,name, address, street, coordinates, sName, openingTime, closingTime, operatingDay)=>{
     const form = {
         "name": name.toLowerCase(),
         "salonId": genNextSalonId,
@@ -911,6 +911,9 @@ const createNewSalonForm =  (genNextSalonId,name, address, street, coordinates, 
         "roomDocIdList": [],
         "reviewsDocId": "",
         "accountStatus": "active",
+        "openingTime":openingTime,
+        "closingTime":closingTime,
+        "operatingDay":operatingDay,
         "created": new Date(),
         "location": {"address": address.toLowerCase(), "street": street.toLowerCase(), "coordinates":coordinates},
         "services": [createNewServicesForm(sName)],
